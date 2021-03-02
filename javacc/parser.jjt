@@ -1,0 +1,195 @@
+options {
+    LOOKAHEAD = 1;
+}
+
+PARSER_BEGIN(Calculator)
+
+import java.util.HashMap;
+
+public class Calculator {
+    public static HashMap<String, Integer> symbols = new HashMap<String, Integer>();
+
+    public static void main(String[] args) throws ParseException {
+      System.out.println("Parser for a calculator that accepts expressions with integers, +,-,*,/,(, and ).");
+      System.out.println("Write an arithmetic expression: ");
+      Calculator myCalc = new Calculator(System.in);
+      SimpleNode root = myCalc.Expression();
+      //root.dump("");
+
+      System.out.println("Expression value: " + myCalc.eval(root));
+    }
+}
+
+PARSER_END(Calculator)
+
+SKIP : {
+  " " | "\r" | "\t"
+}
+
+TOKEN : {
+  < INTEGER: (["0"-"9"])+ >
+  | < LF: "\n" >
+  | < VAR: ["A"-"Z","a"-"z"](["0"-"9","A"-"Z","a"-"z"])* >
+  | < EQ: "=" >
+  | < COL: "," >
+  | < SEMICOL: ";" >
+  | < DOT: "." >
+  | < LBRACE: "{" >
+  | < RBRACE: "}" >
+  | < LPAR: "(" >
+  | < RPAR: ")" >
+  | < LBRACK: "[" >
+  | < RBRACK: "]" >
+  | < AND: "&&" >
+  | < OR: "||" >
+  | < LESS: "<" >
+  | < PLUS: "+" >
+  | < MINUS: "-" >
+  | < MULT: "*" >
+  | < DIV: "/" >
+  | < PERCENTAGE: "%" >
+  | < TRUE: "true" >
+  | < FALSE: "false" >
+  | < THIS > : "this" >
+  | < NEW >: "new" >
+  | < INT: "int" >
+  | < BOOLEAN: "boolean" >
+  | < NOT: "!" >
+  | < IMPORT: "import" >
+  | < CLASS: "class" >
+  | < EXTENDS: "extends" >
+}
+
+SimpleNode Program(): 
+{
+    ImportDeclaration() ClassDeclaration() <EOF> { return jjtThis; }
+}
+
+void ImportDeclaration():
+{
+    (
+        <IMPORT> Identifier()
+        (
+            <DOT> Identifier()
+        )*
+        <SEMICOL>
+    )*
+}
+
+void ClassDeclaration():
+{
+    <CLASS> Identifier()
+    [
+        <EXTENDS> Identifier()
+    ]
+    <LBRACE>
+    (VarDeclaration())*
+    (MethodDeclaration())*
+    <RBRACE>
+}
+
+void VarDeclaration():
+{
+    Type() Identifier() <SEMICOL>
+}
+
+void MethodDeclaration():
+{
+    (
+        "public" Type() Identifier()
+        <LPAR>
+        [
+            Type() Identifier()
+            (
+                <COL> Type() Identifier()
+            )*
+        ]
+        <RPAR>
+
+        <LBRACE>
+        (VarDeclaration())*
+        (Statement())*
+        "return" Expression() <SEMICOL>
+        <RBRACE>
+    )
+    |
+    (
+        "public" "static" "void" "main" // juntar?
+        <LPAR>
+        "String" <LBRACK> <RBRACK> // juntar? String[]
+        Identifier()
+        <RPAR>
+
+        <LBRACE>
+        (VarDeclaration())*
+        (Statement())*
+        <RBRACE>
+    )
+}
+
+void Type():
+{
+    (<INT> <LBRACK> <RBRACK>) // juntar? int[]
+    | <BOOLEAN>
+    | <INT>
+    | Identifier()
+}
+
+void Statement():
+{
+    (
+        <LBRACE>
+        (Statement())*
+        <RBRACE>
+    )
+    |
+    (   "if" <LPAR> Expression() <RPAR> Statement()
+        "else" Statement())
+    |
+    (
+        "while" <LPAR> Expression() <RPAR>
+        Statement()
+    )
+    |
+    (Expression() <SEMICOL>)
+    |
+    (Identifier() <EQ> Expression() <SEMICOL>)
+    |
+    (Identifier() <LBRACK> Expression() <RBRACK> <EQ> Expression() <SEMICOL>)
+}
+
+void Expression():
+{
+    (Expression() ("&&" | "<" | "+" | "-" | "*" | "/") Expression())
+    |
+    (Expression() <LBRACK> Expression() <RBRACK>)
+    |
+    (Expression() <DOT> "length")
+    |
+    (
+        Expression() <DOT> Identifier() <LPAR>
+        [
+            Expression()
+            (<COL> Expression())*
+        ]
+        <RPAR>
+    )
+    |
+    IntegerLiteral() // ?
+    |
+    <TRUE>
+    |
+    <FALSE>
+    |
+    Identifier()
+    |
+    <THIS>
+    |
+    (<NEW> <INT> <LBRACK> Expression() <RBRACK>)
+    |
+    (<NEW> Identifier() <LPAR> <RPAR>)
+    |
+    (<NOT> Expression())
+    |
+    (<LPAR> Expression() <RPAR>)
+}
