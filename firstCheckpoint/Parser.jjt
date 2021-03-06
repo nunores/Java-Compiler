@@ -1,0 +1,291 @@
+options {
+    LOOKAHEAD = 1;
+}
+
+PARSER_BEGIN(Parser)
+
+import java.util.HashMap;
+
+public class Parser {
+    public static HashMap<String, Integer> symbols = new HashMap<String, Integer>();
+
+    public static void main(String[] args) throws ParseException {
+      System.out.println("If you see this, probably its working!");
+      Parser jvm = new Parser(System.in);
+      SimpleNode root = jvm.Program();
+      root.dump("");
+
+      //System.out.println("Expression value: " + myCalc.eval(root));
+    }
+}
+
+PARSER_END(Parser)
+
+SKIP : {
+  " " | "\r" | "\t"
+}
+
+TOKEN : {
+  < INTEGER: (["0"-"9"])+ >
+  | < LF: "\n" >
+  | < EQ: "=" >
+  | < COL: "," >
+  | < SEMICOL: ";" >
+  | < DOT: "." >
+  | < LBRACE: "{" >
+  | < RBRACE: "}" >
+  | < LPAR: "(" >
+  | < RPAR: ")" >
+  | < LBRACK: "[" >
+  | < RBRACK: "]" >
+  | < AND: "&&" >
+  | < OR: "||" >
+  | < LESS: "<" >
+  | < PLUS: "+" >
+  | < MINUS: "-" >
+  | < MULT: "*" >
+  | < DIV: "/" >
+  | < PERCENTAGE: "%" >
+  | < TRUE: "true" >
+  | < FALSE: "false" >
+  | < THIS : "this" >
+  | < NEW : "new" >
+  | < INT: "int" >
+  | < INTARRAY: "int[]" >
+  | < STRINGARRAY: "String[]" >
+  | < BOOLEAN: "boolean" >
+  | < NOT: "!" >
+  | < IMPORT: "import" >
+  | < CLASS: "class" >
+  | < EXTENDS: "extends" >
+  | < IF: "if" >
+  | < VOID: "void" >
+  | < ELSE: "else" >
+  | < LENGTH: "length" >
+  | < MAIN: "main" >
+  | < WHILE: "while" >
+  | < PUBLIC: "public" >
+  | < STATIC: "static" >
+  | < STRING: "string" >
+  | < RETURN: "return" >
+  | < VAR: ["A"-"Z","a"-"z"](["0"-"9","A"-"Z","a"-"z","_"])* >
+}
+
+SimpleNode Program(): {}
+{
+    ImportDeclaration() ClassDeclaration() <EOF> { return jjtThis; }
+}
+
+void ImportDeclaration(): {}
+{
+    (
+        <IMPORT> Identifier()
+        (
+            <DOT> Identifier()
+        )*
+        <SEMICOL>
+    )*
+}
+
+void ClassDeclaration(): {}
+{
+    <CLASS> Identifier()
+    [
+        <EXTENDS> Identifier()
+    ]
+    <LBRACE>
+    (VarDeclaration())*
+    (MethodDeclaration())*
+    <RBRACE>
+}
+
+void VarDeclaration(): {}
+{
+    Type() Identifier() <SEMICOL>
+}
+
+void MethodDeclaration(): {}
+{
+    <PUBLIC>
+    (
+        Type() Identifier()
+        <LPAR>
+        [
+            Type() Identifier()
+            (
+                <COL> Type() Identifier()
+            )*
+        ]
+        <RPAR>
+
+        <LBRACE>
+        (VarDeclaration())*
+        (Statement())*
+        <RETURN> Expression() <SEMICOL>
+        <RBRACE>
+    )
+    |
+    (
+        <STATIC> <VOID> <MAIN>
+        <LPAR>
+        <STRINGARRAY>
+        Identifier()
+        <RPAR>
+
+        <LBRACE>
+        (VarDeclaration())*
+        (Statement())*
+        <RBRACE>
+    )
+}
+
+void Type(): {}
+{
+    <INTARRAY>
+    | <BOOLEAN>
+    | <INT>
+    | Identifier()
+}
+
+void Statement(): {}
+{
+    (
+        <LBRACE>
+        (Statement())*
+        <RBRACE>
+    )
+    |
+    (   <IF> <LPAR> Expression() <RPAR> Statement()
+        <ELSE> Statement()
+    )
+    |
+    (
+        <WHILE> <LPAR> Expression() <RPAR>
+        Statement()
+    )
+    |
+    (Expression() <SEMICOL>)
+    |
+    (Identifier() 
+        (
+            (<EQ> Expression() <SEMICOL>)
+            |
+            (<LBRACK> Expression() <RBRACK> <EQ> Expression() <SEMICOL>)
+        )
+    )
+}
+
+void Expression(): {}
+{
+    (
+        IntegerLiteral()
+        |
+        <TRUE>
+        |
+        <FALSE>
+        |
+        Identifier()
+        |
+        <THIS>
+        |
+        <NEW> 
+        (
+            (<INT> <LBRACK> Expression() <RBRACK>)
+            |
+            (Identifier() <LPAR> <RPAR>)
+        )
+        |
+        (<NOT> Expression())
+        |
+        (<LPAR> Expression() <RPAR> )
+    )
+    Expression1()
+}
+
+
+void Expression1() : {}
+{
+    [
+        (
+            ( (<AND> | <LESS> | <PLUS> | <MINUS> | <MULT> | <DIV>) Expression() )
+            |
+            ( (<LBRACK> Expression() <RBRACK>) )
+            |
+            (
+                <DOT>
+                (
+                    <LENGTH>
+                    |
+                    (
+                        Identifier() <LPAR>
+                        [
+                            Expression()
+                            (<COL> Expression())*
+                        ]
+                        <RPAR>
+                    )
+                )
+            )
+        )
+        Expression1()
+    ]
+}
+
+/*void Expression1(): {}
+{
+    IntegerLiteral()
+    |
+    <TRUE>
+    |
+    <FALSE>
+    |
+    Identifier()
+    |
+    <THIS>
+    |
+    <NEW>
+    (
+        (<INT> <LBRACK> Expression() <RBRACK>)
+        |
+        (Identifier() <LPAR> <RPAR>)
+    )
+    |
+    (<NOT> Expression())
+    |
+    (<LPAR> Expression() <RPAR>)
+}
+
+
+void Expression(): {}
+{
+    Expression1()
+    [
+        ((<AND> | <LESS> | <PLUS> | <MINUS> | <MULT> | <DIV>) Expression())
+        |
+        (<LBRACK> Expression() <RBRACK>)
+        |
+        <DOT>
+        (
+            <LENGTH>
+            |
+            (
+                Identifier() <LPAR>
+                [
+                    Expression()
+                    (<COL> Expression())*
+                ]
+                <RPAR>
+            )
+        )
+    ]
+}*/
+
+void Identifier(): {}
+{
+    <VAR>
+}
+
+void IntegerLiteral(): {}
+{
+    <INTEGER>
+}
