@@ -1,75 +1,291 @@
-options
-{
-    LOOKAHEAD=1;
+options {
+    LOOKAHEAD = 1;
 }
 
 PARSER_BEGIN(Calculator)
 
+import java.util.HashMap;
 
-public class Calculator
-{
-    public static void main(String args[]) throws ParseException {
-      	System.out.println("Write an arithmetic expression:");
-		Calculator myCalc = new Calculator(System.in);
-		SimpleNode root = myCalc.Expression(); // returns reference to root node
-        	
-		root.dump(""); // prints the tree on the screen
+public class Calculator {
+    public static HashMap<String, Integer> symbols = new HashMap<String, Integer>();
 
-		//System.out.println("Expression value: "+myCalc.eval(root));
+    public static void main(String[] args) throws ParseException {
+      System.out.println("If you see this, probably its working!");
+      Calculator jvm = new Calculator(System.in);
+      SimpleNode root = jvm.Program();
+      root.dump("");
+
+      //System.out.println("Expression value: " + myCalc.eval(root));
     }
-	
 }
 
 PARSER_END(Calculator)
 
-SKIP :
-{
-	" " | "\r" | "\t"
+SKIP : {
+  " " | "\r" | "\t"
 }
 
-TOKEN:
-{
-    	< INTEGER: (["0"-"9"])+ >
-	|   < LF: "\n" >
+TOKEN : {
+  < INTEGER: (["0"-"9"])+ >
+  | < LF: "\n" >
+  | < EQ: "=" >
+  | < COL: "," >
+  | < SEMICOL: ";" >
+  | < DOT: "." >
+  | < LBRACE: "{" >
+  | < RBRACE: "}" >
+  | < LPAR: "(" >
+  | < RPAR: ")" >
+  | < LBRACK: "[" >
+  | < RBRACK: "]" >
+  | < AND: "&&" >
+  | < OR: "||" >
+  | < LESS: "<" >
+  | < PLUS: "+" >
+  | < MINUS: "-" >
+  | < MULT: "*" >
+  | < DIV: "/" >
+  | < PERCENTAGE: "%" >
+  | < TRUE: "true" >
+  | < FALSE: "false" >
+  | < THIS : "this" >
+  | < NEW : "new" >
+  | < INT: "int" >
+  | < INTARRAY: "int[]" >
+  | < STRINGARRAY: "String[]" >
+  | < BOOLEAN: "boolean" >
+  | < NOT: "!" >
+  | < IMPORT: "import" >
+  | < CLASS: "class" >
+  | < EXTENDS: "extends" >
+  | < IF: "if" >
+  | < VOID: "void" >
+  | < ELSE: "else" >
+  | < LENGTH: "length" >
+  | < MAIN: "main" >
+  | < WHILE: "while" >
+  | < PUBLIC: "public" >
+  | < STATIC: "static" >
+  | < STRING: "string" >
+  | < RETURN: "return" >
+  | < VAR: ["A"-"Z","a"-"z"](["0"-"9","A"-"Z","a"-"z","_"])* >
 }
 
-SimpleNode Expression(): {}
+SimpleNode Program(): {}
 {
-   Expr1() <LF>  {return jjtThis;} // Java code inside brackets
+    ImportDeclaration() ClassDeclaration() <EOF> { return jjtThis; }
 }
 
-void Expr1() #void: {}
+void ImportDeclaration(): {}
 {
-   Expr2(1) [
-   	("+" Expr2(1) #Add(2)
-   	| "-" Expr2(1) #Sub(2)
-   	)
-   	
-   ]
+    (
+        <IMPORT> Identifier()
+        (
+            <DOT> Identifier()
+        )*
+        <SEMICOL>
+    )*
 }
 
-void Expr2(int sign) #void: {} // 1: positive; -1: negative, because of the ‘-‘ unitary operator
+void ClassDeclaration(): {}
 {
-   Expr3(sign)  [
-   ("*" Expr3(1) #Mul(2) 
-   | "/" Expr3(1) #Div(2)
-   )
-   
-   ]
-/*
-   Expr3(sign) [
-   ("*" #Mul(2)
-   | "/" #Div(2)
-   )
-   Expr3(1)
-   ]
-   */
-   
+    <CLASS> Identifier()
+    [
+        <EXTENDS> Identifier()
+    ]
+    <LBRACE>
+    (VarDeclaration())*
+    (MethodDeclaration())*
+    <RBRACE>
 }
 
-void Expr3(int sign) #void: {Token t;}
+void VarDeclaration(): {}
 {
-    t=<INTEGER> {  jjtThis.val = sign *Integer.parseInt(t.image); } #Term
-    | "-" Expr3(-1)
-    | "(" Expr1() ")"
+    Type() Identifier() <SEMICOL>
+}
+
+void MethodDeclaration(): {}
+{
+    <PUBLIC>
+    (
+        Type() Identifier()
+        <LPAR>
+        [
+            Type() Identifier()
+            (
+                <COL> Type() Identifier()
+            )*
+        ]
+        <RPAR>
+
+        <LBRACE>
+        (VarDeclaration())*
+        (Statement())*
+        <RETURN> Expression() <SEMICOL>
+        <RBRACE>
+    )
+    |
+    (
+        <STATIC> <VOID> <MAIN>
+        <LPAR>
+        <STRINGARRAY>
+        Identifier()
+        <RPAR>
+
+        <LBRACE>
+        (VarDeclaration())*
+        (Statement())*
+        <RBRACE>
+    )
+}
+
+void Type(): {}
+{
+    <INTARRAY>
+    | <BOOLEAN>
+    | <INT>
+    | Identifier()
+}
+
+void Statement(): {}
+{
+    (
+        <LBRACE>
+        (Statement())*
+        <RBRACE>
+    )
+    |
+    (   <IF> <LPAR> Expression() <RPAR> Statement()
+        <ELSE> Statement()
+    )
+    |
+    (
+        <WHILE> <LPAR> Expression() <RPAR>
+        Statement()
+    )
+    |
+    (Expression() <SEMICOL>)
+    |
+    (Identifier()
+        (
+            (<EQ> Expression() <SEMICOL>)
+            |
+            (<LBRACK> Expression() <RBRACK> <EQ> Expression() <SEMICOL>)
+        )
+    )
+}
+
+void Expression(): {}
+{
+    (
+        IntegerLiteral()
+        |
+        <TRUE>
+        |
+        <FALSE>
+        |
+        Identifier()
+        |
+        <THIS>
+        |
+        <NEW>
+        (
+            (<INT> <LBRACK> Expression() <RBRACK>)
+            |
+            (Identifier() <LPAR> <RPAR>)
+        )
+        |
+        (<NOT> Expression())
+        |
+        (<LPAR> Expression() <RPAR> )
+    )
+    Expression1()
+}
+
+
+void Expression1() : {}
+{
+    [
+        (
+            ( (<AND> | <LESS> | <PLUS> | <MINUS> | <MULT> | <DIV>) Expression() )
+            |
+            ( (<LBRACK> Expression() <RBRACK>) )
+            |
+            (
+                <DOT>
+                (
+                    <LENGTH>
+                    |
+                    (
+                        Identifier() <LPAR>
+                        [
+                            Expression()
+                            (<COL> Expression())*
+                        ]
+                        <RPAR>
+                    )
+                )
+            )
+        )
+        Expression1()
+    ]
+}
+
+/*void Expression1(): {}
+{
+    IntegerLiteral()
+    |
+    <TRUE>
+    |
+    <FALSE>
+    |
+    Identifier()
+    |
+    <THIS>
+    |
+    <NEW>
+    (
+        (<INT> <LBRACK> Expression() <RBRACK>)
+        |
+        (Identifier() <LPAR> <RPAR>)
+    )
+    |
+    (<NOT> Expression())
+    |
+    (<LPAR> Expression() <RPAR>)
+}
+
+
+void Expression(): {}
+{
+    Expression1()
+    [
+        ((<AND> | <LESS> | <PLUS> | <MINUS> | <MULT> | <DIV>) Expression())
+        |
+        (<LBRACK> Expression() <RBRACK>)
+        |
+        <DOT>
+        (
+            <LENGTH>
+            |
+            (
+                Identifier() <LPAR>
+                [
+                    Expression()
+                    (<COL> Expression())*
+                ]
+                <RPAR>
+            )
+        )
+    ]
+}*/
+
+void Identifier(): {}
+{
+    <VAR>
+}
+
+void IntegerLiteral(): {}
+{
+    <INTEGER>
 }
