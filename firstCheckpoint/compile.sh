@@ -1,4 +1,4 @@
-jjtree Parser.jjt
-javacc Parser.jj
+jjtree Calculator.jjt
+javacc Calculator.jj
 javac *.java
-java Parser
+java Calculator

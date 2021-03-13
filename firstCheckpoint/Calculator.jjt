@@ -5,24 +5,41 @@ options {
 PARSER_BEGIN(Calculator)
 
 import java.util.HashMap;
+import java.io.*;
 
 public class Calculator {
     public static HashMap<String, Integer> symbols = new HashMap<String, Integer>();
 
     public static void main(String[] args) throws ParseException {
-      System.out.println("If you see this, probably its working!");
-      Calculator jvm = new Calculator(System.in);
+      if (args.length != 1) {
+        System.out.println("Usage: java Calculator input.jmm");
+        return;
+      }
+      FileInputStream file;
+      try {
+        file = new FileInputStream(args[0]);
+      } catch (Exception e) {
+        System.err.println("File " + args[0] + " not found");
+			  return;
+      }
+      
+      Calculator jvm = new Calculator(file);
       SimpleNode root = jvm.Program();
+      
+      System.out.println("If you see this, probably its working!");
+      
       root.dump("");
 
-      //System.out.println("Expression value: " + myCalc.eval(root));
     }
 }
 
 PARSER_END(Calculator)
 
 SKIP : {
-  " " | "\r" | "\t"
+  " "
+  | "\r"
+  | "\t"
+  | "\n"
 }
 
 // Keywords
@@ -78,12 +95,11 @@ TOKEN: {
 
 TOKEN : {
   < DIGIT: ["0"-"9"] >
-  |< INTEGER: "0" | ["1"-"9"] (<DIGIT>)* >
-  | < LF: "\n" >
+  |< INTEGER_LITERAL: "0" | ["1"-"9"] (<DIGIT>)* >
   | < INTARRAY: "int[]" >
   | < STRINGARRAY: "String[]" >
   | < NOT: "!" >
-  | < VAR: ["A"-"Z","a"-"z","$"](["0"-"9","A"-"Z","a"-"z","_"])* >
+  | < IDENTIFIER: ["A"-"Z","a"-"z","$"](["0"-"9","A"-"Z","a"-"z","_"])* >
 }
 
 SimpleNode Program(): {}
@@ -94,9 +110,9 @@ SimpleNode Program(): {}
 void ImportDeclaration(): {}
 {
     (
-        <IMPORT> Identifier()
+        <IMPORT> <IDENTIFIER>
         (
-            <DOT> Identifier()
+            <DOT> <IDENTIFIER>
         )*
         <SEMICOL>
     )*
@@ -104,9 +120,9 @@ void ImportDeclaration(): {}
 
 void ClassDeclaration(): {}
 {
-    <CLASS> Identifier()
+    <CLASS> <IDENTIFIER>
     [
-        <EXTENDS> Identifier()
+        <EXTENDS> <IDENTIFIER>
     ]
     <LBRACE>
     (VarDeclaration())*
@@ -116,19 +132,19 @@ void ClassDeclaration(): {}
 
 void VarDeclaration(): {}
 {
-    Type() Identifier() <SEMICOL>
+    Type() <IDENTIFIER> <SEMICOL>
 }
 
 void MethodDeclaration(): {}
 {
     <PUBLIC>
     (
-        Type() Identifier()
+        Type() <IDENTIFIER>
         <LPAR>
         [
-            Type() Identifier()
+            Type() <IDENTIFIER>
             (
-                <COL> Type() Identifier()
+                <COL> Type() <IDENTIFIER>
             )*
         ]
         <RPAR>
@@ -144,7 +160,7 @@ void MethodDeclaration(): {}
         <STATIC> <VOID> <MAIN>
         <LPAR>
         <STRINGARRAY>
-        Identifier()
+        <IDENTIFIER>
         <RPAR>
 
         <LBRACE>
@@ -159,7 +175,7 @@ void Type(): {}
     <INTARRAY>
     | <BOOLEAN>
     | <INT>
-    | Identifier()
+    | <IDENTIFIER>
 }
 
 void Statement(): {}
@@ -179,18 +195,11 @@ void Statement(): {}
         Statement()
     )
     |
-    (Expression() <SEMICOL>)
-    |
-    (Identifier()
-        (
-            (<EQ> Expression() <SEMICOL>)
-            |
-            (<LBRACK> Expression() <RBRACK> <EQ> Expression() <SEMICOL>)
-        )
+    (
+        LOOKAHEAD(2) <IDENTIFIER> <EQ> Expression() <SEMICOL>
+        |
+        LOOKAHEAD(2) <IDENTIFIER> <LBRACK> Expression() <RBRACK> <EQ> Expression() <SEMICOL>
     )
-
-
-
 }
 
 void Expression() #void: {}
@@ -239,33 +248,33 @@ void Rest() #void: {}
 void Terminal(): {}
 {
 	(
-        IntegerLiteral()
+    <DIGIT>
+    |
+    <TRUE>
+    |
+    <FALSE>
+    |
+    <IDENTIFIER>
+    |
+    <THIS>
+    |
+    <NEW>
+    (
+        (<INT> <LBRACK> Expression() <RBRACK>)
         |
-        <TRUE>
-        |
-        <FALSE>
-        |
-        Identifier()
-        |
-        <THIS>
-        |
-        <NEW>
-        (
-            (<INT> <LBRACK> Expression() <RBRACK>)
-            |
-            (Identifier() <LPAR> <RPAR>)
-        )
-        |
-        (<NOT> Expression())
-        |
-        (<LPAR> Expression() <RPAR> )
+        (<IDENTIFIER> <LPAR> <RPAR>)
+    )
+    |
+    (<NOT> Expression())
+    |
+    (<LPAR> Expression() <RPAR> )
     )
     TerminalAlternative()
 }
 
 void TerminalAlternative():  {}
 {
-    ( (<LBRACK> Expression() <RBRACK>) )
+    ( <LBRACK> Expression() <RBRACK> )
     |
     (
         <DOT>
@@ -273,7 +282,7 @@ void TerminalAlternative():  {}
             <LENGTH>
             |
             (
-                Identifier() <LPAR>
+                <IDENTIFIER> <LPAR>
                 [
                     Expression()
                     (<COL> Expression())*
@@ -283,14 +292,4 @@ void TerminalAlternative():  {}
         )
     )
     TerminalAlternative()
-}
-
-void Identifier(): {}
-{
-    <VAR>
-}
-
-void IntegerLiteral(): {}
-{
-    <INTEGER>
 }
