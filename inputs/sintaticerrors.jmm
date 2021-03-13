@@ -1,0 +1,20 @@
+class SintaticErrors extends {             
+    int i                                 
+    int[] r;                                 
+
+    public void main(String[] args {   
+        SintaticErrors g;
+        g = new SintaticErrors();
+
+        g..metodo(1, 2);                   
+    } 
+
+    public void metodo(int k int s)        
+        r = new int[];                    
+        r[2] = 1;
+
+        i = k + s * * r2];                  
+
+        return i;
+    }
+}

@@ -1,0 +1,12 @@
+import io;
+
+class Fac {
+
+    public int ComputeFac(int num, int[] cenas, String objecto){
+        return num;
+    }
+    public static void main(String[] args){
+        int a;
+        a = 2;
+    }    
+}

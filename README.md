@@ -44,12 +44,12 @@ You can also see a test report by opening ``build/reports/tests/test/index.html`
 ## Checkpoint 1
 For the first checkpoint the following is required:
 
-1. Convert the provided e-BNF grammar into JavaCC grammar format in a .jj file
-2. Resolve grammar conflicts (projects with global LOOKAHEAD > 1 will have a penalty)
-3. Proceed with error treatment and recovery mechanisms for the while expression
-4. Convert the .jj file into a .jjt file
-5. Include missing information in nodes (i.e. tree annotation). E.g. include class name in the class Node.
-6. Generate a JSON from the AST
+1. [x] Convert the provided e-BNF grammar into JavaCC grammar format in a .jj file
+2. [x] Resolve grammar conflicts (projects with global LOOKAHEAD > 1 will have a penalty)
+3. [ ] Proceed with error treatment and recovery mechanisms for the while expression
+4. [x] Convert the .jj file into a .jjt file
+5. [ ] Include missing information in nodes (i.e. tree annotation). E.g. include class name in the class Node.
+6. [ ] Generate a JSON from the AST
 
 ### JavaCC to JSON
 To help converting the JavaCC nodes into a JSON format, we included in this project the JmmNode interface, which can be seen in ``src-lib/pt/up/fe/comp/jmm/JmmNode.java``. The idea is for you to use this interface along with your SimpleNode class. Then, one can easily convert the JmmNode into a JSON string by invoking the method JmmNode.toJson().

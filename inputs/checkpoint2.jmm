@@ -1,0 +1,108 @@
+class Checkpoint2 {
+    int olaglobal;
+    int[] ar;
+    
+    public int ola(int f, int j) {
+        olaglobal = 1;
+        ar = new int[5];
+        ar[0] = 6;
+        return f + j + olaglobal + ar[0];
+    }
+
+    public boolean check(){
+        boolean b;
+        boolean t;
+        int i;
+        int j;
+        int n;
+        int[] sim;
+
+        sim = new int[2];
+        i = this.ola(sim.length, 1);
+        i = 0;
+        j = 2;
+        t = i < j;
+        b = t && j < i;
+        if (b) {
+            io.println(1);
+        }
+        else {
+            io.println(0);
+        }
+
+        return b;
+    }
+
+    public int intFunc(int i, int j){
+        return i + j;
+    }
+
+    public static void main(String[] args) {
+        int i;
+        int j;
+        boolean b;
+        Checkpoint2 t;
+
+        j = 1 * (1 + 7 * (2 - 1));
+        j = 5;
+        i = j + 1;
+        i = j * 2 + i;
+        t = new Checkpoint2();
+        b = t.check();
+        i = t.ola(i, t.intFunc(1, 2));
+        io.println(i);
+        j = 22;
+        
+        while (j < i) {
+            j = j + 1;
+            io.println(j);
+        }
+
+        i = 3;
+        j = 2;
+        b = true;
+
+        if (j < i) {
+            io.println(1);
+        }
+        else {
+            io.println(2);
+        }
+
+        if (j < i && b) {
+            io.println(1);
+        }
+        else {
+            io.println(2);
+        }
+
+        if (true) {
+            io.println(1);
+        }
+        else {
+            io.println(2);
+        }
+
+        if (b) {
+            io.println(1);
+        }
+        else {
+            io.println(2);
+        }
+
+        b = false;
+        if (!b) {
+            io.println(1);
+        }
+        else {
+            io.println(2);
+        }
+
+        if (b && !(!b && (j < (2 + 1 * (1 + 1))))) {
+            io.println(1);
+        }
+        else {
+            io.println(2);
+        }
+    }
+}
