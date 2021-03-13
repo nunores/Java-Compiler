@@ -25,11 +25,35 @@ SKIP : {
   " " | "\r" | "\t"
 }
 
-TOKEN : {
-  < INTEGER: (["0"-"9"])+ >
-  | < LF: "\n" >
-  | < EQ: "=" >
-  | < COL: "," >
+// Keywords
+
+TOKEN: {
+	| < TRUE: "true" >
+	| < FALSE: "false" >
+	| < THIS : "this" >
+	| < NEW : "new" >
+	| < INT: "int" >
+	| < IMPORT: "import" >
+	| < CLASS: "class" >
+	| < EXTENDS: "extends" >
+	| < IF: "if" >
+	| < VOID: "void" >
+	| < ELSE: "else" >
+	| < LENGTH: "length" >
+	| < MAIN: "main" >
+	| < WHILE: "while" >
+	| < PUBLIC: "public" >
+	| < STATIC: "static" >
+	| < STRING: "String" >
+	| < RETURN: "return" >
+	| < BOOLEAN: "boolean" >
+
+}
+
+// Separators
+
+TOKEN: {
+  < COL: "," >
   | < SEMICOL: ";" >
   | < DOT: "." >
   | < LBRACE: "{" >
@@ -38,37 +62,28 @@ TOKEN : {
   | < RPAR: ")" >
   | < LBRACK: "[" >
   | < RBRACK: "]" >
-  | < AND: "&&" >
+}
+
+// Operations
+TOKEN: {
+  < AND: "&&" >
   | < OR: "||" >
   | < LESS: "<" >
   | < PLUS: "+" >
   | < MINUS: "-" >
   | < MULT: "*" >
   | < DIV: "/" >
-  | < PERCENTAGE: "%" >
-  | < TRUE: "true" >
-  | < FALSE: "false" >
-  | < THIS : "this" >
-  | < NEW : "new" >
-  | < INT: "int" >
+  | < EQ: "=" >
+}
+
+TOKEN : {
+  < DIGIT: ["0"-"9"] >
+  < INTEGER: "0" | ["1"-"9"] (<DIGIT>)* >
+  | < LF: "\n" >
   | < INTARRAY: "int[]" >
   | < STRINGARRAY: "String[]" >
-  | < BOOLEAN: "boolean" >
   | < NOT: "!" >
-  | < IMPORT: "import" >
-  | < CLASS: "class" >
-  | < EXTENDS: "extends" >
-  | < IF: "if" >
-  | < VOID: "void" >
-  | < ELSE: "else" >
-  | < LENGTH: "length" >
-  | < MAIN: "main" >
-  | < WHILE: "while" >
-  | < PUBLIC: "public" >
-  | < STATIC: "static" >
-  | < STRING: "string" >
-  | < RETURN: "return" >
-  | < VAR: ["A"-"Z","a"-"z"](["0"-"9","A"-"Z","a"-"z","_"])* >
+  | < VAR: ["A"-"Z","a"-"z","$"](["0"-"9","A"-"Z","a"-"z","_"])* >
 }
 
 SimpleNode Program(): {}
@@ -119,8 +134,8 @@ void MethodDeclaration(): {}
         <RPAR>
 
         <LBRACE>
-        (VarDeclaration())*
-        (Statement())*
+        (LOOKAHEAD(2) VarDeclaration())*
+        (LOOKAHEAD(2) Statement())*
         <RETURN> Expression() <SEMICOL>
         <RBRACE>
     )
@@ -133,8 +148,8 @@ void MethodDeclaration(): {}
         <RPAR>
 
         <LBRACE>
-        (VarDeclaration())*
-        (Statement())*
+        (LOOKAHEAD(2) VarDeclaration())*
+        (LOOKAHEAD(2) Statement())*
         <RBRACE>
     )
 }
@@ -175,9 +190,71 @@ void Statement(): {}
     )
 }
 
-void Expression(): {}
+void Expression() #void: {}
 {
+    And()
+}
+
+void And() #void: {}
+{
+    Less() (LOOKAHEAD(2) <AND> Less() #And(2))*
+}
+
+void Less() #void: {} 
+{
+	Plus() (LOOKAHEAD(2) <LESS> Plus() #Less(2))*
+}
+
+void Sum() #void: {} 
+{
+	Minus() (LOOKAHEAD(2) <PLUS> Minus() #Plus(2))*
+}
+
+void Minus() #void: {} 
+{
+	Mult() (LOOKAHEAD(2) <MINUS> Mult() #Minus(2))*
+}
+
+void Mult() #void: {}
+{
+	Div() (LOOKAHEAD(2) <MULT> Div() #Mult(2))*
+}
+
+void Div() #void: {}
+{
+    Rest() (LOOKAHEAD(2) <MULT> Rest() #Mult(2))*
+}
+
+void Rest() #void: {}
+{
+
     (
+        ExprAnd()
+        |
+        ( (<LBRACK> Expression() <RBRACK>) )
+        |
+        (
+            <DOT>
+            (
+                <LENGTH>
+                |
+                (
+                    Identifier() <LPAR>
+                    [
+                        Expression()
+                        (<COL> Expression())*
+                    ]
+                    <RPAR>
+                )
+            )
+        )
+    )
+    | Terminal()
+}
+
+void Terminal()
+{
+	(
         IntegerLiteral()
         |
         <TRUE>
@@ -199,86 +276,7 @@ void Expression(): {}
         |
         (<LPAR> Expression() <RPAR> )
     )
-    Expression1()
 }
-
-
-void Expression1() : {}
-{
-    [
-        (
-            ( (<AND> | <LESS> | <PLUS> | <MINUS> | <MULT> | <DIV>) Expression() )
-            |
-            ( (<LBRACK> Expression() <RBRACK>) )
-            |
-            (
-                <DOT>
-                (
-                    <LENGTH>
-                    |
-                    (
-                        Identifier() <LPAR>
-                        [
-                            Expression()
-                            (<COL> Expression())*
-                        ]
-                        <RPAR>
-                    )
-                )
-            )
-        )
-        Expression1()
-    ]
-}
-
-/*void Expression1(): {}
-{
-    IntegerLiteral()
-    |
-    <TRUE>
-    |
-    <FALSE>
-    |
-    Identifier()
-    |
-    <THIS>
-    |
-    <NEW>
-    (
-        (<INT> <LBRACK> Expression() <RBRACK>)
-        |
-        (Identifier() <LPAR> <RPAR>)
-    )
-    |
-    (<NOT> Expression())
-    |
-    (<LPAR> Expression() <RPAR>)
-}
-
-
-void Expression(): {}
-{
-    Expression1()
-    [
-        ((<AND> | <LESS> | <PLUS> | <MINUS> | <MULT> | <DIV>) Expression())
-        |
-        (<LBRACK> Expression() <RBRACK>)
-        |
-        <DOT>
-        (
-            <LENGTH>
-            |
-            (
-                Identifier() <LPAR>
-                [
-                    Expression()
-                    (<COL> Expression())*
-                ]
-                <RPAR>
-            )
-        )
-    ]
-}*/
 
 void Identifier(): {}
 {
