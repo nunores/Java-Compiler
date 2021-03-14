@@ -1,12 +1,16 @@
-import io;
+import io.asdsa.s;
 
-class Fac {
+class Fac extends Talas{
 
     public int ComputeFac(int num, int[] cenas, String objecto){
         return num;
     }
     public static void main(String[] args){
         int a;
+
+        while (a zxc 2) {
+            a = 1;
+        }
         a = 2;
     }    
 }

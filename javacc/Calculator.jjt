@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.io.*;
 
 public class Calculator {
+    static int errors = 0;
+
     public static HashMap<String, Integer> symbols = new HashMap<String, Integer>();
 
     public static void main(String[] args) throws ParseException {
@@ -99,36 +101,58 @@ TOKEN : {
   | < IDENTIFIER: ["A"-"Z","a"-"z","$","_"](["0"-"9","A"-"Z","a"-"z","_"])* >
 }
 
-SimpleNode Program(): {} // DONE
+
+JAVACODE
+void error_skipto(int kind) {
+  errors++;
+  if (errors == 10) { // "The compiler could report the first 10 errors found before aborting execution"
+    System.out.println("10 errors found");
+    System.exit(1);
+  }
+  ParseException e = generateParseException();  // generate the exception object.
+  System.out.println("#" + errors + ": Error in while Statement:\n" + e.toString());  // print the error message
+  Token t;
+  do {
+    t = getNextToken();
+  } while (t.kind != kind);
+    // The above loop consumes tokens all the way up to a token of
+    // "kind".  We use a do-while loop rather than a while because the
+    // current token is the one immediately before the erroneous token
+    // (in our case the token immediately before what should have been
+    // "if"/"while".
+}
+
+
+SimpleNode Program(): {} 
 {
     ImportDeclaration() ClassDeclaration() <EOF> { return jjtThis; }
 }
 
-void ImportDeclaration(): {}
+void ImportDeclaration() #void: { Token t; }
 {
 	try {
 		(
-			<IMPORT> <IDENTIFIER> // DONE
+			<IMPORT> <IDENTIFIER>
 			(
-				<DOT> <IDENTIFIER> // DONE
+				<DOT> <IDENTIFIER> 
 			)*
 			<SEMICOL>
-		)*
+		)* #IMPORT
 	} catch (Exception e) {
 		System.out.println("Expected Import Declaration\n" + e);
 		System.exit(1);
 	}
 }
 
-void ClassDeclaration(): {}
+void ClassDeclaration(): { Token t1; }
 {
     try {
-        <CLASS> <IDENTIFIER> // DONE
+        <CLASS> t1 = <IDENTIFIER> { jjtThis.name = t1.image; } #ID
         [
-            <EXTENDS> <IDENTIFIER> // DONE
+            <EXTENDS> <IDENTIFIER>
         ]
         <LBRACE>
-        (VarDeclaration())* // DONE
+        (VarDeclaration())* 
         (<PUBLIC> (MainDeclaration() | MethodDeclaration()))*
         <RBRACE>
     } catch (Exception e) {
@@ -138,7 +162,7 @@ void ClassDeclaration(): {}
     
 }
 
-void VarDeclaration(): {}
+void VarDeclaration() #void: {}
 {
     try {
         Type() <IDENTIFIER> <SEMICOL>
@@ -148,7 +172,7 @@ void VarDeclaration(): {}
     }
 }
 
-void MethodDeclaration(): {}
+void MethodDeclaration() #void: {}
 {
 	try {
         Type() <IDENTIFIER>
@@ -173,7 +197,7 @@ void MethodDeclaration(): {}
     
 }
 
-void MainDeclaration() : {}
+void MainDeclaration() #void: {}
 {
     try {
         <STATIC> <VOID> <MAIN>
@@ -194,7 +218,7 @@ void MainDeclaration() : {}
 }
 
 
-void Type(): {}
+void Type() #void: {}
 {
     try {
         <INTARRAY>
@@ -208,7 +232,7 @@ void Type(): {}
     
 }
 
-void Statement(): {}
+void Statement() #void: {}
 {
 
     try {
@@ -219,7 +243,11 @@ void Statement(): {}
         <IF> <LPAR> Expression() <RPAR> Statement()
         <ELSE> Statement()
         |
-        <WHILE> <LPAR> Expression() <RPAR> Statement()
+        try { <WHILE> <LPAR> Expression() <RPAR> }
+        catch(ParseException e) {
+          error_skipto(RPAR);
+        }
+        Statement()
         |
         LOOKAHEAD(2) <IDENTIFIER> <EQ> Expression() <SEMICOL>
         |
@@ -336,7 +364,7 @@ void Rest() #void: {}
     }
 }
 
-void Terminal():  {}
+void Terminal() #void: {}
 {
     try {
         <LBRACK> Expression() <RBRACK> Terminal()

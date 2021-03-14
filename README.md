@@ -46,7 +46,7 @@ For the first checkpoint the following is required:
 
 1. [x] Convert the provided e-BNF grammar into JavaCC grammar format in a .jj file
 2. [x] Resolve grammar conflicts (projects with global LOOKAHEAD > 1 will have a penalty)
-3. [ ] Proceed with error treatment and recovery mechanisms for the while expression
+3. [x] Proceed with error treatment and recovery mechanisms for the while expression
 4. [x] Convert the .jj file into a .jjt file
 5. [ ] Include missing information in nodes (i.e. tree annotation). E.g. include class name in the class Node.
 6. [ ] Generate a JSON from the AST

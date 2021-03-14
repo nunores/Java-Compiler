@@ -20,6 +20,7 @@ class SimpleNode implements Node, JmmNode {
     // added
     public int val;
     public Operator op = null;
+    public String name;
 
   public SimpleNode(int i) {
     id = i;
@@ -110,7 +111,12 @@ class SimpleNode implements Node, JmmNode {
      out its children. */
 
   public void dump(String prefix) {
-    System.out.println(toString(prefix));
+    if(name != null) {
+      System.out.println(toString(prefix) + (" [" + name + "]"));
+    }
+    else {
+      System.out.println(toString(prefix));
+    }
     if (children != null) {
       for (int i = 0; i < children.length; ++i) {
         SimpleNode n = (SimpleNode)children[i];
