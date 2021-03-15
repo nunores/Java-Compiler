@@ -2,12 +2,12 @@ options {
     LOOKAHEAD = 1;
 }
 
-PARSER_BEGIN(Calculator)
+PARSER_BEGIN(Parser)
 
 import java.util.HashMap;
 import java.io.*;
 
-public class Calculator {
+public class Parser {
     static int errors = 0;
 
     public static HashMap<String, Integer> symbols = new HashMap<String, Integer>();
@@ -25,7 +25,7 @@ public class Calculator {
 			  return;
       }
 
-      Calculator jvm = new Calculator(file);
+      Parser jvm = new Parser(file);
       SimpleNode root = jvm.Program();
 
       System.out.println("If you see this, probably its working!");
@@ -35,7 +35,7 @@ public class Calculator {
     }
 }
 
-PARSER_END(Calculator)
+PARSER_END(Parser)
 
 SKIP : {
   " "
@@ -94,7 +94,7 @@ TOKEN: {
 }
 
 TOKEN : {
-  < INTEGER_LITERAL: (["0"-"9"])* >
+  < INTEGER_LITERAL: (["0"-"9"])+ >
   | < INTARRAY: "int[]" >
   | < STRINGARRAY: "String[]" >
   | < NOT: "!" >

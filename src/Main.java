@@ -2,7 +2,6 @@ import pt.up.fe.comp.jmm.JmmParser;
 import pt.up.fe.comp.jmm.JmmParserResult;
 import pt.up.fe.comp.jmm.report.Report;
 
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.io.StringReader;
 import java.io.*;
@@ -14,8 +13,8 @@ public class Main implements JmmParser {
 	public JmmParserResult parse(String jmmCode) {
 		
 		try {
-		    Calculator myCalc = new Calculator(new StringReader(jmmCode));
-    		SimpleNode root = myCalc.Program(); // returns reference to root node
+			Parser parser = new Parser(new StringReader(jmmCode));
+    		SimpleNode root = parser.Program(); // returns reference to root node
             	
     		root.dump(""); // prints the tree on the screen
     	
