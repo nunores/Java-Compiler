@@ -8,7 +8,7 @@ class Fac extends Talas{
     public static void main(String[] args){
         int a;
 
-        while (a zxc 2) {
+        while (a asda 2) {
             a = 1;
         }
         a = 2;

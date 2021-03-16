@@ -7,7 +7,7 @@ PARSER_BEGIN(Parser)
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.io.*;
-import pt.up.fe.comp.jmm.report.Report;
+import pt.up.fe.comp.jmm.report.*;
 
 public class Parser {
     private int errors = 0;
@@ -91,10 +91,8 @@ void error_skipto(int kind) {
   errors++;
   if (errors == 10) { // "The compiler could report the first 10 errors found before aborting execution"
     System.out.println("10 errors found");
-    System.exit(1);
+    return;
   }
-  ParseException e = generateParseException();  // generate the exception object.
-  System.out.println("#" + errors + ": Error in while Statement:\n" + e.toString());  // print the error message
   Token t;
   do {
     t = getNextToken();
@@ -109,272 +107,190 @@ void error_skipto(int kind) {
 
 SimpleNode Program(): {} 
 {
-    ImportDeclaration() ClassDeclaration() <EOF> { return jjtThis; }
+    // try catch
+    try {
+        ImportDeclaration() ClassDeclaration() <EOF> { return jjtThis; }
+    }
+    catch (Exception e) {
+        Report r = new Report(ReportType.ERROR, Stage.SYNTATIC, 0, e.getMessage());
+        this.reports.add(r);
+    }
 }
 
 void ImportDeclaration() #void: { Token t; }
 {
-	try {
-		(
-			<IMPORT> <IDENTIFIER>
-			(
-				<DOT> <IDENTIFIER> 
-			)*
-			<SEMICOL>
-		)* #IMPORT
-	} catch (Exception e) {
-		System.out.println("Expected Import Declaration\n" + e);
-		System.exit(1);
-	}
+    (
+        <IMPORT> <IDENTIFIER>
+        (
+            <DOT> <IDENTIFIER>
+        )*
+        <SEMICOL>
+    )* #IMPORT
 }
 
 void ClassDeclaration(): { Token t1; }
 {
-    try {
-        <CLASS> t1 = <IDENTIFIER> { jjtThis.name = t1.image; } #ID
-        [
-            <EXTENDS> <IDENTIFIER>
-        ]
-        <LBRACE>
-        (VarDeclaration())* 
-        (<PUBLIC> (MainDeclaration() | MethodDeclaration()))*
-        <RBRACE>
-    } catch (Exception e) {
-        System.out.println("Expected Class Declaration\n" + e);
-		System.exit(1);
-    }
-    
+    <CLASS> t1 = <IDENTIFIER> { jjtThis.name = t1.image; } #ID
+    [
+        <EXTENDS> <IDENTIFIER>
+    ]
+    <LBRACE>
+    (VarDeclaration())*
+    (<PUBLIC> (MainDeclaration() | MethodDeclaration()))*
+    <RBRACE>
 }
 
 void VarDeclaration() #void: {}
 {
-    try {
-        Type() <IDENTIFIER> <SEMICOL>
-    } catch (Exception e) {
-		System.out.println("Expected Var Declaration\n" + e);
-		System.exit(1);    
-    }
+    Type() <IDENTIFIER> <SEMICOL>
 }
 
 void MethodDeclaration() #void: {}
 {
-	try {
+    Type() <IDENTIFIER>
+    <LPAR>
+    [
         Type() <IDENTIFIER>
-        <LPAR>
-        [
-            Type() <IDENTIFIER>
-            (
-                <COL> Type() <IDENTIFIER>
-            )*
-        ]
-        <RPAR>
+        (
+            <COL> Type() <IDENTIFIER>
+        )*
+    ]
+    <RPAR>
 
-        <LBRACE>
-        (LOOKAHEAD(2) VarDeclaration())*
-        (LOOKAHEAD(2) Statement())*
-        <RETURN> Expression() <SEMICOL>
-        <RBRACE> 
-    } catch (Exception e) {
-		System.out.println("Expected Method Declaration\n" + e);
-		System.exit(1);
-    }
-    
+    <LBRACE>
+    (LOOKAHEAD(2) VarDeclaration())*
+    (LOOKAHEAD(2) Statement())*
+    <RETURN> Expression() <SEMICOL>
+    <RBRACE>
 }
 
 void MainDeclaration() #void: {}
 {
-    try {
-        <STATIC> <VOID> <MAIN>
-        <LPAR>
-        <STRINGARRAY>
-        <IDENTIFIER>
-        <RPAR>
+    <STATIC> <VOID> <MAIN>
+    <LPAR>
+    <STRINGARRAY>
+    <IDENTIFIER>
+    <RPAR>
 
-        <LBRACE>
-        (LOOKAHEAD(2) VarDeclaration())* // VarDeclaration gives Type, which can be Identifier
-        (LOOKAHEAD(2) Statement())*
-        <RBRACE>
-    } catch (Exception e) {
-		System.out.println("Expected Main Declaration\n" + e);
-		System.exit(1);
-    }
-    
+    <LBRACE>
+    (LOOKAHEAD(2) VarDeclaration())* // VarDeclaration gives Type, which can be Identifier
+    (LOOKAHEAD(2) Statement())*
+    <RBRACE>
 }
 
 
 void Type() #void: {}
 {
-    try {
-        <INTARRAY>
-        | <BOOLEAN>
-        | <INT>
-        | <IDENTIFIER>
-    } catch (Exception e) {
-        System.out.println("Expected Type\n" + e);
-        System.exit(1);
-    }
-    
+    <INTARRAY>
+    | <BOOLEAN>
+    | <INT>
+    | <IDENTIFIER>
 }
 
 void Statement() #void: {}
 {
-
-    try {
-        <LBRACE>
-        (Statement())*
-        <RBRACE>
-        |
-        <IF> <LPAR> Expression() <RPAR> Statement()
-        <ELSE> Statement()
-        |
-        try { <WHILE> <LPAR> Expression() <RPAR> }
-        catch(ParseException e) {
-          error_skipto(RPAR);
-        }
-        Statement()
-        |
-        LOOKAHEAD(2) <IDENTIFIER> <EQ> Expression() <SEMICOL>
-        |
-        LOOKAHEAD(2) <IDENTIFIER> <LBRACK> Expression() <RBRACK> <EQ> Expression() <SEMICOL>
-        |
-        Expression() <SEMICOL>     
-    } catch (Exception e) {
-		System.out.println("Expected Statement\n" + e);
-		System.exit(1);
+    <LBRACE>
+    (Statement())*
+    <RBRACE>
+    |
+    <IF> <LPAR> Expression() <RPAR> Statement()
+    <ELSE> Statement()
+    |
+    try { <WHILE> <LPAR> Expression() <RPAR> }
+    catch(ParseException e) {
+      Report r = new Report(ReportType.ERROR, Stage.SYNTATIC, 0, e.getMessage());
+      this.reports.add(r);
+      error_skipto(RPAR);
     }
+    Statement()
+    |
+    LOOKAHEAD(2) <IDENTIFIER> <EQ> Expression() <SEMICOL>
+    |
+    LOOKAHEAD(2) <IDENTIFIER> <LBRACK> Expression() <RBRACK> <EQ> Expression() <SEMICOL>
+    |
+    Expression() <SEMICOL>
     
 }
 
 void Expression() #void: {}
 {
-    try {
-        And()
-    } catch (Exception e) {
-		System.out.println("Expected Expression\n" + e);
-		System.exit(1);
-    }
-    
+    And()
 }
 
 void And() #void: {}
 {
-    try {
-        Less() (LOOKAHEAD(2) <AND> Less() #And(2))*
-    } catch (Exception e) {
-		System.out.println("Expected AND\n" + e);
-		System.exit(1);
-    }
-
+    Less() (LOOKAHEAD(2) <AND> Less() #And(2))*
 }
 
 void Less() #void: {}
 {
-	try {
-        Plus() (LOOKAHEAD(2) <LESS> Plus() #Less(2))*
-    } catch (Exception e) {
-		System.out.println("Expected LESS\n" + e);
-		System.exit(1);
-    }
+    Plus() (LOOKAHEAD(2) <LESS> Plus() #Less(2))*
 }
 
 void Plus() #void: {}
 {
-	try {
-        Minus() (LOOKAHEAD(2) <PLUS> Minus() #Plus(2))*
-    } catch (Exception e) {
-		System.out.println("Expected PLUS\n" + e);
-		System.exit(1);
-    }
+    Minus() (LOOKAHEAD(2) <PLUS> Minus() #Plus(2))*
 }
 
 void Minus() #void: {}
 {
-	try {
-        Mult() (LOOKAHEAD(2) <MINUS> Mult() #Minus(2))*
-    } catch (Exception e) {
-		System.out.println("Expected MINUS\n" + e);
-		System.exit(1);
-    }
+    Mult() (LOOKAHEAD(2) <MINUS> Mult() #Minus(2))*
 }
 
 void Mult() #void: {}
 {
-    try {       
-        Div() (LOOKAHEAD(2) <MULT> Div() #Mult(2))*
-    } catch (Exception e) {
-        System.out.println("Expected MULT\n" + e);
-		System.exit(1);
-    }
-	
+    Div() (LOOKAHEAD(2) <MULT> Div() #Mult(2))*
 }
 
 void Div() #void: {}
 {
-    try {
-        Rest() (LOOKAHEAD(2) <DIV> Rest() #Mult(2))*
-    } catch (Exception e) {
-		System.out.println("Expected DIV\n" + e);
-		System.exit(1);
-    }
+    Rest() (LOOKAHEAD(2) <DIV> Rest() #Mult(2))*
 }
 
 void Rest() #void: {}
 {
-    try {
-        <INTEGER_LITERAL> Terminal()
+    <INTEGER_LITERAL> Terminal()
+    |
+    <TRUE> Terminal()
+    |
+    <FALSE> Terminal()
+    |
+    <IDENTIFIER> Terminal()
+    |
+    <THIS> Terminal()
+    |
+    <NEW>
+    (
+        (<INT> <LBRACK> Expression() <RBRACK> Terminal())
         |
-        <TRUE> Terminal()
-        |
-        <FALSE> Terminal()
-        |
-        <IDENTIFIER> Terminal()
-        |
-        <THIS> Terminal()
-        |
-        <NEW> 
-        (
-            (<INT> <LBRACK> Expression() <RBRACK> Terminal())
-            |
-            (<IDENTIFIER> <LPAR> <RPAR> Terminal())
-        )
-        |
-        <NOT> Expression() Terminal()
-        |
-        <LPAR> Expression() <RPAR> Terminal()
-        
-    } catch (Exception e) {
-		System.out.println("Expected REST\n" + e);
-		System.exit(1);
-    }
+        (<IDENTIFIER> <LPAR> <RPAR> Terminal())
+    )
+    |
+    <NOT> Expression() Terminal()
+    |
+    <LPAR> Expression() <RPAR> Terminal()
 }
 
 void Terminal() #void: {}
 {
-    try {
-        <LBRACK> Expression() <RBRACK> Terminal()
-        |
-        <DOT>
+    <LBRACK> Expression() <RBRACK> Terminal()
+    |
+    <DOT>
+    (
         (
-            (
-                <LENGTH> Terminal() 
-            )
-            |
-            (
-                <IDENTIFIER> <LPAR>
-                [
-                    Expression()
-                    (<COL> Expression())*
-                ]
-                <RPAR>
-                Terminal()
-            )
+            <LENGTH> Terminal()
         )
         |
-        {} // Why does [ ] not do the job?
-        
-    } catch (Exception e) {
-		System.out.println("Expected Terminal\n" + e);
-		System.exit(1);
-    }
-    
+        (
+            <IDENTIFIER> <LPAR>
+            [
+                Expression()
+                (<COL> Expression())*
+            ]
+            <RPAR>
+            Terminal()
+        )
+    )
+    |
+    {} // Why does [ ] not do the job?
 }

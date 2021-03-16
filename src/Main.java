@@ -13,23 +13,25 @@ public class Main implements JmmParser {
 
 
 	public JmmParserResult parse(String jmmCode) {
-		
+		Parser parser = new Parser(new StringReader(jmmCode));
+
 		try {
-			Parser parser = new Parser(new StringReader(jmmCode));
     		SimpleNode root = parser.Program(); // returns reference to root node
             	
-    		root.dump(""); // prints the tree on the screen
-			//System.out.println(root.toJson());
+    		//root.dump(""); // prints the tree on the screen
+			System.out.println(root.toJson());
 
     		return new JmmParserResult(root, parser.getReports());
 		} catch(ParseException e) {
-			throw new RuntimeException("Error while parsing", e);
+			/*Report r = new Report(ReportType.ERROR, Stage.SYNTATIC, 0, e.getMessage());
+			parser.getReports().add(r);*/
+			return new JmmParserResult(null, new ArrayList<>());
 		}
 	}
 
     public static void main(String[] args) {
 		if (args.length != 1) {
-			System.out.println("Usage: java Calculator input.jmm");
+			System.out.println("Usage: java Parser input.jmm");
 			return;
 		}
 
