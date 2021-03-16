@@ -6,10 +6,13 @@ import java.lang.RuntimeException;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
 
 
 public
 class SimpleNode implements Node, JmmNode {
+
+  protected HashMap<String, String> attributes = new HashMap<>();
 
   protected Node parent;
   protected Node[] children;
@@ -36,20 +39,14 @@ class SimpleNode implements Node, JmmNode {
 	  return toString();
   }
   
-  public List<String> getAttributes() {
-	throw new RuntimeException("Not implemented yet");
-  }
+  public List<String> getAttributes() {	return new ArrayList<>(this.attributes.keySet()); }
 
-  public void put(String attribute, String value) {
-	throw new RuntimeException("Not implemented yet");	  
-  }
+  public void put(String attribute, String value) {	this.attributes.put(attribute, value); }
 
-  public String get(String attribute) {
-	throw new RuntimeException("Not implemented yet");
-  }
+  public String get(String attribute) {	return this.attributes.get(attribute); }
   
   public List<JmmNode> getChildren() {
-    return (children == null) ? new ArrayList<>() : Arrays.asList((JmmNode[])children);
+    return JmmNode.convertChildren(children);
   }
   
   public int getNumChildren() {
@@ -111,12 +108,7 @@ class SimpleNode implements Node, JmmNode {
      out its children. */
 
   public void dump(String prefix) {
-    if(name != null) {
-      System.out.println(toString(prefix) + (" [" + name + "]"));
-    }
-    else {
-      System.out.println(toString(prefix));
-    }
+    System.out.println(toString(prefix));
     if (children != null) {
       for (int i = 0; i < children.length; ++i) {
         SimpleNode n = (SimpleNode)children[i];

@@ -4,35 +4,19 @@ options {
 
 PARSER_BEGIN(Parser)
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.io.*;
+import pt.up.fe.comp.jmm.report.Report;
 
 public class Parser {
-    static int errors = 0;
+    private int errors = 0;
+    private ArrayList<Report> reports = new ArrayList<Report>();
 
-    public static HashMap<String, Integer> symbols = new HashMap<String, Integer>();
+    public static void main(String[] args) {}
 
-    public static void main(String[] args) throws ParseException {
-      if (args.length != 1) {
-        System.out.println("Usage: java Calculator input.jmm");
-        return;
-      }
-      FileInputStream file;
-      try {
-        file = new FileInputStream(args[0]);
-      } catch (Exception e) {
-        System.err.println("File " + args[0] + " not found");
-			  return;
-      }
-
-      Parser jvm = new Parser(file);
-      SimpleNode root = jvm.Program();
-
-      System.out.println("If you see this, probably its working!");
-
-      root.dump("");
-
-    }
+    public int getErrors() { return this.errors; }
+    public ArrayList<Report> getReports() { return this.reports; }
 }
 
 PARSER_END(Parser)
