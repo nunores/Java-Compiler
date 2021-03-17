@@ -90,7 +90,6 @@ void error_skipto(int kind) {
   Token t;
   do {
     t = getNextToken();
-    t
   } while (t.kind != kind && t.kind != 0); // Treaing reaching EOF
     // The above loop consumes tokens all the way up to a token of
     // "kind".  We use a do-while loop rather than a while because the
@@ -108,26 +107,38 @@ SimpleNode Program(): {}
     catch (ParseException e) {
         Report r = new Report(ReportType.ERROR, Stage.SYNTATIC, token.beginLine, e.getMessage());
         reports.add(r);
+        System.out.println("Program Exception");
     }
     { return jjtThis; }
 }
 
-void ImportDeclaration() #void: { Token t; }
+void ImportDeclaration(): { Token t; String s = ""; }
 {
     (
-        <IMPORT> <IDENTIFIER>
-        (
-            <DOT> <IDENTIFIER>
-        )*
-        <SEMICOL>
-    )* #IMPORT
+        <IMPORT> t=<IDENTIFIER> { s += t.image; }
+
+        (<DOT> t=<IDENTIFIER> { s += "."+t.image; } )*
+        <SEMICOL> { jjtThis.name = t.image; jjtThis.put("qualifiedName", s); }
+    )*
 }
 
-void ClassDeclaration(): { Token t1; }
+/*
+void ImportDeclaration(): { Token t; }
 {
-    <CLASS> t1 = <IDENTIFIER> { jjtThis.name = t1.image; } #ID
+    (
+        <IMPORT> t=<IDENTIFIER> { jjtThis.name = t.image; }
+
+        (<DOT> t=<IDENTIFIER> { jjtThis.name = t.image; } #ImportPart)*
+        <SEMICOL>
+    )*
+}
+*/
+
+void ClassDeclaration(): { Token t1, t2; }
+{
+    <CLASS> t1=<IDENTIFIER> { jjtThis.name = t1.image; } #Class
     [
-        <EXTENDS> <IDENTIFIER>
+        <EXTENDS> t2=<IDENTIFIER> {jjtThis.name = t2.image; } #Extends
     ]
     <LBRACE>
     (VarDeclaration())*
@@ -204,7 +215,6 @@ void Statement() #void: {}
     LOOKAHEAD(2) <IDENTIFIER> <LBRACK> Expression() <RBRACK> <EQ> Expression() <SEMICOL>
     |
     Expression() <SEMICOL>
-    
 }
 
 void Expression() #void: {}
@@ -239,7 +249,7 @@ void Mult() #void: {}
 
 void Div() #void: {}
 {
-    Rest() (LOOKAHEAD(2) <DIV> Rest() #Mult(2))*
+    Rest() (LOOKAHEAD(2) <DIV> Rest() #Div(2))*
 }
 
 void Rest() #void: {}
@@ -266,7 +276,7 @@ void Rest() #void: {}
     <LPAR> Expression() <RPAR> Terminal()
 }
 
-void Terminal() #void: {}
+void Terminal(): {}
 {
     <LBRACK> Expression() <RBRACK> Terminal()
     |
