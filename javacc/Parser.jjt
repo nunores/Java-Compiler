@@ -10,13 +10,10 @@ import java.io.*;
 import pt.up.fe.comp.jmm.report.*;
 
 public class Parser {
-    private int errors = 0;
     private ArrayList<Report> reports = new ArrayList<Report>();
+    public ArrayList<Report> getReports() { return reports; }
 
     public static void main(String[] args) {}
-
-    public int getErrors() { return this.errors; }
-    public ArrayList<Report> getReports() { return this.reports; }
 }
 
 PARSER_END(Parser)
@@ -29,7 +26,6 @@ SKIP : {
 }
 
 // Keywords
-
 TOKEN: {
     < TRUE: "true" >
 	| < FALSE: "false" >
@@ -52,7 +48,6 @@ TOKEN: {
 }
 
 // Separators
-
 TOKEN: {
   < COL: "," >
   | < SEMICOL: ";" >
@@ -88,8 +83,7 @@ TOKEN : {
 
 JAVACODE
 void error_skipto(int kind) {
-  errors++;
-  if (errors == 10) { // "The compiler could report the first 10 errors found before aborting execution"
+  if (reports.size() == 10) { // "The compiler could report the first 10 errors found before aborting execution"
     System.out.println("10 errors found");
     return;
   }
@@ -107,14 +101,14 @@ void error_skipto(int kind) {
 
 SimpleNode Program(): {} 
 {
-    // try catch
     try {
-        ImportDeclaration() ClassDeclaration() <EOF> { return jjtThis; }
+        ImportDeclaration() ClassDeclaration() <EOF>
     }
-    catch (Exception e) {
-        Report r = new Report(ReportType.ERROR, Stage.SYNTATIC, 0, e.getMessage());
-        this.reports.add(r);
+    catch (ParseException e) {
+        Report r = new Report(ReportType.ERROR, Stage.SYNTATIC, token.beginLine, e.getMessage());
+        reports.add(r);
     }
+    { return jjtThis; }
 }
 
 void ImportDeclaration() #void: { Token t; }
@@ -198,8 +192,8 @@ void Statement() #void: {}
     |
     try { <WHILE> <LPAR> Expression() <RPAR> }
     catch(ParseException e) {
-      Report r = new Report(ReportType.ERROR, Stage.SYNTATIC, 0, e.getMessage());
-      this.reports.add(r);
+      Report r = new Report(ReportType.ERROR, Stage.SYNTATIC, token.beginLine, e.getMessage());
+      reports.add(r);
       error_skipto(RPAR);
     }
     Statement()

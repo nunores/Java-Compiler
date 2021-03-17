@@ -15,11 +15,4 @@ public class ExampleTest {
     public void testExpression() {
     assertTrue(true);		
 	}
-
-	@Test
-    public void testing() {
-      Main main = new Main();
-      JmmParserResult r = main.parse(main.readFile("inputs/input.jmm"));
-      System.out.println(r.getRootNode().toJson());
-    }
 }

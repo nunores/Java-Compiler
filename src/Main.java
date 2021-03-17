@@ -18,13 +18,13 @@ public class Main implements JmmParser {
 		try {
     		SimpleNode root = parser.Program(); // returns reference to root node
             	
-    		//root.dump(""); // prints the tree on the screen
-			System.out.println(root.toJson());
+    		root.dump(""); // prints the tree on the screen
+			//System.out.println(root.toJson());
 
     		return new JmmParserResult(root, parser.getReports());
 		} catch(ParseException e) {
-			/*Report r = new Report(ReportType.ERROR, Stage.SYNTATIC, 0, e.getMessage());
-			parser.getReports().add(r);*/
+			Report r = new Report(ReportType.ERROR, Stage.SYNTATIC, 0, e.getMessage());
+			parser.getReports().add(r);
 			return new JmmParserResult(null, new ArrayList<>());
 		}
 	}
