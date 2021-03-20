@@ -118,27 +118,15 @@ void ImportDeclaration(): { Token t; String s = ""; }
         <IMPORT> t=<IDENTIFIER> { s += t.image; }
 
         (<DOT> t=<IDENTIFIER> { s += "."+t.image; } )*
-        <SEMICOL> { jjtThis.name = t.image; jjtThis.put("qualifiedName", s); }
+        <SEMICOL> { jjtThis.put("name", t.image); jjtThis.put("qualifiedName", s); }
     )*
 }
 
-/*
-void ImportDeclaration(): { Token t; }
+void ClassDeclaration(): { Token t; }
 {
-    (
-        <IMPORT> t=<IDENTIFIER> { jjtThis.name = t.image; }
-
-        (<DOT> t=<IDENTIFIER> { jjtThis.name = t.image; } #ImportPart)*
-        <SEMICOL>
-    )*
-}
-*/
-
-void ClassDeclaration(): { Token t1, t2; }
-{
-    <CLASS> t1=<IDENTIFIER> { jjtThis.name = t1.image; } #Class
+    <CLASS> t=<IDENTIFIER> { jjtThis.put("className", t.image); } #Class
     [
-        <EXTENDS> t2=<IDENTIFIER> {jjtThis.name = t2.image; } #Extends
+        <EXTENDS> t=<IDENTIFIER> {jjtThis.put("extendedClass", t.image); } #Extends
     ]
     <LBRACE>
     (VarDeclaration())*
@@ -146,36 +134,43 @@ void ClassDeclaration(): { Token t1, t2; }
     <RBRACE>
 }
 
-void VarDeclaration() #void: {}
+void VarDeclaration(): { Token t; }
 {
-    Type() <IDENTIFIER> <SEMICOL>
+    Type() t=<IDENTIFIER> {jjtThis.put("name", t.image); } <SEMICOL>
 }
 
-void MethodDeclaration() #void: {}
+void MethodDeclaration(): { Token t; }
 {
-    Type() <IDENTIFIER>
+    Type() t=<IDENTIFIER> { jjtThis.put("name", t.image); }
     <LPAR>
     [
-        Type() <IDENTIFIER>
-        (
-            <COL> Type() <IDENTIFIER>
-        )*
+        Parameter() (<COL> Parameter())*
     ]
     <RPAR>
 
     <LBRACE>
     (LOOKAHEAD(2) VarDeclaration())*
     (LOOKAHEAD(2) Statement())*
-    <RETURN> Expression() <SEMICOL>
+    ReturnExpression()
     <RBRACE>
 }
 
-void MainDeclaration() #void: {}
+void ReturnExpression(): {}
+{
+    <RETURN> Expression() <SEMICOL>
+}
+
+void Parameter(): { Token t; }
+{
+    Type() t=<IDENTIFIER> { jjtThis.put("name", t.image); }
+}
+
+void MainDeclaration(): { Token t; }
 {
     <STATIC> <VOID> <MAIN>
     <LPAR>
     <STRINGARRAY>
-    <IDENTIFIER>
+    t=<IDENTIFIER> { jjtThis.put("name", t.image); } #Args
     <RPAR>
 
     <LBRACE>
@@ -185,20 +180,16 @@ void MainDeclaration() #void: {}
 }
 
 
-void Type() #void: {}
+void Type(): { Token t; }
 {
-    <INTARRAY>
-    | <BOOLEAN>
-    | <INT>
-    | <IDENTIFIER>
+    t=<INTARRAY> { jjtThis.put("name", t.image); }
+    | t=<BOOLEAN> { jjtThis.put("name", t.image); }
+    | t=<INT> { jjtThis.put("name", t.image); }
+    | t=<IDENTIFIER> { jjtThis.put("name", t.image); }
 }
 
-void Statement() #void: {}
+void Statement() #void: { Token t; }
 {
-    <LBRACE>
-    (Statement())*
-    <RBRACE>
-    |
     <IF> <LPAR> Expression() <RPAR> Statement()
     <ELSE> Statement()
     |
@@ -210,11 +201,15 @@ void Statement() #void: {}
     }
     Statement()
     |
-    LOOKAHEAD(2) <IDENTIFIER> <EQ> Expression() <SEMICOL>
+    LOOKAHEAD(2) t=<IDENTIFIER> { jjtThis.put("name", t.image); } #Var <EQ> Expression() <SEMICOL> #Assignment(2)
     |
-    LOOKAHEAD(2) <IDENTIFIER> <LBRACK> Expression() <RBRACK> <EQ> Expression() <SEMICOL>
+    LOOKAHEAD(2) t=<IDENTIFIER> { jjtThis.put("name", t.image); } #Var2 <LBRACK> Expression() <RBRACK> <EQ> Expression() <SEMICOL>
     |
     Expression() <SEMICOL>
+    |
+    <LBRACE>
+    (Statement())*
+    <RBRACE>
 }
 
 void Expression() #void: {}
@@ -229,65 +224,55 @@ void And() #void: {}
 
 void Less() #void: {}
 {
-    Plus() (LOOKAHEAD(2) <LESS> Plus() #Less(2))*
+    PlusMinus() (LOOKAHEAD(2) <LESS> PlusMinus() #Less(2))*
 }
 
-void Plus() #void: {}
+void PlusMinus() #void: { Token t; }
 {
-    Minus() (LOOKAHEAD(2) <PLUS> Minus() #Plus(2))*
+    MultDiv() (LOOKAHEAD(2) (t=<PLUS> { jjtThis.put("name", t.image); } MultDiv() | <MINUS> MultDiv()) #Operation(2))*
 }
 
-void Minus() #void: {}
+void MultDiv() #void: { Token t; }
 {
-    Mult() (LOOKAHEAD(2) <MINUS> Mult() #Minus(2))*
+    Rest() (LOOKAHEAD(2) (t=<MULT> { jjtThis.put("name", t.image); } Rest()| t=<DIV> { jjtThis.put("name", t.image); } Rest()) #Operation(2))*
 }
 
-void Mult() #void: {}
+void Rest(): { Token t;}
 {
-    Div() (LOOKAHEAD(2) <MULT> Div() #Mult(2))*
-}
-
-void Div() #void: {}
-{
-    Rest() (LOOKAHEAD(2) <DIV> Rest() #Div(2))*
-}
-
-void Rest() #void: {}
-{
-    <INTEGER_LITERAL> Terminal()
+    t = <INTEGER_LITERAL> { jjtThis.put("name", t.image); } Terminal()
     |
-    <TRUE> Terminal()
+    t = <TRUE> { jjtThis.put("name", t.image); } Terminal()
     |
-    <FALSE> Terminal()
+    t = <FALSE> { jjtThis.put("name", t.image); } Terminal()
     |
-    <IDENTIFIER> Terminal()
+    t = <IDENTIFIER> { jjtThis.put("name", t.image); } Terminal()
     |
-    <THIS> Terminal()
+    t = <THIS> { jjtThis.put("name", t.image); } Terminal()
     |
-    <NEW>
+    t = <NEW> { jjtThis.put("new", t.image); }
     (
         (<INT> <LBRACK> Expression() <RBRACK> Terminal())
         |
-        (<IDENTIFIER> <LPAR> <RPAR> Terminal())
+        (t=<IDENTIFIER> { jjtThis.put("name", t.image); } <LPAR> <RPAR> Terminal())
     )
     |
-    <NOT> Expression() Terminal()
+    t = <NOT> { jjtThis.put("name", t.image); } Expression() Terminal()
     |
     <LPAR> Expression() <RPAR> Terminal()
 }
 
-void Terminal(): {}
+void Terminal() #void: { Token t; }
 {
     <LBRACK> Expression() <RBRACK> Terminal()
     |
     <DOT>
     (
         (
-            <LENGTH> Terminal()
+            t=<LENGTH> { jjtThis.put("name", t.image); } #DotLength Terminal()
         )
         |
         (
-            <IDENTIFIER> <LPAR>
+            t=<IDENTIFIER> { jjtThis.put("name", t.image); } #DotIdentifier <LPAR>
             [
                 Expression()
                 (<COL> Expression())*
@@ -297,5 +282,5 @@ void Terminal(): {}
         )
     )
     |
-    {} // Why does [ ] not do the job?
+    {}
 }

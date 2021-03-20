@@ -20,12 +20,15 @@ public class Main implements JmmParser {
             	
     		root.dump(""); // prints the tree on the screen
 			//System.out.println(root.toJson());
+			System.out.println(parser.getReports());
 
     		return new JmmParserResult(root, parser.getReports());
 		} catch(ParseException e) {
 			Report r = new Report(ReportType.ERROR, Stage.SYNTATIC, 0, e.getMessage());
 			parser.getReports().add(r);
-			return new JmmParserResult(null, new ArrayList<>());
+			System.out.println(parser.getReports());
+
+			return new JmmParserResult(null, parser.getReports());
 		}
 	}
 

@@ -1,7 +1,7 @@
 import abc.def.ghi;
 class Feup extends Mieic {
 
-    public int add(int a, int b){
+    public int add(boolean a, int b){
         int c;
         c = a + this.constInstr();
         return c;

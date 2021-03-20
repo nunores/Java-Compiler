@@ -13,6 +13,7 @@ public class ExampleTest {
 
     @Test
     public void testExpression() {
-    assertTrue(true);		
+        Main main = new Main();
+        JmmParserResult r = main.parse(main.readFile("test/fixtures/public/testing.jmm"));
 	}
 }

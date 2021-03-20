@@ -17,9 +17,8 @@ import pt.up.fe.specs.util.SpecsCollections;
  */
 public interface JmmNode {
 
-    /**
-     * @return the kind of this node (e.g. MethodDeclaration, ClassDeclaration, etc.)
-     */
+    /*@return the kind of this node (e.g. MethodDeclaration, ClassDeclaration, etc.)*/
+    
     String getKind();
 
     /**
