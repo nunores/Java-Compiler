@@ -48,8 +48,13 @@ For the first checkpoint the following is required:
 2. [x] Resolve grammar conflicts (projects with global LOOKAHEAD > 1 will have a penalty)
 3. [x] Proceed with error treatment and recovery mechanisms for the while expression
 4. [x] Convert the .jj file into a .jjt file
-5. [ ] Include missing information in nodes (i.e. tree annotation). E.g. include class name in the class Node.
+5. [x] Include missing information in nodes (i.e. tree annotation). E.g. include class name in the class Node.
 6. [x] Generate a JSON from the AST
+
+### To Fix
+- Assignment
+- Nested ()
+- MissingRightPar: 2 errors, supposed 1?
 
 ### JavaCC to JSON
 To help converting the JavaCC nodes into a JSON format, we included in this project the JmmNode interface, which can be seen in ``src-lib/pt/up/fe/comp/jmm/JmmNode.java``. The idea is for you to use this interface along with your SimpleNode class. Then, one can easily convert the JmmNode into a JSON string by invoking the method JmmNode.toJson().
