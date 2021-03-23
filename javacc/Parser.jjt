@@ -203,17 +203,11 @@ void Statement() #void: { Token t; }
 {
     ifStatement()
     |
-    try { whileStatement() }
-    catch(ParseException e) {
-      Report r = new Report(ReportType.ERROR, Stage.SYNTATIC, token.beginLine, e.getMessage());
-      reports.add(r);
-      error_skipto(RPAR);
-    }
-    Statement()
-    | // To fix
+    whileStatement()
+    | // To clean
     LOOKAHEAD(2) t=<IDENTIFIER> { jjtThis.put("name", t.image); } #Var <EQ> Expression() <SEMICOL> #Assignment(2)
     |
-    LOOKAHEAD(2) t=<IDENTIFIER> { jjtThis.put("name", t.image); } #ArrayVar exprArray() <EQ> Expression() <SEMICOL> #Assignment(2)
+    LOOKAHEAD(2) (t=<IDENTIFIER> { jjtThis.put("name", t.image); } #Var exprArray()) <EQ> Expression() <SEMICOL> #Assignment(2)
     |
     Expression() <SEMICOL>
     |
@@ -230,7 +224,13 @@ void ifStatement(): {}
 
 void whileStatement(): {}
 {
-    <WHILE> <LPAR> Expression() <RPAR>
+    try { <WHILE> <LPAR> Expression() <RPAR> }
+    catch(ParseException e) {
+      Report r = new Report(ReportType.ERROR, Stage.SYNTATIC, token.beginLine, e.getMessage());
+      reports.add(r);
+      error_skipto(RPAR);
+    }
+    Statement()
 }
 
 void Expression() #void: {}
@@ -264,39 +264,48 @@ void MultDiv() #void: { Token t; }
 
 void Rest() #void: { Token t;}
 {
-    t = <INTEGER_LITERAL> { jjtThis.put("name", t.image); } #IntegerLiteral Terminal()
-    |
-    t = <TRUE> { jjtThis.put("name", t.image); } #True Terminal()
-    |
-    t = <FALSE> { jjtThis.put("name", t.image); } #False Terminal()
-    |
-    RestIdentifier()
-    |
-    t = <THIS> { jjtThis.put("name", t.image); } #This Terminal()
-    |
-    newAssignment()
-    |
-    t = <NOT> { jjtThis.put("name", t.image); } #Not Expression() Terminal()
-    |
-    <LPAR> Expression() #Exp <RPAR> Terminal()
+    (
+        IntegerLiteral()
+        |
+        t = <TRUE> { jjtThis.put("name", t.image); } #True
+        |
+        t = <FALSE> { jjtThis.put("name", t.image); } #False
+        |
+        RestIdentifier()
+        |
+        t = <THIS> { jjtThis.put("name", t.image); } #This 
+        |
+        newAssignment()
+        |
+        t = <NOT> Expression() { jjtThis.put("name", t.image); } #Not(1)
+        |
+        <LPAR> Expression() #Exp <RPAR> 
+    ) Terminal()
 }
+
+void IntegerLiteral(): { Token t; }
+{
+    t = <INTEGER_LITERAL> { jjtThis.put("name", t.image); } #IntegerLiteral
+}
+
+// ture, false ,..., not, lpar expr rpar
 
 void RestIdentifier(): { Token t; }
 {
-    t = <IDENTIFIER> { jjtThis.put("name", t.image); } Terminal()
+    t = <IDENTIFIER> { jjtThis.put("name", t.image); }
 }
 
-void newAssignment(): { Token t; }
+void newAssignment() #void: { Token t; }
 {
-    <NEW>
+    <NEW> 
     (
-        (<INT> exprArray() Terminal()) 
+        ((<INT> <LBRACK> Expression() <RBRACK> #NewArray(1)) ) 
         |
-        (t=<IDENTIFIER> { jjtThis.put("name", t.image); } #Obj <LPAR> <RPAR> Terminal())
+        (t=<IDENTIFIER> { jjtThis.put("name", t.image); } #NewInstance <LPAR> <RPAR> )
     )
 }
 
-void exprArray(): { Token t; }
+void exprArray() #ArrayAccess(2): { Token t; }
 {
     <LBRACK> Expression() <RBRACK>
 }
@@ -314,11 +323,11 @@ void dotTerminal() #void: { Token t; }
 {
     <DOT>
     (
-        (t=<LENGTH> { jjtThis.put("name", t.image); } #DotLength Terminal())
+        (t=<LENGTH> { jjtThis.put("name", t.image); } #DotLength(1) Terminal())
         |
-        (t=<IDENTIFIER> { jjtThis.put("name", t.image); } #DotIdentifier <LPAR>
-            [InsideFunction()]
-            <RPAR>
+        ((t=<IDENTIFIER> <LPAR>
+            InsideFunction()
+            <RPAR> { jjtThis.put("name", t.image); } #MethodCall(2))
             Terminal())
     )
 }
@@ -326,6 +335,8 @@ void dotTerminal() #void: { Token t; }
 
 void InsideFunction(): {}
 {
-    Expression()
-    (<COL> Expression())*
+    [
+        Expression()
+        (<COL> Expression())*
+    ]
 }

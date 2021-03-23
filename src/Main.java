@@ -18,8 +18,8 @@ public class Main implements JmmParser {
 		try {
     		SimpleNode root = parser.Program(); // returns reference to root node
             	
-    		//root.dump(""); // prints the tree on the screen
-			System.out.println(root.toJson());
+    		root.dump(""); // prints the tree on the screen
+			//System.out.println(root.toJson());
 			System.out.println(parser.getReports());
 
     		return new JmmParserResult(root, parser.getReports());
