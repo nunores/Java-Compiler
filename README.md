@@ -51,10 +51,14 @@ For the first checkpoint the following is required:
 5. [x] Include missing information in nodes (i.e. tree annotation). E.g. include class name in the class Node.
 6. [x] Generate a JSON from the AST
 
-### To Fix
-- Assignment
-- Nested ()
-- MissingRightPar: 2 errors, supposed 1?
+## Checkpoint 2
+For the second checkpoint the following is required:
+
+1. [ ] Implement the interfaces that will allow the generation of the JSON files representing the source code and the necessary symbol tables
+2. [ ] Implement the Semantic Analsis and generate the LLIR code, OLLIR, from the AST
+3. [ ] Generate grom the OLLIR the JVM code accepted by jasmin corresponding tothe invocation of functions in Java--
+4. [ ] Generate from the OLLIR JVM code accepted by jasmin for arithmetic expressions
+
 
 ### JavaCC to JSON
 To help converting the JavaCC nodes into a JSON format, we included in this project the JmmNode interface, which can be seen in ``src-lib/pt/up/fe/comp/jmm/JmmNode.java``. The idea is for you to use this interface along with your SimpleNode class. Then, one can easily convert the JmmNode into a JSON string by invoking the method JmmNode.toJson().

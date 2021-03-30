@@ -56,7 +56,7 @@ class SimpleNode implements Node, JmmNode {
   public void add(JmmNode child, int index) {
     if(!(child instanceof Node)) {
   	throw new RuntimeException("Node not supported: " + child.getClass());  
-    }
+  }
 	  
 	jjtAddChild((Node) child, index);
   }

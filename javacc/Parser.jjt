@@ -204,7 +204,7 @@ void Statement() #void: { Token t; }
     ifStatement()
     |
     whileStatement()
-    | // To clean
+    |
     LOOKAHEAD(2) t=<IDENTIFIER> { jjtThis.put("name", t.image); } #Var <EQ> Expression() <SEMICOL> #Assignment(2)
     |
     LOOKAHEAD(2) (t=<IDENTIFIER> { jjtThis.put("name", t.image); } #Var exprArray()) <EQ> Expression() <SEMICOL> #Assignment(2)
@@ -267,28 +267,46 @@ void Rest() #void: { Token t;}
     (
         IntegerLiteral()
         |
-        t = <TRUE> { jjtThis.put("name", t.image); } #True
+        RestTrue()
         |
-        t = <FALSE> { jjtThis.put("name", t.image); } #False
+        RestFalse()
         |
         RestIdentifier()
         |
-        t = <THIS> { jjtThis.put("name", t.image); } #This 
+        RestThis()
         |
         newAssignment()
         |
-        t = <NOT> Expression() { jjtThis.put("name", t.image); } #Not(1)
+        Not()
         |
-        <LPAR> Expression() #Exp <RPAR> 
+        ExpBetweenPars()
     ) Terminal()
 }
 
-void IntegerLiteral(): { Token t; }
+void IntegerLiteral() #void: { Token t; }
 {
     t = <INTEGER_LITERAL> { jjtThis.put("name", t.image); } #IntegerLiteral
 }
 
-// ture, false ,..., not, lpar expr rpar
+void RestTrue() #void: { Token t; }
+{
+    t = <TRUE> { jjtThis.put("name", t.image); } #True
+}
+
+void RestFalse() #void: { Token t; }
+{
+    t = <FALSE> { jjtThis.put("name", t.image); } #False
+}
+
+void RestThis() #void: { Token t; }
+{
+    t = <THIS> { jjtThis.put("name", t.image); } #This
+}
+
+void Not() #void: { Token t; }
+{
+    t = <NOT> Expression() { jjtThis.put("name", t.image); } #Not(1)
+}
 
 void RestIdentifier(): { Token t; }
 {
@@ -303,6 +321,11 @@ void newAssignment() #void: { Token t; }
         |
         (t=<IDENTIFIER> { jjtThis.put("name", t.image); } #NewInstance <LPAR> <RPAR> )
     )
+}
+
+void ExpBetweenPars() #void: { Token t; }
+{
+    <LPAR> Expression() #Exp <RPAR>
 }
 
 void exprArray() #ArrayAccess(2): { Token t; }
