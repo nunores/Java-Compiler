@@ -23,7 +23,7 @@ class SimpleNode implements Node, JmmNode {
     // added
     public int val;
     public Operator op = null;
-    public String name;
+    public String packageName;
 
   public SimpleNode(int i) {
     id = i;
@@ -56,7 +56,7 @@ class SimpleNode implements Node, JmmNode {
   public void add(JmmNode child, int index) {
     if(!(child instanceof Node)) {
   	throw new RuntimeException("Node not supported: " + child.getClass());  
-    }
+  }
 	  
 	jjtAddChild((Node) child, index);
   }
@@ -108,12 +108,24 @@ class SimpleNode implements Node, JmmNode {
      out its children. */
 
   public void dump(String prefix) {
-    System.out.println(toString(prefix));
+
+    if (this.attributes.size() != 0) {
+      System.out.print(toString(prefix) + " [ ");
+      for (String key : this.attributes.keySet()) {
+        System.out.print(key + ": " + this.attributes.get(key) + "; ");
+      } 
+      System.out.println("]");
+    }
+    
+    else {
+      System.out.println(toString(prefix));
+    }
+    
     if (children != null) {
       for (int i = 0; i < children.length; ++i) {
         SimpleNode n = (SimpleNode)children[i];
         if (n != null) {
-          n.dump(prefix + " ");
+          n.dump(prefix + "    ");
         }
       }
     }

@@ -7,16 +7,13 @@ PARSER_BEGIN(Parser)
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.io.*;
-import pt.up.fe.comp.jmm.report.Report;
+import pt.up.fe.comp.jmm.report.*;
 
 public class Parser {
-    private int errors = 0;
     private ArrayList<Report> reports = new ArrayList<Report>();
+    public ArrayList<Report> getReports() { return reports; }
 
     public static void main(String[] args) {}
-
-    public int getErrors() { return this.errors; }
-    public ArrayList<Report> getReports() { return this.reports; }
 }
 
 PARSER_END(Parser)
@@ -26,10 +23,18 @@ SKIP : {
   | "\r"
   | "\t"
   | "\n"
+  | "\f"
 }
 
-// Keywords
+/* Comments */
+SPECIAL_TOKEN :
+{
+    <SINGLE_LINE_COMMENT: "//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")>
+    | <MULTI_LINE_COMMENT: "/*" (~["*"])* "*" ("*" | (~["*","/"] (~["*"])* "*"))* "/">
+}
 
+
+// Keywords
 TOKEN: {
     < TRUE: "true" >
 	| < FALSE: "false" >
@@ -52,7 +57,6 @@ TOKEN: {
 }
 
 // Separators
-
 TOKEN: {
   < COL: "," >
   | < SEMICOL: ";" >
@@ -82,299 +86,280 @@ TOKEN : {
   | < INTARRAY: "int[]" >
   | < STRINGARRAY: "String[]" >
   | < NOT: "!" >
-  | < IDENTIFIER: ["A"-"Z","a"-"z","$","_"](["0"-"9","A"-"Z","a"-"z","_"])* >
+  | < IDENTIFIER: ["A"-"Z","a"-"z","$","_"](["0"-"9","A"-"Z","a"-"z","_","$"])* >
 }
 
 
 JAVACODE
 void error_skipto(int kind) {
-  errors++;
-  if (errors == 10) { // "The compiler could report the first 10 errors found before aborting execution"
-    System.out.println("10 errors found");
-    System.exit(1);
-  }
-  ParseException e = generateParseException();  // generate the exception object.
-  System.out.println("#" + errors + ": Error in while Statement:\n" + e.toString());  // print the error message
-  Token t;
-  do {
-    t = getNextToken();
-  } while (t.kind != kind);
-    // The above loop consumes tokens all the way up to a token of
-    // "kind".  We use a do-while loop rather than a while because the
-    // current token is the one immediately before the erroneous token
-    // (in our case the token immediately before what should have been
-    // "if"/"while".
-}
+    if (reports.size() == 10) { // "The compiler could report the first 10 errors found before aborting execution"
+        System.out.println("10 errors found");
+        return;
+    }
+    Token t;
+    Token next;
 
+    if(getToken(0).kind == RPAR && getToken(1).kind != RPAR) // if finishing expression
+        return;
+
+    if(getToken(1).kind == LBRACE) // Or consumption is finished
+        return;
+  
+    do {
+        t = getNextToken();
+        next = getToken(1);
+    }
+    while(next.kind != 0 && next.kind != LBRACE && (t.kind != RPAR || next.kind == RPAR));
+}
 
 SimpleNode Program(): {} 
 {
-    ImportDeclaration() ClassDeclaration() <EOF> { return jjtThis; }
-}
-
-void ImportDeclaration() #void: { Token t; }
-{
-	try {
-		(
-			<IMPORT> <IDENTIFIER>
-			(
-				<DOT> <IDENTIFIER> 
-			)*
-			<SEMICOL>
-		)* #IMPORT
-	} catch (Exception e) {
-		System.out.println("Expected Import Declaration\n" + e);
-		System.exit(1);
-	}
-}
-
-void ClassDeclaration(): { Token t1; }
-{
     try {
-        <CLASS> t1 = <IDENTIFIER> { jjtThis.name = t1.image; } #ID
-        [
-            <EXTENDS> <IDENTIFIER>
-        ]
-        <LBRACE>
-        (VarDeclaration())* 
-        (<PUBLIC> (MainDeclaration() | MethodDeclaration()))*
-        <RBRACE>
-    } catch (Exception e) {
-        System.out.println("Expected Class Declaration\n" + e);
-		System.exit(1);
+        (ImportDeclaration())* ClassDeclaration() <EOF>
     }
-    
+    catch (ParseException e) {
+        Report r = new Report(ReportType.ERROR, Stage.SYNTATIC, token.beginLine, e.getMessage());
+        reports.add(r);
+        System.out.println("Program Exception");
+    }
+    { return jjtThis; }
 }
 
-void VarDeclaration() #void: {}
+void ImportDeclaration(): { Token t; String s = ""; }
 {
-    try {
-        Type() <IDENTIFIER> <SEMICOL>
-    } catch (Exception e) {
-		System.out.println("Expected Var Declaration\n" + e);
-		System.exit(1);    
-    }
+    <IMPORT> t=<IDENTIFIER> { s += t.image; }
+
+    (<DOT> t=<IDENTIFIER> { s += "."+t.image; } )*
+    <SEMICOL> { jjtThis.put("name", t.image); jjtThis.put("qualifiedName", s); }
 }
 
-void MethodDeclaration() #void: {}
+void ClassDeclaration(): { Token t; }
 {
-	try {
-        Type() <IDENTIFIER>
-        <LPAR>
-        [
-            Type() <IDENTIFIER>
-            (
-                <COL> Type() <IDENTIFIER>
-            )*
-        ]
-        <RPAR>
-
-        <LBRACE>
-        (LOOKAHEAD(2) VarDeclaration())*
-        (LOOKAHEAD(2) Statement())*
-        <RETURN> Expression() <SEMICOL>
-        <RBRACE> 
-    } catch (Exception e) {
-		System.out.println("Expected Method Declaration\n" + e);
-		System.exit(1);
-    }
-    
+    <CLASS> t=<IDENTIFIER> { jjtThis.put("className", t.image); } #Class
+    [
+        <EXTENDS> t=<IDENTIFIER> {jjtThis.put("extendedClass", t.image); } #Extends
+    ]
+    <LBRACE>
+    (VarDeclaration())*
+    (<PUBLIC> (MainDeclaration() | MethodDeclaration()))*
+    <RBRACE>
 }
 
-void MainDeclaration() #void: {}
+void VarDeclaration(): { Token t; }
 {
-    try {
-        <STATIC> <VOID> <MAIN>
-        <LPAR>
-        <STRINGARRAY>
-        <IDENTIFIER>
-        <RPAR>
+    Type() t=<IDENTIFIER> {jjtThis.put("name", t.image); } <SEMICOL>
+}
 
-        <LBRACE>
-        (LOOKAHEAD(2) VarDeclaration())* // VarDeclaration gives Type, which can be Identifier
-        (LOOKAHEAD(2) Statement())*
-        <RBRACE>
-    } catch (Exception e) {
-		System.out.println("Expected Main Declaration\n" + e);
-		System.exit(1);
-    }
-    
+void MethodDeclaration(): { Token t; }
+{
+    Type() t=<IDENTIFIER> { jjtThis.put("name", t.image); }
+    <LPAR>
+    [
+        Parameter() (<COL> Parameter())*
+    ]
+    <RPAR>
+
+    <LBRACE>
+    (LOOKAHEAD(2) VarDeclaration())*
+    (LOOKAHEAD(2) Statement())*
+    ReturnExpression()
+    <RBRACE>
+}
+
+void ReturnExpression(): {}
+{
+    <RETURN> Expression() <SEMICOL>
+}
+
+void Parameter(): { Token t; }
+{
+    Type() t=<IDENTIFIER> { jjtThis.put("name", t.image); }
+}
+
+void MainDeclaration(): { Token t; }
+{
+    <STATIC> <VOID> <MAIN>
+    <LPAR>
+    <STRINGARRAY>
+    t=<IDENTIFIER> { jjtThis.put("name", t.image); } #Args
+    <RPAR>
+
+    <LBRACE>
+    (LOOKAHEAD(2) VarDeclaration())* // VarDeclaration gives Type, which can be Identifier
+    (LOOKAHEAD(2) Statement())*
+    <RBRACE>
 }
 
 
-void Type() #void: {}
+void Type(): { Token t; }
 {
-    try {
-        <INTARRAY>
-        | <BOOLEAN>
-        | <INT>
-        | <IDENTIFIER>
-    } catch (Exception e) {
-        System.out.println("Expected Type\n" + e);
-        System.exit(1);
-    }
-    
+    t=<INTARRAY> { jjtThis.put("name", t.image); }
+    | t=<BOOLEAN> { jjtThis.put("name", t.image); }
+    | t=<INT> { jjtThis.put("name", t.image); }
+    | t=<IDENTIFIER> { jjtThis.put("name", t.image); }
 }
 
-void Statement() #void: {}
+void Statement() #void: { Token t; }
 {
+    ifStatement()
+    |
+    whileStatement()
+    |
+    LOOKAHEAD(2) t=<IDENTIFIER> { jjtThis.put("name", t.image); } #Var <EQ> Expression() <SEMICOL> #Assignment(2)
+    |
+    LOOKAHEAD(2) (t=<IDENTIFIER> { jjtThis.put("name", t.image); } #Var exprArray()) <EQ> Expression() <SEMICOL> #Assignment(2)
+    |
+    Expression() <SEMICOL>
+    |
+    <LBRACE>
+    (Statement())*
+    <RBRACE>
+}
 
-    try {
-        <LBRACE>
-        (Statement())*
-        <RBRACE>
-        |
-        <IF> <LPAR> Expression() <RPAR> Statement()
-        <ELSE> Statement()
-        |
-        try { <WHILE> <LPAR> Expression() <RPAR> }
-        catch(ParseException e) {
-          error_skipto(RPAR);
-        }
-        Statement()
-        |
-        LOOKAHEAD(2) <IDENTIFIER> <EQ> Expression() <SEMICOL>
-        |
-        LOOKAHEAD(2) <IDENTIFIER> <LBRACK> Expression() <RBRACK> <EQ> Expression() <SEMICOL>
-        |
-        Expression() <SEMICOL>     
-    } catch (Exception e) {
-		System.out.println("Expected Statement\n" + e);
-		System.exit(1);
+void ifStatement(): {}
+{
+    <IF> <LPAR> Expression() <RPAR> Statement()
+    <ELSE> Statement()
+}
+
+void whileStatement(): {}
+{
+    try { <WHILE> <LPAR> Expression() <RPAR> }
+    catch(ParseException e) {
+      Report r = new Report(ReportType.ERROR, Stage.SYNTATIC, token.beginLine, e.getMessage());
+      reports.add(r);
+      error_skipto(RPAR);
     }
-    
+    Statement()
 }
 
 void Expression() #void: {}
 {
-    try {
-        And()
-    } catch (Exception e) {
-		System.out.println("Expected Expression\n" + e);
-		System.exit(1);
-    }
-    
+    And()
 }
 
 void And() #void: {}
 {
-    try {
-        Less() (LOOKAHEAD(2) <AND> Less() #And(2))*
-    } catch (Exception e) {
-		System.out.println("Expected AND\n" + e);
-		System.exit(1);
-    }
-
+    Less() (LOOKAHEAD(2) <AND> Less() #And(2))*
 }
 
 void Less() #void: {}
 {
-	try {
-        Plus() (LOOKAHEAD(2) <LESS> Plus() #Less(2))*
-    } catch (Exception e) {
-		System.out.println("Expected LESS\n" + e);
-		System.exit(1);
-    }
+    PlusMinus() (LOOKAHEAD(2) <LESS> PlusMinus() #Less(2))*
 }
 
-void Plus() #void: {}
+void PlusMinus() #void: { Token t; }
 {
-	try {
-        Minus() (LOOKAHEAD(2) <PLUS> Minus() #Plus(2))*
-    } catch (Exception e) {
-		System.out.println("Expected PLUS\n" + e);
-		System.exit(1);
-    }
+    MultDiv()
+    (LOOKAHEAD(2) (t=<PLUS> { jjtThis.put("name", t.image); } MultDiv() |
+                   t=<MINUS> { jjtThis.put("name", t.image); } MultDiv()) #Operation(2))*
 }
 
-void Minus() #void: {}
+void MultDiv() #void: { Token t; }
 {
-	try {
-        Mult() (LOOKAHEAD(2) <MINUS> Mult() #Minus(2))*
-    } catch (Exception e) {
-		System.out.println("Expected MINUS\n" + e);
-		System.exit(1);
-    }
+    Rest()
+    (LOOKAHEAD(2) (t=<MULT> { jjtThis.put("name", t.image); } Rest()|
+                   t=<DIV> { jjtThis.put("name", t.image); } Rest()) #Operation(2))*
 }
 
-void Mult() #void: {}
+void Rest() #void: { Token t;}
 {
-    try {       
-        Div() (LOOKAHEAD(2) <MULT> Div() #Mult(2))*
-    } catch (Exception e) {
-        System.out.println("Expected MULT\n" + e);
-		System.exit(1);
-    }
-	
+    (
+        IntegerLiteral()
+        |
+        RestTrue()
+        |
+        RestFalse()
+        |
+        RestIdentifier()
+        |
+        RestThis()
+        |
+        newAssignment()
+        |
+        Not()
+        |
+        ExpBetweenPars()
+    ) Terminal()
 }
 
-void Div() #void: {}
+void IntegerLiteral() #void: { Token t; }
 {
-    try {
-        Rest() (LOOKAHEAD(2) <DIV> Rest() #Mult(2))*
-    } catch (Exception e) {
-		System.out.println("Expected DIV\n" + e);
-		System.exit(1);
-    }
+    t = <INTEGER_LITERAL> { jjtThis.put("name", t.image); } #IntegerLiteral
 }
 
-void Rest() #void: {}
+void RestTrue() #void: { Token t; }
 {
-    try {
-        <INTEGER_LITERAL> Terminal()
-        |
-        <TRUE> Terminal()
-        |
-        <FALSE> Terminal()
-        |
-        <IDENTIFIER> Terminal()
-        |
-        <THIS> Terminal()
-        |
-        <NEW> 
-        (
-            (<INT> <LBRACK> Expression() <RBRACK> Terminal())
-            |
-            (<IDENTIFIER> <LPAR> <RPAR> Terminal())
-        )
-        |
-        <NOT> Expression() Terminal()
-        |
-        <LPAR> Expression() <RPAR> Terminal()
-        
-    } catch (Exception e) {
-		System.out.println("Expected REST\n" + e);
-		System.exit(1);
-    }
+    t = <TRUE> { jjtThis.put("name", t.image); } #True
 }
 
-void Terminal() #void: {}
+void RestFalse() #void: { Token t; }
 {
-    try {
-        <LBRACK> Expression() <RBRACK> Terminal()
+    t = <FALSE> { jjtThis.put("name", t.image); } #False
+}
+
+void RestThis() #void: { Token t; }
+{
+    t = <THIS> { jjtThis.put("name", t.image); } #This
+}
+
+void Not() #void: { Token t; }
+{
+    t = <NOT> Expression() { jjtThis.put("name", t.image); } #Not(1)
+}
+
+void RestIdentifier(): { Token t; }
+{
+    t = <IDENTIFIER> { jjtThis.put("name", t.image); }
+}
+
+void newAssignment() #void: { Token t; }
+{
+    <NEW> 
+    (
+        ((<INT> <LBRACK> Expression() <RBRACK> #NewArray(1)) ) 
         |
-        <DOT>
-        (
-            (
-                <LENGTH> Terminal() 
-            )
-            |
-            (
-                <IDENTIFIER> <LPAR>
-                [
-                    Expression()
-                    (<COL> Expression())*
-                ]
-                <RPAR>
-                Terminal()
-            )
-        )
+        (t=<IDENTIFIER> { jjtThis.put("name", t.image); } #NewInstance <LPAR> <RPAR> )
+    )
+}
+
+void ExpBetweenPars() #void: { Token t; }
+{
+    <LPAR> Expression() #Exp <RPAR>
+}
+
+void exprArray() #ArrayAccess(2): { Token t; }
+{
+    <LBRACK> Expression() <RBRACK>
+}
+
+void Terminal() #void: { Token t; }
+{
+    exprArray() Terminal()
+    |
+    dotTerminal()
+    |
+    {}
+}
+
+void dotTerminal() #void: { Token t; }
+{
+    <DOT>
+    (
+        (t=<LENGTH> { jjtThis.put("name", t.image); } #DotLength(1) Terminal())
         |
-        {} // Why does [ ] not do the job?
-        
-    } catch (Exception e) {
-		System.out.println("Expected Terminal\n" + e);
-		System.exit(1);
-    }
-    
+        ((t=<IDENTIFIER> <LPAR>
+            InsideFunction()
+            <RPAR> { jjtThis.put("name", t.image); } #MethodCall(2))
+            Terminal())
+    )
+}
+
+
+void InsideFunction(): {}
+{
+    [
+        Expression()
+        (<COL> Expression())*
+    ]
 }
