@@ -32,7 +32,7 @@ public class Main implements JmmParser {
 		try {
     		SimpleNode root = parser.Program(); // returns reference to root node
             	
-    		//root.dump(""); // prints the tree on the screen
+    		root.dump(""); // prints the tree on the screen
 			//System.out.println(root.toJson());
 			System.out.println(parser.getReports());
 
@@ -51,8 +51,10 @@ public class Main implements JmmParser {
 			JmmNode node = parserResult.getRootNode().sanitize();
 			
 			var stGenerator = new SymbolTableGenerator(); // TO DO
-			SymbolTable st = stGenerator.visit(node, null);
+			Boolean temp = stGenerator.visit(node);
+			MySymbolTable st = stGenerator.getSymbolTable();
 
+			st.print();
 
 			/*var semanticAnalysisVisitor = new SemanticAnalysisVisitor(); // TO DO: class SemanticAnalysisVisitor extends PreOrderVisitor<SymbolTable, List<Reports>
 			List<Report> reports = semanticAnalysisVisitor.visit(node, st);*/
@@ -72,7 +74,7 @@ public class Main implements JmmParser {
 
 		JmmParserResult parserResult = compiler.parse(filename);
 
-		MainAnalysis analysis = new MainAnalysis();
+		//MainAnalysis analysis = new MainAnalysis();
 
         //analysis.semanticAnalysis(parserResult);
 

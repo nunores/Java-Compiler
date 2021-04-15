@@ -5,28 +5,39 @@ import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.ast.PreorderJmmVisitor;
 import pt.up.fe.specs.util.utilities.StringLines;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
+import pt.up.fe.comp.jmm.analysis.table.Type;
+import pt.up.fe.comp.jmm.report.Report;
+import pt.up.fe.comp.jmm.report.ReportType;
+import pt.up.fe.comp.jmm.report.Stage;
+import pt.up.fe.comp.jmm.analysis.table.Symbol;
+import pt.up.fe.comp.jmm.analysis.table.Type;
 
+class SymbolTableGenerator extends PreorderJmmVisitor<List<Report>, Boolean> {
 
-class SymbolTableGenerator extends PreorderJmmVisitor<String, SymbolTable> {
+    private MySymbolTable symbolTable = new MySymbolTable();
+
+    public MySymbolTable getSymbolTable(){
+        return this.symbolTable;
+    }
 
     public SymbolTableGenerator() {
+
+        addVisit("ImportDeclaration", this::handleImportDeclaration);
 
         setDefaultVisit(this::defaultVisit);
 
     }
 
-    private SymbolTable defaultVisit(JmmNode node, String space) {
-/*         String content = space + node.getKind();
-        String attrs = node.getAttributes()
-                .stream()
-                .filter(a -> !a.equals("line"))
-                .map(a -> a + "=" + node.get(a))
-                .collect(Collectors.joining(", ", "[", "]"));
+    public Boolean handleImportDeclaration(JmmNode node, List<Report> reports){
+        
+        MySymbol symbol = new MySymbol(new Type(node.getKind(), false), node.getKind(), null);
+        symbolTable.add(node, symbol);        
+        
+        return defaultVisit(node, reports);
+    }
 
-        content += ((attrs.length() > 2) ? attrs : "");
-
-        return content;  */
-        return new MySymbolTable();
+    private Boolean defaultVisit(JmmNode node, List<Report> reports) {
+        return true;
     }
 
 

@@ -3,10 +3,22 @@ import java.util.ArrayList;
 import java.util.List;
 import pt.up.fe.comp.jmm.analysis.table.Symbol;
 import pt.up.fe.comp.jmm.analysis.table.Type;
+import java.util.HashMap;
+import java.util.Map;
+import pt.up.fe.comp.jmm.JmmNode;
+
 
 class MySymbolTable implements SymbolTable {
+
+    HashMap<JmmNode, MySymbol> table = new HashMap<JmmNode, MySymbol>(); 
     
     public MySymbolTable(){}
+
+    public void add(JmmNode node, MySymbol symbol){
+        table.put(node, symbol);
+    }
+
+    
 
     @Override
     public List<String> getImports() {
@@ -48,4 +60,12 @@ class MySymbolTable implements SymbolTable {
         return new ArrayList<Symbol>();
     }
 
+    public void print(){
+        for (Map.Entry<JmmNode, MySymbol> entry : table.entrySet()) {
+            JmmNode node = entry.getKey();
+            MySymbol symbol = entry.getValue();
+
+            System.out.println("SYMBOL: " + symbol + "\t NODE: " + node);
+        }
+    }
 }
