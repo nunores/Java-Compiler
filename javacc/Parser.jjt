@@ -135,7 +135,7 @@ void ImportDeclaration(): { Token t; String s = ""; }
 
 void ClassDeclaration(): { Token t; }
 {
-    <CLASS> t=<IDENTIFIER> { jjtThis.put("className", t.image); } #Class
+    <CLASS> t=<IDENTIFIER> { jjtThis.put("name", t.image); } #Class
     [
         <EXTENDS> t=<IDENTIFIER> {jjtThis.put("extendedClass", t.image); } #Extends
     ]
@@ -202,6 +202,7 @@ void Type(): { Token t; }
 void Statement() #void: { Token t; }
 {
     ifStatement()
+    elseStatement()
     |
     whileStatement()
     |
@@ -219,6 +220,10 @@ void Statement() #void: { Token t; }
 void ifStatement(): {}
 {
     <IF> <LPAR> Expression() <RPAR> Statement()
+}
+
+void elseStatement(): {}
+{
     <ELSE> Statement()
 }
 

@@ -56,10 +56,11 @@ public class Main implements JmmParser {
 
 			st.print();
 
-			/*var semanticAnalysisVisitor = new SemanticAnalysisVisitor(); // TO DO: class SemanticAnalysisVisitor extends PreOrderVisitor<SymbolTable, List<Reports>
-			List<Report> reports = semanticAnalysisVisitor.visit(node, st);*/
+			ArrayList<Report> reports = new ArrayList<Report>();
+			var semanticAnalysisVisitor = new SemanticAnalysisVisitor(st, reports);
+			Boolean hasErrors = semanticAnalysisVisitor.visit(node);
 			
-			return new JmmSemanticsResult(node, st, new ArrayList<Report>());
+			return new JmmSemanticsResult(node, st, reports);
 		}
 		return null;
 	}
