@@ -51,7 +51,7 @@ class SymbolTableGenerator extends PreorderJmmVisitor<List<Report>, Boolean> {
     public Boolean handleVarDeclaration(JmmNode node, List<Report> reports){
         if (node.getParent().getKind().equals("ClassDeclaration"))
         {
-            MySymbol symbol = new MySymbol(new Type(node.getChildren().get(0).get("name"), false), node.getKind(), node.get("name"), node.getParent().getChildren().get(0).get("name"));
+            MySymbol symbol = new MySymbol(new Type(node.getChildren().get(0).get("name"), false), node.getKind(), node.get("name"), "GLOBAL");
             symbolTable.add(node, symbol);
         }
         else if (node.getParent().getKind().equals("MainDeclaration"))

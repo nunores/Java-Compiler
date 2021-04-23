@@ -32,14 +32,14 @@ public class MySymbol extends Symbol {
         }
     }
 
-    public boolean isImport() { return true; }
-    public boolean isClass() { return true; }
-    public boolean isField() { return true; }
-    public boolean isMethod() { return true; }
-    public boolean isParameter() { return true; }
-    public boolean isVariable() { return true; }
+    public Map<String, ArrayList<MySymbol>> getAttributes(){
+        return attributes;
+    }
 
-    public void setInit() { init = true; }
+    public String getName() {
+        return this.name;
+    }
+
     public boolean getInit() { return init; }
 
     public String getScope(){

@@ -33,6 +33,9 @@ isArray = true quando for um array
 - [ ] verificar se o número de argumentos na invocação é igual ao número de parâmetros da declaração
 - [ ] verificar se o tipo dos parâmetros coincide com o tipo dos argumentos
 
+- [ ] verificar se retorno coincide
+
+
 ## OLLIR Generation
 
 - [ ] Conversão da AST completa para OLLIR

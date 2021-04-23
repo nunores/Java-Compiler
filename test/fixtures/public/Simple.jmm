@@ -1,8 +1,9 @@
 import io;
 class Simple extends Cenas {
+
     public int add(int a, int b){
         int c;
-        c = a + this.constInstr();
+        //c = a + this.constInstr();
         return c;
     }
 
@@ -10,12 +11,14 @@ class Simple extends Cenas {
         int a;
         int b;
         int c;
+		int f;
         Simple s;
         a = 20;
         b = 10;
         s = new Simple();
         c = s.add(a,b);
         io.println(c);
+		a = (2+z+1); // Isto ta merdado
     }
 
     public int constInstr(){

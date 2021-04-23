@@ -57,8 +57,10 @@ public class Main implements JmmParser {
 			st.print();
 
 			ArrayList<Report> reports = new ArrayList<Report>();
-			var semanticAnalysisVisitor = new SemanticAnalysisVisitor(st, reports);
-			Boolean hasErrors = semanticAnalysisVisitor.visit(node);
+			var semanticAnalysisVisitor = new SemanticAnalysisVisitor(st);
+			semanticAnalysisVisitor.visit(node, reports);
+
+			System.out.println(reports);
 			
 			return new JmmSemanticsResult(node, st, reports);
 		}

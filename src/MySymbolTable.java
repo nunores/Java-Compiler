@@ -25,6 +25,7 @@ class MySymbolTable implements SymbolTable {
         return this.table;
     }
     
+    // TODO: Completar isto
 
     @Override
     public List<String> getImports() {
