@@ -17,6 +17,7 @@ Todas as verificações feitas na análise semantica pedidas devem reportar erro
 ### Type Verification
 
 isArray = true quando for um array
+
 - [ ] verificar se operações são efetuadas com o mesmo tipo (e.g. int + boolean tem de dar erro)
 - [ ] não é possível utilizar arrays diretamente para operações aritmeticas (e.g. array1 + array2)
 - [ ] verificar se um array access é de facto feito sobre um array (e.g. 1[10] não é permitido)
@@ -32,7 +33,6 @@ isArray = true quando for um array
 - [ ] caso o método não seja da classe declarada, isto é uma classe importada, assumir como existente e assumir tipos esperados. (e.g. a = Foo.b(), se a é um inteiro, e Foo é uma classe importada, assumir que o método b é estático (pois estamos a aceder a uma método diretamente da classe), que não tem argumentos e que retorna um inteiro)
 - [ ] verificar se o número de argumentos na invocação é igual ao número de parâmetros da declaração
 - [ ] verificar se o tipo dos parâmetros coincide com o tipo dos argumentos
-
 - [ ] verificar se retorno coincide
 
 

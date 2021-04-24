@@ -68,23 +68,24 @@ class SymbolTableGenerator extends PreorderJmmVisitor<List<Report>, Boolean> {
     }
 
     public Boolean handleMethodDeclaration(JmmNode node, List<Report> reports){
-        MySymbol symbol = new MySymbol(new Type(node.getChildren().get(0).get("name"), false), node.getKind(), node.get("name"), node.getParent().getChildren().get(0).get("name"));
+        MySymbol symbol = new MySymbol(new Type(node.getChildren().get(0).get("name"), false), node.getKind(), node.get("name"), "GLOBAL");
         symbolTable.add(node, symbol);      
         
         return defaultVisit(node, reports);
     }
 
     public Boolean handleMainDeclaration(JmmNode node, List<Report> reports){
-        MySymbol symbol = new MySymbol(new Type(node.getKind(), false), node.getKind(), node.getKind(), node.getParent().getChildren().get(0).get("name"));
+        MySymbol symbol = new MySymbol(new Type(node.getKind(), false), node.getKind(), node.getKind(), "GLOBAL");
         symbolTable.add(node, symbol);        
         
         return defaultVisit(node, reports);
     }
     
     public Boolean handleParameter(JmmNode node, List<Report> reports){
-        MySymbol symbol = new MySymbol(new Type(node.getChildren().get(0).get("name"), false), node.get("name"), node.getKind(), node.getParent().getKind());
+        MySymbol symbol = new MySymbol(new Type(node.getChildren().get(0).get("name"), false), node.get("name"), node.get("name"), node.getParent().get("name"));
 
-        this.symbolTable.getTable().get(node.getParent()).addAttribute("Parameter", symbol);   
+        this.symbolTable.getTable().get(node.getParent()).addAttribute("Parameter", symbol);  
+        symbolTable.add(node, symbol); 
         
         return defaultVisit(node, reports);
     }
