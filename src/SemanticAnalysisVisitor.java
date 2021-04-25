@@ -14,10 +14,10 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
     private MySymbolTable symbolTable = new MySymbolTable();
 
     List<String> booleanArray = Arrays.asList("True", "False", "Less", "And", "Or", "Not");
-    List<String> intArray = Arrays.asList("IntegerLiteral", "DotLength");
+    List<String> intArray = Arrays.asList("IntegerLiteral", "DotLength", "ArrayAccess");
     List<String> varArray = Arrays.asList("MethodCall", "RestIdentifier");
     List<String> newInstanceArray = Arrays.asList("NewInstance");
-    List<String> typeReturner = Arrays.asList("True", "False", "Less", "And", "Or", "Not", "IntegerLiteral", "DotLength", "MethodCall", "RestIdentifier", "NewInstance");
+    List<String> typeReturner = Arrays.asList("True", "False", "Less", "And", "Or", "Not", "IntegerLiteral", "DotLength", "ArrayAccess", "MethodCall", "RestIdentifier", "NewInstance");
  
     public SemanticAnalysisVisitor(MySymbolTable symbolTable) {
 
@@ -29,6 +29,7 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
         addVisit("Not", this::handleNot);
         addVisit("ifStatement", this::handleIfStatementWhileStatement);
         addVisit("whileStatement", this::handleIfStatementWhileStatement);
+        addVisit("ArrayAccess", this::handleArrayAccess);
 
         setDefaultVisit(this::defaultVisit);
 
@@ -210,7 +211,7 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
             {
                 if (!type.equals(getType(node.getChildren().get(i), scope)))
                 {
-                    System.out.println(node.get("name"));
+                    //System.out.println(node.get("name"));
                     System.out.println(getType(node.getChildren().get(i), scope)); // TODO: Report
                     return false;
                 }
@@ -225,6 +226,29 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
         return true;
     } 
 
+    public Boolean handleArrayAccess(JmmNode node, ArrayList<Report> reports) {
+        String scope = getScope(node);
+        if (!scopeIsCorrect(scope, node.getChildren().get(0)))
+        {
+            System.out.println("Bad scope");
+        }
+        if (!scopeIsCorrect(scope, node.getChildren().get(1)))
+        {
+            System.out.println("Bad scope");
+        }
+
+        if (!getType(node.getChildren().get(0), scope).equals("int[]"))
+        {
+            System.out.println("ArrayAccess numa variável que nao é um array"); // TODO: Report
+        }
+
+        if (!getTypeReturnedByNode(node.getChildren().get(1), scope).equals("int"))
+        {
+            System.out.println("ArrayAccess nao possui um int no acesso"); // TODO: Report
+        }
+
+        return defaultVisit(node, reports);
+    }
     public Boolean handleIfStatementWhileStatement(JmmNode node, ArrayList<Report> reports) {
         String scope = getScope(node);
         if (!scopeIsCorrect(scope, node.getChildren().get(0)))

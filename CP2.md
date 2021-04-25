@@ -16,12 +16,10 @@ Todas as verificações feitas na análise semantica pedidas devem reportar erro
 
 ### Type Verification
 
-isArray = true quando for um array
-
 - [ ] verificar se operações são efetuadas com o mesmo tipo (e.g. int + boolean tem de dar erro)
 - [ ] não é possível utilizar arrays diretamente para operações aritmeticas (e.g. array1 + array2)
-- [ ] verificar se um array access é de facto feito sobre um array (e.g. 1[10] não é permitido)
-- [ ] verificar se o indice do array access é um inteiro (e.g. a[true] não é permitido)
+- [x] verificar se um array access é de facto feito sobre um array (e.g. 1[10] não é permitido)
+- [x] verificar se o indice do array access é um inteiro (e.g. a[true] não é permitido)
 - [x] verificar se valor do assignee é igual ao do assigned (a_int = b_boolean não é permitido!)
 - [x] verificar se operação booleana (&&, < ou !) é efetuada só com booleanos
 - [x] verificar se conditional expressions (if e while) resulta num booleano
@@ -35,6 +33,7 @@ isArray = true quando for um array
 - [ ] verificar se o tipo dos parâmetros coincide com o tipo dos argumentos
 - [ ] verificar se retorno coincide
 
+- Tirar os prints todos / Completar os reports
 
 ## OLLIR Generation
 

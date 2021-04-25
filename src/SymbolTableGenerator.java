@@ -49,19 +49,24 @@ class SymbolTableGenerator extends PreorderJmmVisitor<List<Report>, Boolean> {
     }
 
     public Boolean handleVarDeclaration(JmmNode node, List<Report> reports){
+        
+        Boolean isArray = false;
+        if (node.getChildren().get(0).get("name").equals("int[]")) 
+            isArray = true;
+        
         if (node.getParent().getKind().equals("ClassDeclaration"))
         {
-            MySymbol symbol = new MySymbol(new Type(node.getChildren().get(0).get("name"), false), node.getKind(), node.get("name"), "GLOBAL");
+            MySymbol symbol = new MySymbol(new Type(node.getChildren().get(0).get("name"), isArray), node.getKind(), node.get("name"), "GLOBAL");
             symbolTable.add(node, symbol);
         }
         else if (node.getParent().getKind().equals("MainDeclaration"))
         {
-            MySymbol symbol = new MySymbol(new Type(node.getChildren().get(0).get("name"), false), node.getKind(), node.get("name"), node.getParent().getKind());
+            MySymbol symbol = new MySymbol(new Type(node.getChildren().get(0).get("name"), isArray), node.getKind(), node.get("name"), node.getParent().getKind());
             symbolTable.add(node, symbol);   
         }
         else
         {
-            MySymbol symbol = new MySymbol(new Type(node.getChildren().get(0).get("name"), false), node.getKind(), node.get("name"), node.getParent().get("name"));
+            MySymbol symbol = new MySymbol(new Type(node.getChildren().get(0).get("name"), isArray), node.getKind(), node.get("name"), node.getParent().get("name"));
             symbolTable.add(node, symbol);        
         }        
         return defaultVisit(node, reports);
@@ -82,7 +87,7 @@ class SymbolTableGenerator extends PreorderJmmVisitor<List<Report>, Boolean> {
     }
     
     public Boolean handleParameter(JmmNode node, List<Report> reports){
-        MySymbol symbol = new MySymbol(new Type(node.getChildren().get(0).get("name"), false), node.get("name"), node.get("name"), node.getParent().get("name"));
+        MySymbol symbol = new MySymbol(new Type(node.getChildren().get(0).get("name"), node.getChildren().get(0).get("name").equals("int[]")), node.get("name"), node.get("name"), node.getParent().get("name"));
 
         this.symbolTable.getTable().get(node.getParent()).addAttribute("Parameter", symbol);  
         symbolTable.add(node, symbol); 
