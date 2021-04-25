@@ -3,25 +3,28 @@ class Simple extends Cenas {
 
     public int add(int a, int b){
         int c;
+		Simple s;
+		String string;
+		int[] talas;
+		s = new Simple();
         c = a + this.constInstr();
+		// TODO: tratar de operation
+		//c = (!true && ((1<2)<this.add(1,2)+c+talas.length)) && !3;
+		
         return c;
     }
-
+	
     public static void main(String[] args){
         int a;
         int b;
         int c;
 		int f;
 		int[] array;
-        String s;
-        // TODO: a = s;
+        Simple s;
         b = 10;
         s = new Simple();
-        //c = s.add(a,b);
+        c = s.add(a,b);
         io.println(c);
-		a = this.add(1, 2) + ((1+2) - array.length) * b;
-		
-		//TODO: args.length
     }
 
     public int constInstr(){
