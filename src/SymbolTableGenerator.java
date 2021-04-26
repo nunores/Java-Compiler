@@ -35,7 +35,7 @@ class SymbolTableGenerator extends PreorderJmmVisitor<List<Report>, Boolean> {
 
     public Boolean handleImportDeclaration(JmmNode node, List<Report> reports){
         
-        MySymbol symbol = new MySymbol(new Type(node.getKind(), false), node.getKind(), node.get("qualifiedName"), "GLOBAL");
+        MySymbol symbol = new MySymbol(new Type(node.getKind(), false), node.getKind(), node.get("name"), "GLOBAL");
         symbolTable.add(node, symbol);        
         
         return defaultVisit(node, reports);

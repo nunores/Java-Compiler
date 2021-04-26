@@ -77,10 +77,6 @@ public class Main implements JmmParser {
 
 		JmmParserResult parserResult = compiler.parse(filename);
 
-		//MainAnalysis analysis = new MainAnalysis();
-
-        //analysis.semanticAnalysis(parserResult);
-
 		JmmSemanticsResult semanticsResult = compiler.semanticAnalysis(parserResult); 	// CP2: Symbol table generation and semantic analysis
 
 		//OllirResult ollirResult = compiler.toOllir(semanticsResult); 					// CP2: Convert AST to OLLIR format

@@ -5,6 +5,7 @@ import pt.up.fe.comp.jmm.report.ReportType;
 import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.comp.jmm.JmmNode;
 import java.util.Map;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -30,9 +31,98 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
         addVisit("ifStatement", this::handleIfStatementWhileStatement);
         addVisit("whileStatement", this::handleIfStatementWhileStatement);
         addVisit("ArrayAccess", this::handleArrayAccess);
+        addVisit("ReturnExpression", this::handleReturnExpression);
+        addVisit("MethodCall", this::handleMethodCall);
 
         setDefaultVisit(this::defaultVisit);
 
+    }
+
+    public Boolean varIsThisOrClass(JmmNode node, String scope)
+    {
+        if (node.getKind().equals("This"))
+        {
+            return true;
+        }
+        else
+        {
+            for (Map.Entry<JmmNode, MySymbol> entry : symbolTable.getTable().entrySet()) {
+                JmmNode tempNode = entry.getKey();
+                MySymbol symbol = entry.getValue();
+
+                if (tempNode.getKind().equals("ClassDeclaration") && symbol.getName().equals(getType(node, scope))){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public Boolean extendsExists()
+    {
+        for (Map.Entry<JmmNode, MySymbol> entry : symbolTable.getTable().entrySet()) {
+            JmmNode tempNode = entry.getKey();
+            MySymbol symbol = entry.getValue();
+
+            ArrayList<MySymbol> tempArray = new ArrayList<MySymbol>();
+
+            tempArray = symbol.getAttributes().get("Extends");
+
+            if (tempNode.getKind().equals("ClassDeclaration") && tempArray != null){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Boolean varIsObject(JmmNode node, String scope)
+    {
+        if (getType(node, scope).equals("int") || getType(node, scope).equals("int[]") || getType(node, scope).equals("boolean"))
+        {
+            return false;
+        }
+        else if (typeInImports(node.get("name")))
+        {
+            return true;
+        }
+        else if (typeInImports(getType(node, scope)))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public Boolean typeInImports(String type){
+        for (Map.Entry<JmmNode, MySymbol> entry : symbolTable.getTable().entrySet()) {
+            JmmNode tempNode = entry.getKey();
+            MySymbol symbol = entry.getValue();
+
+            if (tempNode.getKind().equals("ImportDeclaration") && symbol.getName().equals(type)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Boolean methodTypeUnknown(JmmNode node, String scope)
+    {
+        if (varIsThisOrClass(node.getChildren().get(0), scope))
+        {
+            if (!extendsExists())
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+        else if (varIsObject(node.getChildren().get(0), scope))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public String getTypeReturnedByNode(JmmNode node, String scope)
@@ -124,6 +214,35 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
         }   
     }
 
+    public String getMethodDeclarationType(JmmNode node)
+    {
+        for (Map.Entry<JmmNode, MySymbol> entry : symbolTable.getTable().entrySet()) {
+            JmmNode tempNode = entry.getKey();
+            MySymbol symbol = entry.getValue();
+
+            if (tempNode.getKind().equals("MethodDeclaration") && symbol.getName().equals(node.get("name"))){
+                return symbol.getType().getName();
+            }
+        }
+
+        return null;
+    }
+
+    
+    public Integer getMethodNumParameters(JmmNode node)
+    {
+        for (Map.Entry<JmmNode, MySymbol> entry : symbolTable.getTable().entrySet()) {
+            JmmNode tempNode = entry.getKey();
+            MySymbol symbol = entry.getValue();
+
+            if (tempNode.getKind().equals("MethodDeclaration") && symbol.getName().equals(node.get("name"))){
+                return symbol.getAttributes().get("Parameter").size();
+            }
+        }
+
+        return -1;
+    }
+
     // Returns the type of a variable/method
     public String getType(JmmNode node, String scope){
         String tempType = new String();
@@ -173,7 +292,7 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
             }
             else if (this.varArray.contains(node.getKind()))
             {
-                if (!type.equals(getType(node, scope)))
+                if (!type.equals(getType(node, scope)) && !methodTypeUnknown(node, scope))
                 {
                     System.out.println(getType(node, scope)); // TODO: Report
                     return false;
@@ -209,7 +328,7 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
             }
             else if (this.varArray.contains(node.getChildren().get(i).getKind()))
             {
-                if (!type.equals(getType(node.getChildren().get(i), scope)))
+                if (!type.equals(getType(node.getChildren().get(i), scope)) && !methodTypeUnknown(node.getChildren().get(i), scope))
                 {
                     //System.out.println(node.get("name"));
                     System.out.println(getType(node.getChildren().get(i), scope)); // TODO: Report
@@ -225,6 +344,33 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
         }
         return true;
     } 
+
+    public Boolean handleMethodCall(JmmNode node, ArrayList<Report> reports) {
+        
+/*         Integer numChildren = node.getChildren().get(1).getNumChildren();
+
+        System.out.println(getMethodNumParameters(node));
+        ////////////////////////////////////////////////////////////
+        if(numChildren != getMethodNumParameters(node))
+            System.out.println("Numero de parâmetros não bate certo"); */
+
+        return defaultVisit(node, reports);
+    }
+
+    public Boolean handleReturnExpression(JmmNode node, ArrayList<Report> reports) {
+        String scope = getScope(node);
+        if (!scopeIsCorrect(scope, node.getChildren().get(0)))
+        {
+            System.out.println("Bad scope");
+        }
+
+        if (!getMethodDeclarationType(node.getParent()).equals(getType(node.getChildren().get(0), scope)))
+        {
+            System.out.println("Quilhou-se no return");
+        }
+
+        return defaultVisit(node, reports);
+    }
 
     public Boolean handleArrayAccess(JmmNode node, ArrayList<Report> reports) {
         String scope = getScope(node);

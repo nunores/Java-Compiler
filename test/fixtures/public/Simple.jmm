@@ -1,18 +1,16 @@
-import io;
-class Simple extends Cenas {
+import abc;
+class Simple{
 
     public int add(int[] a, int b){
         int c;
 		Simple s;
-		String string;
 		int[] talas;
 		s = new Simple();
-        //c = a + this.constInstr();
-		// TODO: tratar de operation
-		//c = (!true && ((1<2)<this.add(1,2)+c+talas.length)) && !3;
+		//s = s.qualquerCoisa();
+		//io.qualquerCoisa();
 		
-		c = 1[1+2]+ 1;
-		
+		c = s.qualquerCoisa() + 1;
+				
         return c;
     }
 	

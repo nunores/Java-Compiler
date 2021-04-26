@@ -16,6 +16,8 @@ Todas as verificações feitas na análise semantica pedidas devem reportar erro
 
 ### Type Verification
 
+- [ ] meter init=true quando nos assignments
+
 - [ ] verificar se operações são efetuadas com o mesmo tipo (e.g. int + boolean tem de dar erro)
 - [ ] não é possível utilizar arrays diretamente para operações aritmeticas (e.g. array1 + array2)
 - [x] verificar se um array access é de facto feito sobre um array (e.g. 1[10] não é permitido)
@@ -31,14 +33,15 @@ Todas as verificações feitas na análise semantica pedidas devem reportar erro
 - [ ] caso o método não seja da classe declarada, isto é uma classe importada, assumir como existente e assumir tipos esperados. (e.g. a = Foo.b(), se a é um inteiro, e Foo é uma classe importada, assumir que o método b é estático (pois estamos a aceder a uma método diretamente da classe), que não tem argumentos e que retorna um inteiro)
 - [ ] verificar se o número de argumentos na invocação é igual ao número de parâmetros da declaração
 - [ ] verificar se o tipo dos parâmetros coincide com o tipo dos argumentos
-- [ ] verificar se retorno coincide
+- [x] verificar se retorno coincide
 
 - Tirar os prints todos / Completar os reports
 
 ## OLLIR Generation
 
-- [ ] Conversão da AST completa para OLLIR
-- [ ] Ver documento para mais instruções: link TBD
+- [ ] Conversão da AST completa para OLLIR em expressões e tudo o necessário para a declaração da classe e dos métodos
+- [ ] Ver documento para mais instruções: https://teams.microsoft.com/l/file/A5DF3346-0BA6-4AAB-9641-E4C36D43C3CD?tenantId=b7821bc8-67cc-447b-b579-82f7854174fc&fileType=pdf&objectUrl=https%3A%2F%2Fuporto.sharepoint.com%2Fsites%2FMIEIC-Compilers-2021%2FDocumentos%20Partilhados%2FProject%20-%20General%20topics%2FOLLIR%20and%20OLLIRTool.pdf&baseUrl=https%3A%2F%2Fuporto.sharepoint.com%2Fsites%2FMIEIC-Compilers-2021&serviceName=teams&threadId=19:2dbfad42ccee45df88e17f84760fd86b@thread.tacv2&groupId=1d256bf6-e8f7-46fa-89e0-c21504d6f8e0
+
 
 ## Jasmin Generation
 
