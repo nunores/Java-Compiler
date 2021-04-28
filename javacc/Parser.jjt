@@ -2,6 +2,14 @@ options {
     LOOKAHEAD = 1;
 }
 
+/*
+
+void jjtreeOpenNodeScope(Node n)
+void jjtreeCloseNodeScope(Node n)
+node.put("line",token.getLine())
+
+*/
+
 PARSER_BEGIN(Parser)
 
 import java.util.ArrayList;
@@ -118,7 +126,7 @@ SimpleNode Program(): {}
         (ImportDeclaration())* ClassDeclaration() <EOF>
     }
     catch (ParseException e) {
-        Report r = new Report(ReportType.ERROR, Stage.SYNTATIC, token.beginLine, e.getMessage());
+        Report r = new Report(ReportType.ERROR, Stage.SYNTATIC, token.beginLine, token.beginColumn, e.getMessage());
         reports.add(r);
         System.out.println("Program Exception");
     }

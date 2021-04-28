@@ -1,25 +1,18 @@
-import abc;
-class Simple{
+import io;
+class Simple {
 
-    public int add(int[] a, int b){
+    public int add(int a, int b){
         int c;
-		Simple s;
-		int[] talas;
-		s = new Simple();
-		//s = s.qualquerCoisa();
-		//io.qualquerCoisa();
-		
-		c = s.qualquerCoisa() + 1;
-				
+        c = a + this.constInstr();
         return c;
     }
-	
+
     public static void main(String[] args){
         int a;
         int b;
         int c;
-		int f;
         Simple s;
+        a = 20;
         b = 10;
         s = new Simple();
         c = s.add(a,b);
@@ -37,7 +30,6 @@ class Simple{
         c = 1000;
         c = 100474650;
 		c = 10;
-		c = this.add(2, 3);
         return c;
     }
 
