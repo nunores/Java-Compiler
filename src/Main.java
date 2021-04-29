@@ -58,7 +58,7 @@ public class Main implements JmmParser {
 		AnalysisStage as = new AnalysisStage();
 		JmmSemanticsResult semanticsResult = as.semanticAnalysis(parserResult); 	// CP2: Symbol table generation and semantic analysis
 
-		OptimizationStage os = new OptimizationStage();
+		OptimizationStage os = new OptimizationStage(as.getSymbolTable());
 		OllirResult ollirResult = os.toOllir(semanticsResult); 					// CP2: Convert AST to OLLIR format
 		
 		BackendStage bs = new BackendStage();

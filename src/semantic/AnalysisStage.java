@@ -18,15 +18,19 @@ import pt.up.fe.comp.jmm.report.Stage;
 
 public class AnalysisStage implements JmmAnalysis {
 
+	private MySymbolTable table = new MySymbolTable();
+
     @Override
     public JmmSemanticsResult semanticAnalysis(JmmParserResult parserResult) {
 
         if (parserResult.getReports().isEmpty() && parserResult.getRootNode() != null) {
 			JmmNode node = parserResult.getRootNode().sanitize();
 			
-			var stGenerator = new SymbolTableGenerator(); // TO DO
+			var stGenerator = new SymbolTableGenerator();
 			Boolean temp = stGenerator.visit(node);
 			MySymbolTable st = stGenerator.getSymbolTable();
+
+			this.table = stGenerator.getSymbolTable(); 
 
 			st.print();
 
@@ -42,4 +46,7 @@ public class AnalysisStage implements JmmAnalysis {
 
     }
 
+	public MySymbolTable getSymbolTable(){
+		return this.table;
+	}
 }
