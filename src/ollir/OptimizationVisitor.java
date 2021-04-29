@@ -25,9 +25,10 @@ class OptimizationVisitor extends PreorderJmmVisitor<List<Report>, String> {
         this.symbolTable = symbolTable;
 
         addVisit("Program", this::handleProgram);
-        /*addVisit("MethodDeclaration", this::handleMethodDeclaration);
+        addVisit("ClassDeclaration", this::handleClassDeclaration);
+        addVisit("MethodDeclaration", this::handleMethodDeclaration);
         addVisit("MainDeclaration", this::handleMainDeclaration);
-        addVisit("Assignment", this::handleAssignment);
+        /*addVisit("Assignment", this::handleAssignment);
         addVisit("Less", this::handleLess);
         addVisit("And", this::handleAnd);
         addVisit("Not", this::handleNot);
@@ -42,8 +43,25 @@ class OptimizationVisitor extends PreorderJmmVisitor<List<Report>, String> {
 
     public String handleProgram(JmmNode node, List<Report> reports) {
         
-        ollirCode += "PROGRAM";
-        return defaultVisit(node, reports);
+        return "PROGRAM\n" + defaultVisit(node, reports);
+    }
+
+    public String handleClassDeclaration(JmmNode node, List<Report> reports) {
+        /*String ret = node.getKind() + "{\n";
+        ret += "\t.contruct " + node.getKind() + ".V {\n";
+        ret += "\t\tinvokespecial(this, \"<init>\").V;\n";
+        ret += "\t}\n";
+        return ret + defaultVisit(node, reports) + "}";*/
+        return "ClassDeclaration\n" + defaultVisit(node, reports);
+    }
+
+    public String handleMethodDeclaration(JmmNode node, List<Report> reports) {
+        return "MethodDeclaration\n" + defaultVisit(node, reports);
+    }
+
+    public String handleMainDeclaration(JmmNode node, List<Report> reports) {
+        
+        return "MainDeclaration\n" + defaultVisit(node, reports);
     }
 
     private String defaultVisit(JmmNode node, List<Report> reports) {
