@@ -34,15 +34,14 @@ public class OptimizationStage implements JmmOptimization {
 
     @Override
     public OllirResult toOllir(JmmSemanticsResult semanticsResult) {
-        //ArrayList<Report> reports = new ArrayList<Report>();
         JmmNode node = semanticsResult.getRootNode();
 
-        // Convert the AST to a String containing the equivalent OLLIR code
-        String ollirCode = ""; // Convert node ...
-
-        // More reports from this stage
         List<Report> reports = new ArrayList<>();
+        OptimizationVisitor ov = new OptimizationVisitor(reports, semanticsResult.getSymbolTable());
+        String ollirCode = ov.visit(node);
 
+
+        System.out.println("OLLIR CODE:\n" + ollirCode);
         return new OllirResult(semanticsResult, ollirCode, reports);
     }
 

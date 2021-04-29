@@ -9,7 +9,7 @@ import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.MainAnalysis;
 import pt.up.fe.comp.jmm.analysis.JmmAnalysis;
-
+import pt.up.fe.comp.jmm.ollir.*;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -59,7 +59,7 @@ public class Main implements JmmParser {
 		JmmSemanticsResult semanticsResult = as.semanticAnalysis(parserResult); 	// CP2: Symbol table generation and semantic analysis
 
 		OptimizationStage os = new OptimizationStage();
-		//OllirResult ollirResult = compiler.toOllir(semanticsResult); 					// CP2: Convert AST to OLLIR format
+		OllirResult ollirResult = compiler.toOllir(semanticsResult); 					// CP2: Convert AST to OLLIR format
 		
 		BackendStage bs = new BackendStage();
 		//JasminResult jasminResult = compiler.toJasmin(ollirResult, filename);			// CP2: Convert OLLIR to Jasmin Bytecode (only for code structures defined in the project)

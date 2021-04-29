@@ -24,8 +24,6 @@ class MySymbolTable implements SymbolTable {
     public Map<JmmNode, MySymbol> getTable(){
         return this.table;
     }
-    
-    // TODO: Completar isto
 
     @Override
     public List<String> getImports() {
