@@ -8,6 +8,8 @@ import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
 import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.MainAnalysis;
+import pt.up.fe.comp.jmm.analysis.JmmAnalysis;
+
 
 import java.util.List;
 import java.util.ArrayList;
@@ -46,41 +48,22 @@ public class Main implements JmmParser {
 		}
 	}
 
-	public JmmSemanticsResult semanticAnalysis(JmmParserResult parserResult) {
-		if (parserResult.getReports().isEmpty() && parserResult.getRootNode() != null) {
-			JmmNode node = parserResult.getRootNode().sanitize();
-			
-			var stGenerator = new SymbolTableGenerator(); // TO DO
-			Boolean temp = stGenerator.visit(node);
-			MySymbolTable st = stGenerator.getSymbolTable();
-
-			st.print();
-
-			ArrayList<Report> reports = new ArrayList<Report>();
-			var semanticAnalysisVisitor = new SemanticAnalysisVisitor(st);
-			semanticAnalysisVisitor.visit(node, reports);
-
-			System.out.println(reports);
-			
-			return new JmmSemanticsResult(node, st, reports);
-		}
-		return null;
-	}
-
     public static void main(String[] args) {
-		if (args.length != 1) {
-			return;
-		}
+		if (args.length != 1) { return; }
 
 		Main compiler = new Main();
 		String filename = compiler.readFile(args[0]);
-
 		JmmParserResult parserResult = compiler.parse(filename);
 
-		JmmSemanticsResult semanticsResult = compiler.semanticAnalysis(parserResult); 	// CP2: Symbol table generation and semantic analysis
+		AnalysisStage as = new AnalysisStage();
+		JmmSemanticsResult semanticsResult = as.semanticAnalysis(parserResult); 	// CP2: Symbol table generation and semantic analysis
 
+		OptimizationStage os = new OptimizationStage();
 		//OllirResult ollirResult = compiler.toOllir(semanticsResult); 					// CP2: Convert AST to OLLIR format
+		
+		BackendStage bs = new BackendStage();
 		//JasminResult jasminResult = compiler.toJasmin(ollirResult, filename);			// CP2: Convert OLLIR to Jasmin Bytecode (only for code structures defined in the project)
+		
 		//compiler.compile(jasminResult, filename);										// CP2: this should generate the .class File
 	}
 }
