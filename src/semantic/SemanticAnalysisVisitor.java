@@ -33,6 +33,9 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
         addVisit("ArrayAccess", this::handleArrayAccess);
         addVisit("ReturnExpression", this::handleReturnExpression);
         addVisit("MethodCall", this::handleMethodCall);
+        addVisit("Operation", this::handleOperation);
+        addVisit("NewArray", this::handleNewArray);
+        addVisit("DotLength", this::handleDotLength);
 
         setDefaultVisit(this::defaultVisit);
 
@@ -194,7 +197,7 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
         return true;
     }
 
-    // Checks if the scope in an assignment is the current or global
+    // Checks if the scope in an assignment is the current or global and var is initialized
     public Boolean inScope(JmmNode node, String scope) {
         if (node.getKind().equals("RestIdentifier") || node.getKind().equals("Var"))
         {
@@ -203,6 +206,14 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
 
                 if (symbol.getName().equals(node.get("name"))
                         && (symbol.getScope().equals("GLOBAL") || symbol.getScope().equals(scope))) {
+                    if (node.getKind().equals("RestIdentifier") && !symbol.getInit() && !node.getParent().getKind().equals("ArrayAccess") && symbol.getSuperName().equals("VarDeclaration"))
+                    {
+                        System.out.println("Variavel nao inicializada");
+                    }
+                    if (node.getKind().equals("Var"))
+                    {
+                        symbol.setInit(true);
+                    }
                     return true;
                 }
             }
@@ -438,12 +449,14 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
         {
             if (methodNumPar(node.get("name")) != numChildren && methodNumPar(node.get("name")) != -1)
             {
-                System.out.println("O numero de argumentos de uma funçao esta mal");
+                if (!methodTypeUnknown(node, scope))
+                    System.out.println("O numero de argumentos de uma funçao esta mal");
             }
         }
         else if (methodExists(node.get("name")) && (methodNumPar(node.get("name")) != numChildren) )
         {
-            System.out.println("O numero de argumentos de uma funçao esta mal");
+            if (!methodTypeUnknown(node, scope))
+                System.out.println("O numero de argumentos de uma funçao esta mal");
         }
         else if (!methodExists(node.get("name")))
         {
@@ -460,6 +473,28 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
         return defaultVisit(node, reports);
     }
 
+    public Boolean handleDotLength(JmmNode node, ArrayList<Report> reports) {
+        String scope = getScope(node);
+
+        if(!getTypeReturnedByNode(node.getChildren().get(0), scope).equals("int[]"))
+        {
+            System.out.println("DotLength usado num nao array");
+        }
+
+        return defaultVisit(node, reports);
+    }
+
+    public Boolean handleNewArray(JmmNode node, ArrayList<Report> reports) {
+        String scope = getScope(node);
+
+        if (!getTypeReturnedByNode(node, scope).equals("int"))
+        {
+            System.out.println("NewArray a nao levar um int no access");
+        }
+        
+        return defaultVisit(node, reports);
+    }
+
     public Boolean handleReturnExpression(JmmNode node, ArrayList<Report> reports) {
         String scope = getScope(node);
         if (!scopeIsCorrect(scope, node.getChildren().get(0)))
@@ -467,7 +502,7 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
             System.out.println("Bad scope");
         }
 
-        if (!getMethodDeclarationType(node.getParent()).equals(getType(node.getChildren().get(0), scope)))
+        if (!getMethodDeclarationType(node.getParent()).equals(getTypeReturnedByNode(node, scope)))
         {
             System.out.println("Quilhou-se no return");
         }
@@ -581,6 +616,15 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
         return scope;
     }
 
+    public Boolean handleOperation(JmmNode node, ArrayList<Report> reports) {
+        String scope = getScope(node);
+        if (getTypeReturnedByNode(node.getChildren().get(0), scope).equals("boolean") || getTypeReturnedByNode(node.getChildren().get(1), scope).equals("boolean"))        
+        {
+            System.out.println("Operação invalida");
+        }
+       
+       return defaultVisit(node, reports);
+    }
 
     public Boolean handleAssignment(JmmNode node, ArrayList<Report> reports) {
         String scope = getScope(node);
@@ -594,14 +638,16 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
             System.out.println("Errooooooouuuuuuuu");
 
         String type = getType(node.getChildren().get(0), scope);
-        if (type.equals("int[]"))
+
+        // TODO: Trolamos aqui, temos de ver
+        if (type.equals("int[]") && node.getChildren().get(1).getKind().equals("NewArray"))
         {
-            type = "int";
+            int a = 1;
+            System.out.println(type);
         }
-
-        if (!checkTypes(node.getChildren().get(1), type, scope)) //TODO: tratar report disto
-            System.out.println("Weleleleleelelelel");
-
+        else if (!getTypeReturnedByNode(node.getChildren().get(1), scope).equals(type)){ //TODO: tratar report disto
+            System.out.println("Weleleleleelelelel " + type);
+        }   
         return defaultVisit(node, reports);
     }
 

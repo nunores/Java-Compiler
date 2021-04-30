@@ -46,6 +46,14 @@ public class MySymbol extends Symbol {
         return this.scope;
     }
 
+    public void setInit(boolean init) {
+        this.init = init;
+    }
+
+    public String getSuperName() {
+        return super.getName();
+    }
+
     @Override
     public String toString() {
         String temp = "";
@@ -59,7 +67,7 @@ public class MySymbol extends Symbol {
                 temp += symbols.get(i).getType().getName() + " " + symbols.get(i).getName() + "; ";
             }
         }
-        return "Symbol [type=" + super.getType() + ", name=" + super.getName() + "]" + " Name: " + this.name + " Scope: " + this.scope + " " + temp;
+        return "Symbol [type=" + super.getType() + ", name=" + super.getName() + "]" + " Name: " + this.name + " Scope: " + this.scope + " " + temp + " Init: " + this.init;
     }
 
 }

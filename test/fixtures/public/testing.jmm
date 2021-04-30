@@ -16,7 +16,7 @@ class Feup extends Mieic {
         b = 10;
         s = new Simple();
         c = s.add(a,b);
-        io.println(c);
+        ghi.println(c);
     }
 
     public int constInstr(){

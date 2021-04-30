@@ -21,7 +21,7 @@ class Life {
         while (true) {
             l.printField();
             l.update();
-            unused = io.read();
+			unused = io.read();
         }
 
     }

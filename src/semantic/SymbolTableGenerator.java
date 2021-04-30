@@ -1,4 +1,5 @@
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import pt.up.fe.comp.jmm.JmmNode;
@@ -28,9 +29,40 @@ class SymbolTableGenerator extends PreorderJmmVisitor<List<Report>, Boolean> {
         addVisit("MainDeclaration", this::handleMainDeclaration);
         addVisit("Parameter", this::handleParameter);
         addVisit("Extends", this::handleExtends);
+        addVisit("Assignment", this::handleAssignment);
 
         setDefaultVisit(this::defaultVisit);
 
+    }
+
+    public String getScope(JmmNode node){
+        String scope = new String();
+        if (node.getAncestor("MethodDeclaration").isPresent()) {
+            scope = node.getAncestor("MethodDeclaration").get().get("name");
+        } else if (node.getAncestor("MainDeclaration").isPresent()) {
+            scope = "MainDeclaration";
+        } else if (node.getAncestor("ClassDeclaration").isPresent()) {
+            scope = "GLOBAL";
+        }
+        return scope;
+    }
+
+    public Boolean handleAssignment(JmmNode node, List<Report> reports){
+        String scope = getScope(node);
+        String name = new String();
+        if (node.getChildren().get(0).getKind().equals("ArrayAccess"))
+        {
+            name = node.getChildren().get(0).getChildren().get(0).get("name");
+        }
+        else{
+            name = node.getChildren().get(0).get("name");
+        }
+        for (Map.Entry<JmmNode, MySymbol> entry : symbolTable.getTable().entrySet()) {
+            JmmNode tempNode = entry.getKey();
+            MySymbol symbol = entry.getValue();
+        }
+        
+        return defaultVisit(node, reports);
     }
 
     public Boolean handleImportDeclaration(JmmNode node, List<Report> reports){
@@ -73,7 +105,11 @@ class SymbolTableGenerator extends PreorderJmmVisitor<List<Report>, Boolean> {
     }
 
     public Boolean handleMethodDeclaration(JmmNode node, List<Report> reports){
-        MySymbol symbol = new MySymbol(new Type(node.getChildren().get(0).get("name"), false), node.getKind(), node.get("name"), "GLOBAL");
+        Boolean isArray = false;
+        if (node.getChildren().get(0).get("name").equals("int[]")) 
+            isArray = true;
+        
+        MySymbol symbol = new MySymbol(new Type(node.getChildren().get(0).get("name"), isArray), node.getKind(), node.get("name"), "GLOBAL");
         symbolTable.add(node, symbol);      
         
         return defaultVisit(node, reports);
@@ -88,7 +124,7 @@ class SymbolTableGenerator extends PreorderJmmVisitor<List<Report>, Boolean> {
     
     public Boolean handleParameter(JmmNode node, List<Report> reports){
         MySymbol symbol = new MySymbol(new Type(node.getChildren().get(0).get("name"), node.getChildren().get(0).get("name").equals("int[]")), node.get("name"), node.get("name"), node.getParent().get("name"));
-
+        symbol.setInit(true);
         this.symbolTable.getTable().get(node.getParent()).addAttribute("Parameter", symbol);  
         symbolTable.add(node, symbol); 
         
