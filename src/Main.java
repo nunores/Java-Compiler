@@ -1,6 +1,7 @@
 import pt.up.fe.comp.jmm.JmmParser;
 import pt.up.fe.comp.jmm.JmmParserResult;
 import pt.up.fe.comp.jmm.analysis.JmmAnalysis;
+import pt.up.fe.comp.jmm.jasmin.JasminResult;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.ReportType;
 import pt.up.fe.comp.jmm.report.Stage;
@@ -10,6 +11,7 @@ import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.MainAnalysis;
 import pt.up.fe.comp.jmm.analysis.JmmAnalysis;
 import pt.up.fe.comp.jmm.ollir.*;
+
 
 import java.util.List;
 import java.util.ArrayList;
@@ -53,16 +55,18 @@ public class Main implements JmmParser {
 
 		Main compiler = new Main();
 		String filename = compiler.readFile(args[0]);
-		JmmParserResult parserResult = compiler.parse(filename);
+		//JmmParserResult parserResult = compiler.parse(filename);
 
-		AnalysisStage as = new AnalysisStage();
-		JmmSemanticsResult semanticsResult = as.semanticAnalysis(parserResult); 	// CP2: Symbol table generation and semantic analysis
+		//AnalysisStage as = new AnalysisStage();
+		//JmmSemanticsResult semanticsResult = as.semanticAnalysis(parserResult); 	// CP2: Symbol table generation and semantic analysis
 
 		//OptimizationStage os = new OptimizationStage(as.getSymbolTable());
 		//OllirResult ollirResult = os.toOllir(semanticsResult); 					// CP2: Convert AST to OLLIR format
-		
-		//BackendStage bs = new BackendStage();
-		//JasminResult jasminResult = compiler.toJasmin(ollirResult, filename);			// CP2: Convert OLLIR to Jasmin Bytecode (only for code structures defined in the project)
+ 		
+		OllirResult or = new OllirResult(OllirUtils.parse(filename), null, new ArrayList<Report>());
+
+		BackendStage bs = new BackendStage();
+		JasminResult jasminResult = bs.toJasmin(or);	// CP2: Convert OLLIR to Jasmin Bytecode (only for code structures defined in the project)
 		
 		//compiler.compile(jasminResult, filename);										// CP2: this should generate the .class File
 	}
