@@ -34,7 +34,6 @@ Todas as verificações feitas na análise semantica pedidas devem reportar erro
 - [x] verificar se o tipo dos parâmetros coincide com o tipo dos argumentos
 - [x] verificar se retorno coincide
 
-- [ ] Tirar os prints todos / Completar os reports
 - [ ] Fazer testes
 
 ## OLLIR Generation

@@ -1,14 +1,7 @@
 options {
     LOOKAHEAD = 1;
+    NODE_SCOPE_HOOK=true;
 }
-
-/*
-
-void jjtreeOpenNodeScope(Node n)
-void jjtreeCloseNodeScope(Node n)
-node.put("line",token.getLine())
-
-*/
 
 PARSER_BEGIN(Parser)
 
@@ -21,7 +14,17 @@ public class Parser {
     private ArrayList<Report> reports = new ArrayList<Report>();
     public ArrayList<Report> getReports() { return reports; }
 
+
     public static void main(String[] args) {}
+    
+    
+    void jjtreeOpenNodeScope(Node node){
+        ( (SimpleNode) node).put("line", Integer.toString(getToken(1).beginLine));
+        ( (SimpleNode) node).put("column", Integer.toString(getToken(1).beginColumn));
+    }
+
+    void jjtreeCloseNodeScope(Node node){}
+
 }
 
 PARSER_END(Parser)

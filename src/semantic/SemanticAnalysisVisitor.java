@@ -19,6 +19,7 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
     List<String> varArray = Arrays.asList("MethodCall", "RestIdentifier");
     List<String> newInstanceArray = Arrays.asList("NewInstance");
     List<String> typeReturner = Arrays.asList("True", "False", "Less", "And", "Or", "Not", "IntegerLiteral", "DotLength", "ArrayAccess", "MethodCall", "RestIdentifier", "NewInstance");
+    List<String> types = Arrays.asList("int", "boolean", "int[]");
  
     public SemanticAnalysisVisitor(MySymbolTable symbolTable) {
 
@@ -36,6 +37,7 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
         addVisit("Operation", this::handleOperation);
         addVisit("NewArray", this::handleNewArray);
         addVisit("DotLength", this::handleDotLength);
+        addVisit("VarDeclaration", this::handleVarDeclaration);
 
         setDefaultVisit(this::defaultVisit);
 
@@ -206,10 +208,10 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
 
                 if (symbol.getName().equals(node.get("name"))
                         && (symbol.getScope().equals("GLOBAL") || symbol.getScope().equals(scope))) {
-                    if (node.getKind().equals("RestIdentifier") && !symbol.getInit() && !node.getParent().getKind().equals("ArrayAccess") && symbol.getSuperName().equals("VarDeclaration"))
-                    {
-                        System.out.println("Variavel nao inicializada");
-                    }
+                    // if (node.getKind().equals("RestIdentifier") && !symbol.getInit() && !node.getParent().getKind().equals("ArrayAccess") && symbol.getSuperName().equals("VarDeclaration"))
+                    // {
+                    //     System.out.println("Variavel nao inicializada");
+                    // }
                     if (node.getKind().equals("Var"))
                     {
                         symbol.setInit(true);
@@ -306,21 +308,19 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
             {
                 if (!type.equals("int"))
                 {
-                    System.out.println("1");
                     return false;
                 }
+
             }
             else if (this.booleanArray.contains(node.getKind()))
             {
                 if(!type.equals("boolean")){                    
-                    System.out.println("2");
                     return false;
                 }
             }
             else if(this.newInstanceArray.contains(node.getKind())){
                 if(!type.equals(node.get("name")))
                 {
-                    System.out.println("3");
                     return false;
                 }
             }
@@ -328,7 +328,10 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
             {
                 if (!type.equals(getType(node, scope)) && node.getKind().equals("MethodCall") && !methodTypeUnknown(node, scope))
                 {
-                    System.out.println("Not Defined"); // TODO: Report
+                    return false;
+                }
+                else if(!type.equals(getType(node, scope)) && node.getKind().equals("RestIdentifier"))
+                {
                     return false;
                 }
             }
@@ -339,7 +342,6 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
             if (this.intArray.contains(node.getChildren().get(i).getKind()))
             {
                 if(!type.equals("int")){
-                    System.out.println("1");
                     return false;             
                 }
             }
@@ -347,7 +349,6 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
             {
                 if (!type.equals("boolean"))
                 {
-                    System.out.println("2");
                     return false;
                 }
             }
@@ -355,7 +356,6 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
             {
                 if (!type.equals(node.get("name")))
                 {
-                    System.out.println("3");
                     return false;
                 }
             }
@@ -363,13 +363,15 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
             {
                 if (!type.equals(getType(node.getChildren().get(i), scope)) && node.getChildren().get(i).getKind().equals("MethodCall") && !methodTypeUnknown(node.getChildren().get(i), scope))
                 {
-                    System.out.println("Not defined"); // TODO: Report
+                    return false;
+                }
+                else if(!type.equals(getType(node.getChildren().get(i), scope)) && node.getChildren().get(i).getKind().equals("RestIdentifier"))
+                {
                     return false;
                 }
             }
             else
             {
-                System.out.println("4");
                 if (!checkTypes(node.getChildren().get(i), type, scope))
                     return false;
             }
@@ -441,6 +443,15 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
         return false;
     }
 
+    public Boolean handleVarDeclaration(JmmNode node, ArrayList<Report> reports) {
+
+        if (!typeInImports(node.getChildren().get(0).get("name")) && !types.contains(node.getChildren().get(0).get("name")) && !node.getChildren().get(0).get("name").equals(node.getAncestor("ClassDeclaration").get().getChildren().get(0).get("name")))
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                    "Unknown type '" + node.getChildren().get(0).get("name") + "'."));
+        
+        return defaultVisit(node, reports);
+    }
+
     public Boolean handleMethodCall(JmmNode node, ArrayList<Report> reports) {
         String scope = getScope(node);
         Integer numChildren = node.getChildren().get(1).getNumChildren();
@@ -450,23 +461,31 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
             if (methodNumPar(node.get("name")) != numChildren && methodNumPar(node.get("name")) != -1)
             {
                 if (!methodTypeUnknown(node, scope))
-                    System.out.println("O numero de argumentos de uma funçao esta mal");
+                {
+                    reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                    "The number of parameters in function " + node.get("name") + " is wrong."));
+                }
             }
         }
         else if (methodExists(node.get("name")) && (methodNumPar(node.get("name")) != numChildren) )
         {
             if (!methodTypeUnknown(node, scope))
-                System.out.println("O numero de argumentos de uma funçao esta mal");
+            {
+                reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                    "The number of parameters in function " + node.get("name") + " is wrong."));
+            }
         }
         else if (!methodExists(node.get("name")))
         {
-            System.out.println("Method does not exist");
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                    "The method " + node.get("name") + " does not exist."));
         }
         else
         {
             if (!methodCheckParTypes(node.get("name"), node.getChildren().get(1).getChildren(), scope))
             {
-                System.out.println("Method does not have correct parameters types");
+                reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                    "The method " + node.get("name") + " does not have the correct parameter types."));
             }
         }
         
@@ -478,7 +497,8 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
 
         if(!getTypeReturnedByNode(node.getChildren().get(0), scope).equals("int[]"))
         {
-            System.out.println("DotLength usado num nao array");
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                    "The method length is not called on an array."));
         }
 
         return defaultVisit(node, reports);
@@ -489,7 +509,8 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
 
         if (!getTypeReturnedByNode(node, scope).equals("int"))
         {
-            System.out.println("NewArray a nao levar um int no access");
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                    "Array does not have an 'int' on the access."));
         }
         
         return defaultVisit(node, reports);
@@ -499,12 +520,14 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
         String scope = getScope(node);
         if (!scopeIsCorrect(scope, node.getChildren().get(0)))
         {
-            System.out.println("Bad scope");
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                    "Variable does not exist in current scope."));
         }
 
         if (!getMethodDeclarationType(node.getParent()).equals(getTypeReturnedByNode(node, scope)))
         {
-            System.out.println("Quilhou-se no return");
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                    "Wrong return type."));
         }
 
         return defaultVisit(node, reports);
@@ -514,21 +537,25 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
         String scope = getScope(node);
         if (!scopeIsCorrect(scope, node.getChildren().get(0)))
         {
-            System.out.println("Bad scope");
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                    "Variable does not exist in current scope."));
         }
         if (!scopeIsCorrect(scope, node.getChildren().get(1)))
         {
-            System.out.println("Bad scope");
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                    "Variable does not exist in current scope."));
         }
 
         if (!getType(node.getChildren().get(0), scope).equals("int[]"))
         {
-            System.out.println("ArrayAccess numa variável que nao é um array"); // TODO: Report
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                    "Trying to access a variable that is not an array."));
         }
 
         if (!getTypeReturnedByNode(node.getChildren().get(1), scope).equals("int"))
         {
-            System.out.println("ArrayAccess nao possui um int no acesso"); // TODO: Report
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                    "Array does not have an 'int' on the access."));
         }
 
         return defaultVisit(node, reports);
@@ -537,12 +564,14 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
         String scope = getScope(node);
         if (!scopeIsCorrect(scope, node.getChildren().get(0)))
         {
-            System.out.println("Bad scope");
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                    "Variable does not exist in current scope."));
         }
 
         if (!getTypeReturnedByNode(node.getChildren().get(0), scope).equals("boolean"))
         {
-            System.out.println("IfStatement / WhileStatement nao tem um boolean na condiçao"); // TODO: Report
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                    "Condition does not return a 'boolean'."));
         }
         
         return defaultVisit(node, reports);
@@ -552,12 +581,14 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
         String scope = getScope(node);
         if (!scopeIsCorrect(scope, node.getChildren().get(0)))
         {
-            System.out.println("Bad scope");
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                    "Variable does not exist in current scope."));
         }
 
         if (!getTypeReturnedByNode(node.getChildren().get(0), scope).equals("boolean"))
         {
-            System.out.println("Not nao tem um boolean"); // TODO: Report
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                    "Operator '!' not used on a 'boolean'."));
         }
     
         return defaultVisit(node, reports);
@@ -567,16 +598,19 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
         String scope = getScope(node);
         if (!scopeIsCorrect(scope, node.getChildren().get(0)))
         {
-            System.out.println("Bad scope");
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                    "Variable does not exist in current scope.AccessController."));
         }
         if (!scopeIsCorrect(scope, node.getChildren().get(1)))
         {
-            System.out.println("Bad scope");
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                    "Variable does not exist in current scope."));
         }
 
         if (!getTypeReturnedByNode(node.getChildren().get(0), scope).equals("boolean") || !getTypeReturnedByNode(node.getChildren().get(1), scope).equals("boolean"))
         {
-            System.out.println("And nao tem boolean num dos dois lados"); // TODO: Report
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                    "Operator '&&' does not have both operands being 'boolean'."));
         }
 
         return defaultVisit(node, reports);
@@ -586,17 +620,20 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
         String scope = getScope(node);
         if (!scopeIsCorrect(scope, node.getChildren().get(0)))
         {
-            System.out.println("Bad scope");
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                    "Variable does not exist in current scope."));
         }
         if (!scopeIsCorrect(scope, node.getChildren().get(1)))
         {
-            System.out.println("Bad scope");
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                    "Variable does not exist in current scope."));
         }
 
         if (!getTypeReturnedByNode(node.getChildren().get(0), scope).equals("int") || !getTypeReturnedByNode(node.getChildren().get(1), scope).equals("int"))
         {
-            System.out.println("Less nao tem int num dos dois lados"); // TODO: Report
             
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                    "Operator '<' does not have both operands being 'int'."));
         }
 
         return defaultVisit(node, reports);
@@ -620,7 +657,8 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
         String scope = getScope(node);
         if (getTypeReturnedByNode(node.getChildren().get(0), scope).equals("boolean") || getTypeReturnedByNode(node.getChildren().get(1), scope).equals("boolean"))        
         {
-            System.out.println("Operação invalida");
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                    "Invalid operation."));
         }
        
        return defaultVisit(node, reports);
@@ -630,24 +668,20 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
         String scope = getScope(node);
 
         if (!this.inScope(node.getChildren().get(0), scope)) {
-            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, 0,
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
                     node.getChildren().get(0).get("name") + " is not in current scope."));
         }
 
-        if (!scopeIsCorrect(scope, node.getChildren().get(1))) //TODO: tratar report disto
-            System.out.println("Errooooooouuuuuuuu");
+        if (!scopeIsCorrect(scope, node.getChildren().get(1)))
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                    "Assignment with wrong scopes."));
 
         String type = getType(node.getChildren().get(0), scope);
 
-        // TODO: Trolamos aqui, temos de ver
-        if (type.equals("int[]") && node.getChildren().get(1).getKind().equals("NewArray"))
-        {
-            int a = 1;
-            System.out.println(type);
+        if (!checkTypes(node.getChildren().get(1), type, scope) && !(type.equals("int[]") && node.getChildren().get(1).getKind().equals("NewArray"))){ //TODO: tratar report disto
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                    "Operation with different types."));
         }
-        else if (!getTypeReturnedByNode(node.getChildren().get(1), scope).equals(type)){ //TODO: tratar report disto
-            System.out.println("Weleleleleelelelel " + type);
-        }   
         return defaultVisit(node, reports);
     }
 
