@@ -12,6 +12,9 @@ import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 class OptimizationVisitor extends AJmmVisitor<String, String> {
 
     private Map<String, String> types = new HashMap<>();
+    private String className = "";
+    private String actualMethodName = "";
+    private String actualMethodType = "";
 
     public OptimizationVisitor() {
         fillTypesMap();
@@ -19,6 +22,12 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         addVisit("ClassDeclaration", this::handleClassDeclaration);
         addVisit("MethodDeclaration", this::handleMethodDeclaration);
         addVisit("MainDeclaration", this::handleMainDeclaration);
+    
+
+        // Not needed for CP2
+        addVisit("ImportDeclaration", this::handleImportDeclaration);
+        addVisit("VarDeclaration", this::handleVarDeclaration);
+        addVisit("ReturnExpression", this::handleReturnExpression);
 
         setDefaultVisit(this::defaultVisit);
     }
@@ -32,10 +41,10 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
     }
 
     public String handleClassDeclaration(JmmNode node, String ollirCode) { // DONE
-        String className = firstChildName(node);
+        this.className = firstChildName(node);
         String ret = "";
-        ret += className + " {\n";
-        ret += "    .construct " + className + "().V {\n";
+        ret += this.className + " {\n";
+        ret += "    .construct " + this.className + "().V {\n";
         ret += "        invokespecial(this, \"<init>\").V;\n";
         ret += "    }\n\n";
         return ret + defaultVisit(node, ollirCode) + "}";
@@ -44,9 +53,12 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
     public String handleMethodDeclaration(JmmNode node, String ollirCode) {
         String init = "    .method public " + node.get("name");
         String parameters = "(" + methodParameters(node) + ")";
-        String methodType = "." + getMethodType(node) + " {";
+        String methodType = "." + getMethodType(node) + " {\n";
 
-        return init + parameters + methodType + defaultVisit(node, ollirCode) + "\n    }\n\n";
+        this.actualMethodName = node.get("name");
+        this.actualMethodType = firstChildName(node);
+
+        return init + parameters + methodType + defaultVisit(node, ollirCode) + "    }\n\n";
     }
 
     public String methodParameters(JmmNode node) {
@@ -69,10 +81,17 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
 
     public String handleMainDeclaration(JmmNode node, String ollirCode) {
         String init = "    .method public static main";
-        String args = "(" + firstChildName(node) + ".array.String).V {";
+        String args = "(" + firstChildName(node) + ".array.String).V {\n";
 
-        return init + args + defaultVisit(node, ollirCode) + "\n    }\n\n";
+        return init + args + defaultVisit(node, ollirCode) + "    }\n\n";
     }
+
+    public String handleReturnExpression(JmmNode node, String ollirCode) {
+        String ret = "        ret." + types.get(this.actualMethodType) + " ";
+        String var = firstChildName(node) + "." + types.get(this.actualMethodType);
+        return ret + var + ";\n" + defaultVisit(node, ollirCode);
+    }
+
 
     private String defaultVisit(JmmNode node, String ollirCode) {
         String ret = "";
@@ -90,6 +109,17 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         types.put("String", "String");
         types.put("int[]", "array.i32");
         types.put("String[]", "array.String");
+        types.put("void", "V");
+    }
+
+    public String handleImportDeclaration(JmmNode node, String ollirCode) {
+
+        return "//VarDeclaration: TO REMOVE\n\n" + defaultVisit(node, ollirCode);
+    }
+
+    public String handleVarDeclaration(JmmNode node, String ollirCode) {
+
+        return "        //VarDeclaration: TO REMOVE\n" + defaultVisit(node, ollirCode);
     }
 
     //public String getOllirCode() { return ollirCode; }
