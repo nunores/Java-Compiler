@@ -7,27 +7,32 @@ import java.util.HashMap;
 
 import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
+import semantic.MySymbolTable;
 
 
 class OptimizationVisitor extends AJmmVisitor<String, String> {
 
+    private MySymbolTable symbolTable = new MySymbolTable();
     private Map<String, String> types = new HashMap<>();
     private String className = "";
     private String actualMethodName = "";
     private String actualMethodType = "";
 
-    public OptimizationVisitor() {
+    public OptimizationVisitor(MySymbolTable symbolTable) {
         fillTypesMap();
+        this.symbolTable = symbolTable;
 
         addVisit("ClassDeclaration", this::handleClassDeclaration);
         addVisit("MethodDeclaration", this::handleMethodDeclaration);
         addVisit("MainDeclaration", this::handleMainDeclaration);
+        addVisit("Assignment", this::handleAssignment);
     
-
         // Not needed for CP2
         addVisit("ImportDeclaration", this::handleImportDeclaration);
         addVisit("VarDeclaration", this::handleVarDeclaration);
         addVisit("ReturnExpression", this::handleReturnExpression);
+        addVisit("ifStatement", this::handleIf);
+        addVisit("elseStatement", this::handleElse);
 
         setDefaultVisit(this::defaultVisit);
     }
@@ -43,7 +48,10 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
     public String handleClassDeclaration(JmmNode node, String ollirCode) { // DONE
         this.className = firstChildName(node);
         String ret = "";
-        ret += this.className + " {\n";
+        if (node.getChildren().get(1).getKind().equals("Extends"))
+            ret += this.className + " extends " + node.getChildren().get(1).get("extendedClass") + " {\n";
+        else
+            ret += this.className + " {\n";
         ret += "    .construct " + this.className + "().V {\n";
         ret += "        invokespecial(this, \"<init>\").V;\n";
         ret += "    }\n\n";
@@ -51,12 +59,12 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
     }
 
     public String handleMethodDeclaration(JmmNode node, String ollirCode) {
-        String init = "    .method public " + node.get("name");
-        String parameters = "(" + methodParameters(node) + ")";
-        String methodType = "." + getMethodType(node) + " {\n";
-
         this.actualMethodName = node.get("name");
         this.actualMethodType = firstChildName(node);
+
+        String init = "    .method public " + this.actualMethodName;
+        String parameters = "(" + methodParameters(node) + ")";
+        String methodType = "." + getMethodType(node) + " {\n";
 
         return init + parameters + methodType + defaultVisit(node, ollirCode) + "    }\n\n";
     }
@@ -92,6 +100,13 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         return ret + var + ";\n" + defaultVisit(node, ollirCode);
     }
 
+    public String handleAssignment(JmmNode node, String ollirCode) {
+        String var = node.getChildren().get(0).get("name");
+        //String varType = symbolTable.getValue(var);
+
+        return "        // " + var + ".\n" + defaultVisit(node, ollirCode);
+    }
+
 
     private String defaultVisit(JmmNode node, String ollirCode) {
         String ret = "";
@@ -114,12 +129,22 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
 
     public String handleImportDeclaration(JmmNode node, String ollirCode) {
 
-        return "//VarDeclaration: TO REMOVE\n\n" + defaultVisit(node, ollirCode);
+        return "// Import: Not needed.\n\n" + defaultVisit(node, ollirCode);
     }
 
     public String handleVarDeclaration(JmmNode node, String ollirCode) {
 
-        return "        //VarDeclaration: TO REMOVE\n" + defaultVisit(node, ollirCode);
+        return "        // VarDeclaration: Not needed.\n" + defaultVisit(node, ollirCode);
+    }
+
+    public String handleIf(JmmNode node, String ollirCode) {
+
+        return "        // If: Not needed.\n" + defaultVisit(node, ollirCode);
+    }
+
+    public String handleElse(JmmNode node, String ollirCode) {
+
+        return "        // Else: Not needed.\n" + defaultVisit(node, ollirCode);
     }
 
     //public String getOllirCode() { return ollirCode; }

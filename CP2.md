@@ -40,7 +40,13 @@ Todas as verificações feitas na análise semantica pedidas devem reportar erro
 ## OLLIR Generation
 
 - [ ] Conversão da AST completa para OLLIR em expressões e tudo o necessário para a declaração da classe e dos métodos
-- [ ] Ver documento para mais instruções: https://teams.microsoft.com/l/file/A5DF3346-0BA6-4AAB-9641-E4C36D43C3CD?tenantId=b7821bc8-67cc-447b-b579-82f7854174fc&fileType=pdf&objectUrl=https%3A%2F%2Fuporto.sharepoint.com%2Fsites%2FMIEIC-Compilers-2021%2FDocumentos%20Partilhados%2FProject%20-%20General%20topics%2FOLLIR%20and%20OLLIRTool.pdf&baseUrl=https%3A%2F%2Fuporto.sharepoint.com%2Fsites%2FMIEIC-Compilers-2021&serviceName=teams&threadId=19:2dbfad42ccee45df88e17f84760fd86b@thread.tacv2&groupId=1d256bf6-e8f7-46fa-89e0-c21504d6f8e0
+- [x] ClassDeclaration
+- [x] MethodDeclaration
+- [x] MainDeclaration
+- [ ] Assignment
+- [x] ReturnExpression: Possibly bugged
+- [ ]
+
 
 ## Jasmin Generation
 
