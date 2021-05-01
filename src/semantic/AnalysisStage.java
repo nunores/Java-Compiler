@@ -1,3 +1,4 @@
+package semantic;
 
 import java.util.ArrayList;
 import java.util.Arrays;
