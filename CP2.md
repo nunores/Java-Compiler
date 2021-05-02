@@ -43,9 +43,10 @@ Todas as verificações feitas na análise semantica pedidas devem reportar erro
 - [x] ClassDeclaration
 - [x] MethodDeclaration
 - [x] MainDeclaration
-- [ ] Assignment
-- [x] ReturnExpression: Possibly bugged
-- [ ]
+- [x] simple Assignment
+- [ ] complex Assignment
+- [x] ReturnExpression
+- [ ] MethodCall
 
 
 ## Jasmin Generation

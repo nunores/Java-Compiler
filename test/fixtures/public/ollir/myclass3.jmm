@@ -1,12 +1,6 @@
 class myClass {
     int a;
     
-    myClass(int n) {
-        this.a = n;
-    }
-    myClass(int n) {
-        this.a = n;
-    }
     public int get() {
         return this.a;
     }

@@ -5,8 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b1be5d57-de64-4a62-9e6a-897895b518bf" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CP2.md" beforeDir="false" afterPath="$PROJECT_DIR$/CP2.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/ollir/OptimizationVisitor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ollir/OptimizationVisitor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/fixtures/public/ollir/Fac.jmm" beforeDir="false" afterPath="$PROJECT_DIR$/test/fixtures/public/ollir/Fac.jmm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/fixtures/public/ollir/Fac.jmm" beforeDir="false" afterPath="$PROJECT_DIR$/test/fixtures/public/Fac.jmm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/fixtures/public/ollir/Fac.ollir" beforeDir="false" afterPath="$PROJECT_DIR$/test/fixtures/public/Fac.ollir" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/fixtures/public/ollir/myclass1.jmm" beforeDir="false" afterPath="$PROJECT_DIR$/test/fixtures/public/ollir/myclass1.jmm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/fixtures/public/ollir/myclass2.jmm" beforeDir="false" afterPath="$PROJECT_DIR$/test/fixtures/public/ollir/myclass2.jmm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/fixtures/public/ollir/myclass3.jmm" beforeDir="false" afterPath="$PROJECT_DIR$/test/fixtures/public/ollir/myclass3.jmm" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,10 +55,16 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="ProblemsViewState">
+    <option name="selectedIndex" value="1" />
+  </component>
   <component name="ProjectCodeStyleSettingsMigration">
     <option name="version" value="1" />
   </component>
   <component name="ProjectId" id="1poLVWKydnhdorNVgErBI9FtcHk" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -65,6 +77,7 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Asus ZenBook\OneDrive - Universidade do Porto\FEUP\comp2021-4d\test\fixtures\public" />
       <recent name="C:\Users\Asus ZenBook\OneDrive - Universidade do Porto\FEUP\comp2021-4d" />
     </key>
   </component>
