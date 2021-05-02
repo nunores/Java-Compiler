@@ -4,10 +4,14 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Stack;
 
 import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
+import semantic.MySymbol;
 import semantic.MySymbolTable;
+
+import static java.lang.Integer.parseInt;
 
 
 class OptimizationVisitor extends AJmmVisitor<String, String> {
@@ -17,6 +21,8 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
     private String className = "";
     private String actualMethodName = "";
     private String actualMethodType = "";
+    private List<String> parameters = new ArrayList<String>();
+    private Stack stack = new Stack();
 
     public OptimizationVisitor(MySymbolTable symbolTable) {
         fillTypesMap();
@@ -26,6 +32,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         addVisit("MethodDeclaration", this::handleMethodDeclaration);
         addVisit("MainDeclaration", this::handleMainDeclaration);
         addVisit("Assignment", this::handleAssignment);
+        addVisit("MethodCall", this::handleMethodCall);
     
         // Not needed for CP2
         addVisit("ImportDeclaration", this::handleImportDeclaration);
@@ -45,7 +52,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         return types.get(firstChildName(node));
     }
 
-    public String handleClassDeclaration(JmmNode node, String ollirCode) { // DONE
+    public String handleClassDeclaration(JmmNode node, String ollirCode) {
         this.className = firstChildName(node);
         String ret = "";
         if (node.getChildren().get(1).getKind().equals("Extends"))
@@ -59,18 +66,18 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
     }
 
     public String handleMethodDeclaration(JmmNode node, String ollirCode) {
+        this.stack = new Stack();
         this.actualMethodName = node.get("name");
         this.actualMethodType = firstChildName(node);
 
         String init = "    .method public " + this.actualMethodName;
-        String parameters = "(" + methodParameters(node) + ")";
+        String methodParameters = "(" + methodParameters(node) + ")";
         String methodType = "." + getMethodType(node) + " {\n";
 
-        return init + parameters + methodType + defaultVisit(node, ollirCode) + "    }\n\n";
+        return init + methodParameters + methodType + defaultVisit(node, ollirCode) + "    }\n\n";
     }
 
     public String methodParameters(JmmNode node) {
-        List<String> parameters = new ArrayList<String>();
         int i = 1;
         List<JmmNode> children = node.getChildren();
 
@@ -88,10 +95,15 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
     }
 
     public String handleMainDeclaration(JmmNode node, String ollirCode) {
+        this.stack = new Stack();
         String init = "    .method public static main";
         String args = "(" + firstChildName(node) + ".array.String).V {\n";
 
         return init + args + defaultVisit(node, ollirCode) + "    }\n\n";
+    }
+
+    public String handleMethodCall(JmmNode node, String ollirCode) {
+        return "        // MethodCall: TODO\n" + defaultVisit(node, ollirCode);
     }
 
     public String handleReturnExpression(JmmNode node, String ollirCode) {
@@ -102,11 +114,47 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
 
     public String handleAssignment(JmmNode node, String ollirCode) {
         String var = node.getChildren().get(0).get("name");
-        //String varType = symbolTable.getValue(var);
+        String varType = types.get(varTypeST(var, this.actualMethodName));
+        String varRet = var + "." + varType;
 
-        return "        // " + var + ".\n" + defaultVisit(node, ollirCode);
+        for (int i = 0; i < this.parameters.size(); i++) {
+            if (this.parameters.get(i).startsWith(var)) {
+                int index = this.parameters.get(i).indexOf(var) + 1;
+                String temp = "$" + String.valueOf(index);
+                varRet = temp + "." + this.parameters.get(i);
+                break;
+            }
+        }
+        
+        String var2 = "";
+
+        if (node.getChildren().get(1).getKind().equals("IntegerLiteral")) {
+            var2 = node.getChildren().get(1).get("name");
+            return "        " + varRet + " :=.i32 " + var2 + ".i32;\n" + defaultVisit(node, ollirCode);
+        }
+        else if (node.getChildren().get(1).getKind().equals("Operation")) {
+            return this.operationAssignment(node, ollirCode);
+        }
+
+        return "        // " + varRet + "\n" + defaultVisit(node, ollirCode);
     }
 
+    public String operationAssignment(JmmNode node, String ollirCode) {
+        return "        // Operation Assignment: TODO\n" + defaultVisit(node, ollirCode);
+    }
+
+    public String varTypeST(String var, String methodName) {
+        for (Map.Entry<JmmNode, MySymbol> entry : symbolTable.getTable().entrySet()) {
+            JmmNode tempNode = entry.getKey();
+            MySymbol symbol = entry.getValue();
+
+            if (symbol.getName().equals(var) && 
+                (symbol.getScope().equals(methodName) || symbol.getScope().equals("GLOBAL"))) {
+                return symbol.getType().getName();
+            }
+        }
+        return "";
+    }
 
     private String defaultVisit(JmmNode node, String ollirCode) {
         String ret = "";

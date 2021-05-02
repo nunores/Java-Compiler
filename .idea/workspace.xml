@@ -5,11 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b1be5d57-de64-4a62-9e6a-897895b518bf" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/CP2.md" beforeDir="false" afterPath="$PROJECT_DIR$/CP2.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ollir/OptimizationStage.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ollir/OptimizationStage.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/ollir/OptimizationVisitor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ollir/OptimizationVisitor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/semantic/MySymbolTable.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/semantic/MySymbolTable.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/fixtures/public/ollir/Fac.jmm" beforeDir="false" afterPath="$PROJECT_DIR$/test/fixtures/public/ollir/Fac.jmm" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
