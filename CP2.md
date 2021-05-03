@@ -43,10 +43,15 @@ Todas as verificações feitas na análise semantica pedidas devem reportar erro
 - [x] ClassDeclaration
 - [x] MethodDeclaration
 - [x] MainDeclaration
-- [x] simple Assignment
-- [ ] complex Assignment
 - [x] ReturnExpression
+- [ ] Assignment
 - [ ] MethodCall
+- [ ] Operation 
+- [ ] NewInstance
+- [x] HelloWorld.jmm
+- [ ] Fac.jmm
+- [ ] Simple.jmm
+- [ ] Recursivity
 
 
 ## Jasmin Generation

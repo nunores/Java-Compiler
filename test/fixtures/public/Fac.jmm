@@ -5,7 +5,7 @@ class Fac {
         int num_aux;
 
         num_aux = 1;
-        num_aux = num * (this.compFac(num - 1));
+        num_aux = num * (num - 1);
         
         return num_aux;
     }
