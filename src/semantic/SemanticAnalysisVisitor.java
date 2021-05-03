@@ -1,5 +1,3 @@
-package semantic;
-
 import pt.up.fe.comp.jmm.ast.PreorderJmmVisitor;
 import java.util.List;
 import pt.up.fe.comp.jmm.report.Report;

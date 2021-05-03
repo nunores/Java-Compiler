@@ -1,5 +1,3 @@
-package semantic;
-
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

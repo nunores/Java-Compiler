@@ -1,5 +1,3 @@
-package ollir;
-
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -9,8 +7,6 @@ import java.util.Stack;
 import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
 import pt.up.fe.comp.jmm.ast.JmmNodeImpl;
-import semantic.MySymbol;
-import semantic.MySymbolTable;
 
 
 class OptimizationVisitor extends AJmmVisitor<String, String> {
