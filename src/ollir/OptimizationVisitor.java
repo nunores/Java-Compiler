@@ -94,7 +94,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
 
     public String handleMethodCall(JmmNode node, String ollirCode) {
         String scope = getScope(node);
-        return getMethodCall(node, new String(), "", 0, getTypeReturnedByNode(node, scope)); // TODO
+        return getMethodCall(node, new String(), node.get("name"), 0, getTypeReturnedByNode(node, scope)); // TODO
 
     }
 
@@ -226,7 +226,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         }
         else if (node.getKind().equals("MethodCall"))
         {
-            result += getMethodCall(node, result, "aux", nextVarNumber, type);
+            result += getMethodCall(node, result, var, nextVarNumber, type);
         }
         else if (node.getKind().equals("Exp"))
         {
@@ -390,7 +390,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         List<String> a = new ArrayList<String>();
         String methodCall = node.get("name");
         String restIdent = node.getChildren().get(0).get("name") + "." + types.get(varTypeST(node.getChildren().get(0).get("name"), this.actualMethodName));
-        a.add(restIdent);
+        a.add(restIdent); //                                              TODO: este types.get está mal
         a.add("\"" + methodCall + "\"");
         for (JmmNode child : node.getChildren().get(1).getChildren()) {
             a.add(child.get("name") + "." + types.get(varTypeST(child.get("name"), this.actualMethodName)));
