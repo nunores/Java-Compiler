@@ -83,6 +83,8 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
     }
 
     public String handleMainDeclaration(JmmNode node, String ollirCode) {
+        this.actualMethodName = "MainDeclaration";
+
         String init = "    .method public static main";
         String args = "(" + firstChildName(node) + ".array.String).V {\n";
         this.parameters = new ArrayList<String>();
@@ -389,8 +391,8 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
     public String handleInsideFunctionVirtual(JmmNode node) {
         List<String> a = new ArrayList<String>();
         String methodCall = node.get("name");
-        String restIdent = node.getChildren().get(0).get("name") + "." + types.get(varTypeST(node.getChildren().get(0).get("name"), this.actualMethodName));
-        a.add(restIdent); //                                              TODO: este types.get está mal
+        String restIdent = node.getChildren().get(0).get("name") + "." + types.get(varTypeST("s", this.actualMethodName));
+        a.add(restIdent);
         a.add("\"" + methodCall + "\"");
         for (JmmNode child : node.getChildren().get(1).getChildren()) {
             a.add(child.get("name") + "." + types.get(varTypeST(child.get("name"), this.actualMethodName)));

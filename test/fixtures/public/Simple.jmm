@@ -16,7 +16,7 @@ class Simple {
         b = 10;
         s = new Simple();
         c = s.add(a,b);
-        //io.println(c);
+        io.println(c);
     }
 
     public int constInstr(){
