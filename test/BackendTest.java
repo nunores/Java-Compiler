@@ -70,10 +70,8 @@ public class BackendTest {
 
     @Test
     public void testArrIndexNotInt() {
-        //JmmSemanticsResult result = TestUtils.analyse(SpecsIo.getResource("fixtures/public/fail/semantic/arr_index_not_int.jmm"));
-        //assertEquals(result.getReports().size(), 1);
-        String tempResult = SpecsIo.getResource("fixtures/public/fail/semantic/arr_index_not_int.jmm");
-        JmmSemanticsResult result = TestUtils.analyse(tempResult);
+        JmmSemanticsResult result = TestUtils.analyse(SpecsIo.getResource("fixtures/public/fail/semantic/arr_index_not_int.jmm"));
+        assertEquals(result.getReports().size(), 1);
     }
 
     @Test
