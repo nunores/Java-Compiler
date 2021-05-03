@@ -1,10 +1,7 @@
-package jasmin;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import jasmin.JasminGenerator;
 import org.specs.comp.ollir.ClassUnit;
 import org.specs.comp.ollir.OllirErrorException;
 
@@ -14,7 +11,6 @@ import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.Stage;
 import pt.up.fe.specs.util.SpecsIo;
-
 
 /**
  * Copyright 2021 SPeCS.

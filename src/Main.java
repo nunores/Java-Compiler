@@ -1,4 +1,3 @@
-import jasmin.BackendStage;
 import pt.up.fe.comp.jmm.JmmParser;
 import pt.up.fe.comp.jmm.JmmParserResult;
 import pt.up.fe.comp.jmm.analysis.JmmAnalysis;
@@ -69,6 +68,8 @@ public class Main implements JmmParser {
 		BackendStage bs = new BackendStage();
 		JasminResult jasminResult = bs.toJasmin(or);	// CP2: Convert OLLIR to Jasmin Bytecode (only for code structures defined in the project)
 		
+		jasminResult.run();
+
 		//compiler.compile(jasminResult, filename);										// CP2: this should generate the .class File
 	}
 }
