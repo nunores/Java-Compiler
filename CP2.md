@@ -34,8 +34,6 @@ Todas as verificações feitas na análise semantica pedidas devem reportar erro
 - [x] verificar se o tipo dos parâmetros coincide com o tipo dos argumentos
 - [x] verificar se retorno coincide
 
-- [ ] Fazer testes
-
 ## OLLIR Generation
 
 - [ ] Conversão da AST completa para OLLIR em expressões e tudo o necessário para a declaração da classe e dos métodos
@@ -50,14 +48,13 @@ Todas as verificações feitas na análise semantica pedidas devem reportar erro
 - [x] HelloWorld.jmm
 - [ ] Fac.jmm
 - [ ] Simple.jmm
-- [ ] Recursivity
 
 
 ## Jasmin Generation
 
-- [ ] estrutura básica de classe (incluindo construtor init)
+- [x] estrutura básica de classe (incluindo construtor init)
 - [ ] estrutura básica de fields
-- [ ] estrutura básica de métodos (podem desconsiderar os limites neste checkpoint: limit_stack 99, limit_locals 99)
-- [ ] assignments
-- [ ] operações aritméticas (com prioridade de operações correta) (neste checkpoint não é necessário a seleção das operações mais eficientes mas isto será considerado no CP3 e versão final)
+- [x] estrutura básica de métodos (podem desconsiderar os limites neste checkpoint: limit_stack 99, limit_locals 99)
+- [x] assignments
+- [x] operações aritméticas (com prioridade de operações correta) (neste checkpoint não é necessário a seleção das operações mais eficientes mas isto será considerado no CP3 e versão final)
 - [ ] invocação de métodos

@@ -36,8 +36,6 @@ public class AnalysisStage implements JmmAnalysis {
 			semanticAnalysisVisitor.visit(node, reports);
 
 			st.print();
-
-			System.out.println(reports);
 			
 			return new JmmSemanticsResult(node, st, reports);
 		}

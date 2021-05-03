@@ -208,10 +208,6 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
 
                 if (symbol.getName().equals(node.get("name"))
                         && (symbol.getScope().equals("GLOBAL") || symbol.getScope().equals(scope))) {
-                    // if (node.getKind().equals("RestIdentifier") && !symbol.getInit() && !node.getParent().getKind().equals("ArrayAccess") && symbol.getSuperName().equals("VarDeclaration"))
-                    // {
-                    //     System.out.println("Variavel nao inicializada");
-                    // }
                     if (node.getKind().equals("Var"))
                     {
                         symbol.setInit(true);
@@ -678,7 +674,7 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
 
         String type = getType(node.getChildren().get(0), scope);
 
-        if (!checkTypes(node.getChildren().get(1), type, scope) && !(type.equals("int[]") && node.getChildren().get(1).getKind().equals("NewArray"))){ //TODO: tratar report disto
+        if (!checkTypes(node.getChildren().get(1), type, scope) && !(type.equals("int[]") && node.getChildren().get(1).getKind().equals("NewArray"))){
             reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
                     "Operation with different types."));
         }
