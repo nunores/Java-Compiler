@@ -111,27 +111,42 @@ public class JasminGenerator {
         if(instruction instanceof ReturnInstruction){
             ReturnInstruction instruction2 = (ReturnInstruction)instruction;
             if(!instruction2.hasReturnValue()) jasminString +="\treturn\n";
-        switch(instruction2.getOperand().getType().getTypeOfElement()){
-            case VOID:
+            switch(instruction2.getOperand().getType().getTypeOfElement()){
+                case VOID:
 
-            case INT32:
-                return "\tireturn\n";
+                case INT32:
+                    return "\tireturn\n";
 
-            case BOOLEAN:
-                jasminString += loadElement(instruction2.getOperand(), varTable);
-                jasminString += "\tireturn\n";
+                case BOOLEAN:
+                    jasminString += loadElement(instruction2.getOperand(), varTable);
+                    jasminString += "\tireturn\n";
 
-            case ARRAYREF:
+                case ARRAYREF:
 
-            case OBJECTREF:
-                jasminString += loadElement(instruction2.getOperand(), varTable);
-                jasminString += "\tareturn\n";
+                case OBJECTREF:
+                    jasminString += loadElement(instruction2.getOperand(), varTable);
+                    jasminString += "\tareturn\n";
 
-            default:
-                break;
+                default:
+                    break;
+            }
         }
-    }
-    return jasminString;
+
+        if(instruction instanceof CallInstruction){
+            CallInstruction instruction2 = (CallInstruction) instruction;
+            switch(instruction2.getInvocationType()){
+                case invokevirtual:
+                    return jasminString += "\t" +invokeToJasmin(instruction2, varTable);//"\tinvokevirtual " + classUnit.getClassName() + "\n";
+                case invokespecial:
+                    return jasminString += "\tinvokespecial " +classUnit.getClassName() +"/" + invokeToJasmin(instruction2, varTable);
+                case invokestatic:
+                    return jasminString += invokeToJasmin(instruction2, varTable);//"\tinvokestatic " + "\n";
+                case NEW:
+                case arraylength:
+                default: 
+            }
+        }
+    return "";
 }
 
     public String storeElement(Operand operand, HashMap<String, Descriptor> varTable){
@@ -164,8 +179,8 @@ public class JasminGenerator {
         else if(element instanceof ArrayOperand){
             ArrayOperand operand = (ArrayOperand) element;
 
-            jasminString = String.format("\taload %s\n", varTable.get(operand.getName()).getVirtualReg());
-            jasminString = loadElement(operand.getIndexOperands().get(0), varTable);
+            jasminString += String.format("\taload %s\n", varTable.get(operand.getName()).getVirtualReg());
+            jasminString += loadElement(operand.getIndexOperands().get(0), varTable);
 
             return jasminString + "\tiaload\n";
         }
@@ -187,5 +202,50 @@ public class JasminGenerator {
         }
         return "nhe";
     }
-    
+    public String invokeToJasmin(CallInstruction instruction, HashMap<String, Descriptor> varTable){
+        String jasminString = "";
+        Element first = instruction.getFirstArg();
+
+        if(first.toString().equals("this")){
+            jasminString +=loadElement((Operand) first, varTable);
+            Element second = instruction.getSecondArg();
+            if(second.isLiteral()){
+                jasminString += ((LiteralElement) second).getLiteral().replace("\"", "");           
+            }
+            else{
+                Operand op = (Operand) second;
+                jasminString += op.getName();
+            }
+        }
+        else{
+            jasminString+=instruction.getInvocationType()+" ";
+
+            if(first.isLiteral()){
+                jasminString+="\n"+ ((LiteralElement) first).getLiteral().replace("\"", "");
+            }
+            else{
+                Operand op = (Operand) first;
+                //jasminString += op.getName();
+            }
+
+            Element second = instruction.getSecondArg();
+            if(second.isLiteral()){
+                jasminString+=classUnit.getClassName() + "/" + ((LiteralElement) second).getLiteral().replace("\"", "");
+            }
+            else{
+                Operand op = (Operand) second;
+                jasminString += op.getName();
+            }
+        }
+
+        jasminString+="(";
+
+        for(Element e: instruction.getListOfOperands()){
+            jasminString+=convertElementType(e.getType().getTypeOfElement());
+        }
+        jasminString+=")";
+
+        jasminString+=convertElementType(instruction.getReturnType().getTypeOfElement());
+        return jasminString +"\n" ;
+    }
 }

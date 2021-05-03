@@ -10,6 +10,8 @@
       <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/myClass.dot" beforeDir="false" afterPath="$PROJECT_DIR$/myClass.dot" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/jasmin/BackendStage.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/jasmin/BackendStage.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/jasmin/JasminGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/jasmin/JasminGenerator.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sum.dot" beforeDir="false" afterPath="$PROJECT_DIR$/sum.dot" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/JasminTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/JasminTest.java" afterDir="false" />
