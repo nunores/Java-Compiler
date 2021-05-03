@@ -48,6 +48,7 @@ public class Main implements JmmParser {
 		}
 	}
 
+	// TODO: Stop when error
     public static void main(String[] args) {
 		if (args.length != 1) { return; }
 
@@ -58,9 +59,9 @@ public class Main implements JmmParser {
 		AnalysisStage as = new AnalysisStage();
 		JmmSemanticsResult semanticsResult = as.semanticAnalysis(parserResult); 	// CP2: Symbol table generation and semantic analysis
 
-		//OptimizationStage os = new OptimizationStage(as.getSymbolTable());
-		//OllirResult ollirResult = os.toOllir(semanticsResult); 					// CP2: Convert AST to OLLIR format
-		//System.out.println("\nOLLIR Code generated with success.\n");
+		OptimizationStage os = new OptimizationStage(as.getSymbolTable());
+		OllirResult ollirResult = os.toOllir(semanticsResult); 					// CP2: Convert AST to OLLIR format
+		System.out.println("\nOLLIR Code generated with success.\n");
 
 		//BackendStage bs = new BackendStage();
 		//JasminResult jasminResult = compiler.toJasmin(ollirResult, filename);			// CP2: Convert OLLIR to Jasmin Bytecode (only for code structures defined in the project)

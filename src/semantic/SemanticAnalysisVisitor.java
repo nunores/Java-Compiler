@@ -427,7 +427,7 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
                 if(tempArray != null){
                     for (int i = 0; i < symbol.getAttributes().get("Parameter").size(); i++)
                     {
-                        if (!symbol.getAttributes().get("Parameter").get(i).getType().getName().equals(getType(nodes.get(i), scope)))
+                        if (!symbol.getAttributes().get("Parameter").get(i).getType().getName().equals(getTypeReturnedByNode(nodes.get(i), scope)))
                         {
                             return false;
                         }
