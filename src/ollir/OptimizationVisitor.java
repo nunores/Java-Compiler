@@ -1,5 +1,6 @@
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Stack;
@@ -21,6 +22,12 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
     private List<String> imports = new ArrayList<String>();
     private Integer globalVarNumber = 0;
     private Integer prevInitialVarNumber = 0;
+    List<String> booleanArray = Arrays.asList("True", "False", "Less", "And", "Or", "Not");
+    List<String> intArray = Arrays.asList("IntegerLiteral", "DotLength", "ArrayAccess");
+    List<String> varArray = Arrays.asList("MethodCall", "RestIdentifier");
+    List<String> newInstanceArray = Arrays.asList("NewInstance");
+    List<String> typeReturner = Arrays.asList("True", "False", "Less", "And", "Or", "Not", "IntegerLiteral", "DotLength", "ArrayAccess", "MethodCall", "RestIdentifier", "NewInstance");
+    List<String> nodeTypes = Arrays.asList("int", "boolean", "int[]");
 
     public OptimizationVisitor(MySymbolTable symbolTable) {
         fillTypesMap();
@@ -111,6 +118,100 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         return ret + var + defaultVisit(node, ollirCode) + ";\n";
     }
 
+    public String getType(JmmNode node, String scope){
+        String tempType = new String();
+        String nodeName = new String();
+        if (node.getKind().equals("ArrayAccess"))
+        {
+            nodeName = node.getChildren().get(0).get("name");
+        }
+        else
+        {
+            nodeName = node.get("name");
+        }
+
+        if (booleanArray.contains(node.getKind()))
+        {
+            return "boolean";
+        }
+        else if (intArray.contains(node.getKind()))
+        {
+            return "int";
+        }
+        else if (newInstanceArray.contains(node.getKind()))
+        {
+            return node.get("name");
+        }
+
+        for (Map.Entry<JmmNode, MySymbol> entry : symbolTable.getTable().entrySet()) {
+            MySymbol symbol = entry.getValue();
+
+            if (symbol.getName().equals(nodeName) && (symbol.getScope().equals("GLOBAL") || symbol.getScope().equals(scope))) {
+                if (symbol.getScope().equals("GLOBAL"))
+                {
+                    tempType = symbol.getType().getName();
+                }
+                else if(symbol.getScope().equals(scope))
+                {
+                    return symbol.getType().getName();
+                }
+                
+            }
+        }
+        return tempType;
+    }
+
+    public String getScope(JmmNode node){
+        String scope = new String();
+        if (node.getAncestor("MethodDeclaration").isPresent()) {
+            scope = node.getAncestor("MethodDeclaration").get().get("name");
+        } else if (node.getAncestor("MainDeclaration").isPresent()) {
+            scope = "MainDeclaration";
+        } else if (node.getAncestor("ClassDeclaration").isPresent()) {
+            scope = "GLOBAL";
+        }
+        return scope;
+    }
+
+    public String getTypeReturnedByNode(JmmNode node, String scope)
+    {
+        
+        String currentType = "";
+        if (typeReturner.contains(node.getKind()))
+        {
+            if (booleanArray.contains(node.getKind()))
+            {
+                return "boolean";
+            }
+            else if (intArray.contains(node.getKind()))
+            {
+                return "int";
+            }
+            else if (varArray.contains(node.getKind()))
+            {
+                return getType(node, scope);
+            }
+            else if (newInstanceArray.contains(node.getKind()))
+            {
+                return node.get("name");
+            }
+        }
+        for (int i = 0; i < node.getChildren().size(); i++)
+        {
+            JmmNode current = node.getChildren().get(i);
+            String typeReturned = getTypeReturnedByNode(current, scope);
+            if (currentType.equals(""))
+            {
+                currentType = typeReturned;
+            }
+            else if (!typeReturned.equals(currentType))
+            {
+                return "NULL";
+            }
+        }
+        return currentType;
+    }
+
     public String handleAssignment(JmmNode node, String ollirCode) {
         // String var = node.getChildren().get(0).get("name"); // num_aux
         // String varType = types.get(varTypeST(var, this.actualMethodName)); // i32 
@@ -135,7 +236,10 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
 
         // return "        // " + ret + defaultVisit(node, ollirCode);
 
-        return getAssignment(node.getChildren().get(1), new String(), node.getChildren().get(0).get("name"), 0, "int"); // TODO
+        String scope = getScope(node);
+        //System.out.println(getTypeReturnedByNode(node.getChildren().get(1), scope));
+
+        return getAssignment(node.getChildren().get(1), new String(), node.getChildren().get(0).get("name"), 0, getTypeReturnedByNode(node.getChildren().get(1), scope)); // TODO
 
     }
 
@@ -163,9 +267,11 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
                 var = "$" + String.valueOf(varIsArg) + "." + var;
             }
             
-            return "\t" + var + "." + types.get(type) + " :=" + types.get(type) + " " + node.get("name") + "." + types.get(type) + ";\n";
+            return "\t" + var + "." + types.get(type) + " :=." + types.get(type) + " " + node.get("name") + "." + types.get(type) + ";\n";
         }
-
+        else if (node.getKind().equals("NewInstance")) {
+            return "\t" + var + "." + types.get(type) + " :=." + types.get(type) + " new(" + types.get(type) + ")." + types.get(type) + ";\n";
+        }
         
 
 
@@ -205,7 +311,9 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         }
         else if(node.getChildren().get(0).getKind().equals("MethodCall"))
         {
-            
+            /*this.globalVarNumber++;
+            newResult += getMethodCall(node.getChildren().get(0), result, "aux", type);
+            firstChild = "aux" + String.valueOf(this.prevInitialVarNumber);*/
         }
         else if(node.getChildren().get(0).getKind().equals("Exp"))
         {
@@ -274,6 +382,21 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
 
     public String getMethodCall(JmmNode node, String result, String var, int varNumber, String type)
     {
+        /*String invokeType = new String();
+        if (node.getChildren().get(0).getKind().equals("This"))
+        {
+            invokeType = "virtual";
+        }
+        else
+        {
+            invokeType = "static";
+        }
+
+        for (int i = 0; i < node.getChildren().get(1).size(); i++)
+        {
+            
+        }*/
+        
         return new String();
     }
 
@@ -338,7 +461,6 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
     }
 
     public int checkVarIsArg(String var) {
-        System.out.println(this.parameters);
         for (int i = 0; i < this.parameters.size(); i++) {
             if (this.parameters.get(i).startsWith(var)) {
                 return this.parameters.get(i).indexOf(var) + 1;
