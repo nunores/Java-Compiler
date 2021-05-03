@@ -1,6 +1,7 @@
 package semantic;
 
 import java.util.List;
+import java.util.Map;
 
 import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.ast.PreorderJmmVisitor;
