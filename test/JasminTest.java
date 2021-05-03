@@ -32,12 +32,16 @@ public class JasminTest {
 
     @Test
     public void testHelloWorld() {
-        //JasminResult result = TestUtils.backend(new OllirResult(OllirUtils.parse(SpecsIo.getResource("fixtures/public/ollir/myclass1.ollir")), null, new ArrayList<>()));
-        var result = TestUtils.backend(new OllirResult(OllirUtils.parse(SpecsIo.getResource("fixtures/public/ollir/myclass1.ollir")), null, new ArrayList<>()));
-
+        // JasminResult result = TestUtils.backend(new OllirResult(OllirUtils.parse(SpecsIo.getResource("fixtures/public/ollir/HelloWorld.ollir")), null, new ArrayList<>()));
     
-        // String output = result.run().trim();
-        // System.out.println(output);
+        // result.run();
+    }
+
+    @Test
+    public void testFac() {
+        // JasminResult result = TestUtils.backend(new OllirResult(OllirUtils.parse(SpecsIo.getResource("fixtures/public/ollir/Fac.ollir")), null, new ArrayList<>()));
+    
+        // result.run();
     }
 
 

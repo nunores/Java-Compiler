@@ -44,12 +44,9 @@ public class JasminGenerator {
 
                 HashMap<String, Descriptor> varTable = method.getVarTable();
 
-                /* jasminString += "\n.limit stack 99\n";
-                int count = varTable.size()+1;
-                jasminString += ".limit locals " + count + "\n"; */
                 for (Instruction instruction: method.getInstructions()){
                         jasminString += instructToJasmin(instruction, varTable, method.getLabels());
-                }
+                } 
             }
 
             jasminString += "\n.end method\n";
@@ -71,7 +68,7 @@ public class JasminGenerator {
             case VOID:
                 return "V";
             default:
-                return "ups - conversao element type";
+                return "ups - conversao element type"; 
         }
     }
     public String instructToJasmin(Instruction instruction, HashMap<String, Descriptor> varTable, HashMap<String, Instruction> methodLabels){
@@ -84,21 +81,33 @@ public class JasminGenerator {
         }
 
         if (instruction instanceof AssignInstruction){
-            jasminString += assignmentsToJasmin((AssignInstruction)instruction, varTable);
+            AssignInstruction instruction2 = (AssignInstruction)instruction;
+            jasminString = instructToJasmin(instruction2.getRhs(), varTable, new HashMap<String, Instruction>());
+            Operand operand = (Operand) instruction2.getDest();
+    
+            if(!operand.getType().getTypeOfElement().equals(ElementType.OBJECTREF)){
+                jasminString += this.storeElement(operand, varTable);
+            }
+            return jasminString;
         }
 
         if (instruction instanceof BinaryOpInstruction){
-            jasminString += operationToJasmin((BinaryOpInstruction)instruction, varTable);
-        }
-        return jasminString;
-    }
-
-    public String assignmentsToJasmin(AssignInstruction instruction, HashMap<String, Descriptor> varTable){
-        String jasminString = instructToJasmin(instruction.getRhs(), varTable, new HashMap<String, Instruction>());
-        Operand operand = (Operand) instruction.getDest();
-
-        if(!operand.getType().getTypeOfElement().equals(ElementType.OBJECTREF)){
-            jasminString += this.storeElement(operand, varTable);
+            BinaryOpInstruction instruction2 = (BinaryOpInstruction)instruction;
+            String left = loadElement(instruction2.getLeftOperand(), varTable);
+            String right = loadElement(instruction2.getRightOperand(), varTable);
+            OperationType operationType = instruction2.getUnaryOperation().getOpType();
+            switch(operationType){
+                case ADD:
+                    jasminString += left + right + "iadd\n";
+                case SUB:
+                    jasminString += left + right + "isub\n";
+                case MUL:
+                    jasminString += left + right + "imul\n";
+                case DIV:
+                    jasminString += left + right + "idiv\n";
+                default:
+                    jasminString += "default - operations\n";
+            }
         }
         return jasminString;
     }
@@ -159,24 +168,5 @@ public class JasminGenerator {
             }
         }
         return jasminString;
-    }
-
-    public String operationToJasmin(BinaryOpInstruction instruction, HashMap<String, Descriptor> varTable){
-        String left = loadElement(instruction.getLeftOperand(), varTable);
-        String right = loadElement(instruction.getRightOperand(), varTable);
-        OperationType operationType = instruction.getUnaryOperation().getOpType();
-        switch(operationType){
-            case ADD:
-                return left + right + "iadd\n";
-            case SUB:
-                return left + right + "isub\n";
-            case MUL:
-                return left + right + "imul\n";
-            case DIV:
-                return left + right + "idiv\n";
-            default:
-                return "ups - operations";
-        }
-
     }
 }
