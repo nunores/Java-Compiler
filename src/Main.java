@@ -63,9 +63,15 @@ public class Main implements JmmParser {
 		OllirResult ollirResult = os.toOllir(semanticsResult); 					// CP2: Convert AST to OLLIR format
 		System.out.println("\nOLLIR Code generated with success.\n");
 
-		//BackendStage bs = new BackendStage();
-		//JasminResult jasminResult = compiler.toJasmin(ollirResult, filename);			// CP2: Convert OLLIR to Jasmin Bytecode (only for code structures defined in the project)
+		BackendStage bs = new BackendStage();
+		JasminResult jasminResult = compiler.toJasmin(ollirResult, filename);			// CP2: Convert OLLIR to Jasmin Bytecode (only for code structures defined in the project)
 		
-		//compiler.compile(jasminResult, filename);										// CP2: this should generate the .class File
+		compiler.compile(jasminResult, filename);				
+		
+		
+	}
+
+	public void compile(JasminResult jasminResult, String filename){
+		jasminResult.run();
 	}
 }

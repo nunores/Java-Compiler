@@ -16,7 +16,6 @@ public class MySymbolTable implements SymbolTable {
     public MySymbolTable() {}
 
     public void add(JmmNode node, MySymbol symbol){
-        // Check repeated vars, symbols, correct operation types, ...
         
         table.put(node, symbol);
     }

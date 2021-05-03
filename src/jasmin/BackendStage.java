@@ -27,6 +27,8 @@ import pt.up.fe.specs.util.SpecsIo;
 
 public class BackendStage implements JasminBackend {
 
+    public BackendStage() {}
+
     @Override
     public JasminResult toJasmin(OllirResult ollirResult) {
         ClassUnit ollirClass = ollirResult.getOllirClass();
@@ -41,13 +43,15 @@ public class BackendStage implements JasminBackend {
             ollirClass.show(); // print to console main information about the input OLLIR
 
             // Convert the OLLIR to a String containing the equivalent Jasmin code
-            String jasminCode = ""; // Convert node ...
+            String jasminCode = new JasminGenerator(ollirClass).classToJasmin();
+            System.out.println(jasminCode);
 
             // More reports from this stage
             List<Report> reports = new ArrayList<>();
 
             return new JasminResult(ollirResult, jasminCode, reports);
-
+            
+            
         } catch (OllirErrorException e) {
             return new JasminResult(ollirClass.getClassName(), null,
                     Arrays.asList(Report.newError(Stage.GENERATION, -1, -1, "Exception during Jasmin generation", e)));

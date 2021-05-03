@@ -31,8 +31,6 @@ public class AnalysisStage implements JmmAnalysis {
 
 			this.table = stGenerator.getSymbolTable(); 
 
-			st.print();
-
 			ArrayList<Report> reports = new ArrayList<Report>();
 			var semanticAnalysisVisitor = new SemanticAnalysisVisitor(st);
 			semanticAnalysisVisitor.visit(node, reports);
