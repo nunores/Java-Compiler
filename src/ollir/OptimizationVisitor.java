@@ -93,13 +93,9 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
     }
 
     public String handleMethodCall(JmmNode node, String ollirCode) {
-        String restIdent = node.getChildren().get(0).get("name");
-        String methodCall = node.get("name");
-        String ret = "";
-        if (this.imports.contains(restIdent) && node.getChildren().get(1).getKind().equals("InsideFunction")) {
-            ret = "        invokestatic(" + handleInsideFunction(node) + ").V;\n";
-        }
-        return ret + defaultVisit(node, ollirCode);
+        String scope = getScope(node);
+        return getMethodCall(node, new String(), "", 0, getTypeReturnedByNode(node, scope)); // TODO
+
     }
 
     public String handleReturnExpression(JmmNode node, String ollirCode) {
@@ -213,32 +209,8 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
     }
 
     public String handleAssignment(JmmNode node, String ollirCode) {
-        // String var = node.getChildren().get(0).get("name"); // num_aux
-        // String varType = types.get(varTypeST(var, this.actualMethodName)); // i32 
-        // String varRet = var + "." + varType; // num_aux.i32
-        // String ret = "";
-
-        // int varIsArg = checkVarIsArg(var);
-        // if (varIsArg != 0) {
-        //     varRet = "$" + String.valueOf(varIsArg) + varRet; // $1.num.i32
-        // }
-
-        // JmmNode arg2 = node.getChildren().get(1);
-        // if (arg2.getKind().equals("Operation")) {
-        //     String op = arg2.get("name");
-        //     String str = varRet + " .=." + varType + " \n";
-        //     ret = str;
-        // }
-        // else {
-        //     String var2 = node.getChildren().get(1).get("name");
-        //     ret = varRet + " :=." + varType + " " + var2 + "." + varType + defaultVisit(node, ollirCode) + ";\n\n";
-        // }
-
-        // return "        // " + ret + defaultVisit(node, ollirCode);
 
         String scope = getScope(node);
-        //System.out.println(getTypeReturnedByNode(node.getChildren().get(1), scope));
-
         return getAssignment(node.getChildren().get(1), new String(), node.getChildren().get(0).get("name"), 0, getTypeReturnedByNode(node.getChildren().get(1), scope)); // TODO
 
     }
@@ -382,22 +354,23 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
 
     public String getMethodCall(JmmNode node, String result, String var, int varNumber, String type)
     {
-        /*String invokeType = new String();
+        // TODO: Missing recursivity
+        String restIdent = node.getChildren().get(0).get("name");
         if (node.getChildren().get(0).getKind().equals("This"))
         {
-            invokeType = "virtual";
+            restIdent = "this";
         }
-        else
-        {
-            invokeType = "static";
-        }
-
-        for (int i = 0; i < node.getChildren().get(1).size(); i++)
-        {
-            
-        }*/
         
-        return new String();
+        String methodCall = node.get("name");
+        String ret = "";
+
+        if (this.imports.contains(restIdent)) {
+            ret = "        invokestatic(" + handleInsideFunction(node) + ").V;\n";
+        }
+        else {
+            ret = "        invokevirtual(" + handleInsideFunctionVirtual(node) + ")." + types.get(varTypeST(methodCall, this.actualMethodName)) + ";\n";
+        }
+        return ret;
     }
 
 
@@ -405,6 +378,18 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         List<String> a = new ArrayList<String>();
         String methodCall = node.get("name");
         String restIdent = node.getChildren().get(0).get("name");
+        a.add(restIdent);
+        a.add("\"" + methodCall + "\"");
+        for (JmmNode child : node.getChildren().get(1).getChildren()) {
+            a.add(child.get("name") + "." + types.get(varTypeST(child.get("name"), this.actualMethodName)));
+        }
+        return String.join(", ", a);
+    }
+
+    public String handleInsideFunctionVirtual(JmmNode node) {
+        List<String> a = new ArrayList<String>();
+        String methodCall = node.get("name");
+        String restIdent = node.getChildren().get(0).get("name") + "." + types.get(varTypeST(node.getChildren().get(0).get("name"), this.actualMethodName));
         a.add(restIdent);
         a.add("\"" + methodCall + "\"");
         for (JmmNode child : node.getChildren().get(1).getChildren()) {
