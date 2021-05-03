@@ -1,3 +1,5 @@
+package ollir;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +19,7 @@ import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.comp.jmm.report.ReportType;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.jmm.report.Stage;
+import semantic.MySymbolTable;
 
 /**
  * Copyright 2021 SPeCS.
@@ -32,11 +35,14 @@ import pt.up.fe.comp.jmm.report.Stage;
  */
 
 public class OptimizationStage implements JmmOptimization {
-
     private MySymbolTable table = new MySymbolTable();
 
     public OptimizationStage(MySymbolTable table){
         this.table = table;
+    }
+
+    public MySymbolTable getSymbolTable(){
+        return this.table;
     }
 
     @Override
@@ -44,10 +50,11 @@ public class OptimizationStage implements JmmOptimization {
         JmmNode node = semanticsResult.getRootNode();
 
         List<Report> reports = new ArrayList<>();
-        OptimizationVisitor ov = new OptimizationVisitor(reports, getSymbolTable());
+        OptimizationVisitor ov = new OptimizationVisitor(getSymbolTable());
         String ollirCode = ov.visit(node);
 
-        System.out.println("OLLIR CODE:\n" + ollirCode);
+        System.out.println("OLLIR CODE:\n----------\n" + ollirCode + "\n----------\n");
+
         return new OllirResult(semanticsResult, ollirCode, reports);
     }
 
@@ -61,9 +68,5 @@ public class OptimizationStage implements JmmOptimization {
     public OllirResult optimize(OllirResult ollirResult) {
         // THIS IS JUST FOR CHECKPOINT 3
         return ollirResult;
-    }
-
-    public MySymbolTable getSymbolTable(){
-        return this.table;
     }
 }

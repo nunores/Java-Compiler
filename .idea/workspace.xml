@@ -6,14 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="b1be5d57-de64-4a62-9e6a-897895b518bf" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/AnalysisStage.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/BackendStage.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/MySymbol.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/MySymbolTable.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/OptimizationStage.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/SemanticAnalysisVisitor.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/SymbolTableGenerator.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/CP2.md" beforeDir="false" afterPath="$PROJECT_DIR$/CP2.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ollir/OptimizationVisitor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ollir/OptimizationVisitor.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/fixtures/public/Fac.jmm" beforeDir="false" afterPath="$PROJECT_DIR$/test/fixtures/public/Fac.jmm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/fixtures/public/HelloWorld.ollir" beforeDir="false" afterPath="$PROJECT_DIR$/test/fixtures/public/HelloWorld.ollir" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,6 +49,13 @@
       </state>
     </system>
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -60,17 +63,22 @@
     <option name="version" value="1" />
   </component>
   <component name="ProjectId" id="1poLVWKydnhdorNVgErBI9FtcHk" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Asus ZenBook\OneDrive - Universidade do Porto\FEUP\comp2021-4d\test\fixtures\public" />
       <recent name="C:\Users\Asus ZenBook\OneDrive - Universidade do Porto\FEUP\comp2021-4d" />
     </key>
   </component>

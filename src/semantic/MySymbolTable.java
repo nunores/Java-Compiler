@@ -1,3 +1,5 @@
+package semantic;
+
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -9,9 +11,9 @@ import java.util.Map;
 import pt.up.fe.comp.jmm.JmmNode;
 
 
-class MySymbolTable implements SymbolTable {
+public class MySymbolTable implements SymbolTable {
 
-    Map<JmmNode, MySymbol> table = new LinkedHashMap(); 
+    Map<JmmNode, MySymbol> table = new LinkedHashMap();
     
     public MySymbolTable() {}
 
