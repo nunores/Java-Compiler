@@ -208,6 +208,10 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
 
                 if (symbol.getName().equals(node.get("name"))
                         && (symbol.getScope().equals("GLOBAL") || symbol.getScope().equals(scope))) {
+                    if (node.getKind().equals("RestIdentifier") && !symbol.getInit() && !node.getParent().getKind().equals("ArrayAccess") && symbol.getSuperName().equals("VarDeclaration"))
+                    {
+                        return false;
+                    }
                     if (node.getKind().equals("Var"))
                     {
                         symbol.setInit(true);
@@ -452,37 +456,44 @@ class SemanticAnalysisVisitor extends PreorderJmmVisitor<ArrayList<Report>, Bool
         String scope = getScope(node);
         Integer numChildren = node.getChildren().get(1).getNumChildren();
 
-        if (methodTypeUnknown(node, scope))
-        {
-            if (methodNumPar(node.get("name")) != numChildren && methodNumPar(node.get("name")) != -1)
+        if (!getTypeReturnedByNode(node.getChildren().get(0), scope).equals("int") && !getTypeReturnedByNode(node.getChildren().get(0), scope).equals("boolean") && !getTypeReturnedByNode(node.getChildren().get(0), scope).equals("int[]")){
+            if (methodTypeUnknown(node, scope))
+            {
+                if (methodNumPar(node.get("name")) != numChildren && methodNumPar(node.get("name")) != -1)
+                {
+                    if (!methodTypeUnknown(node, scope))
+                    {
+                        reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                        "The number of parameters in function " + node.get("name") + " is wrong."));
+                    }
+                }
+            }
+            else if (methodExists(node.get("name")) && (methodNumPar(node.get("name")) != numChildren) )
             {
                 if (!methodTypeUnknown(node, scope))
                 {
                     reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
-                    "The number of parameters in function " + node.get("name") + " is wrong."));
+                        "The number of parameters in function " + node.get("name") + " is wrong."));
+                }
+            }
+            else if (!methodExists(node.get("name")))
+            {
+                reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                        "The method " + node.get("name") + " does not exist."));
+            }
+            else
+            {
+                if (!methodCheckParTypes(node.get("name"), node.getChildren().get(1).getChildren(), scope))
+                {
+                    reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                        "The method " + node.get("name") + " does not have the correct parameter types."));
                 }
             }
         }
-        else if (methodExists(node.get("name")) && (methodNumPar(node.get("name")) != numChildren) )
-        {
-            if (!methodTypeUnknown(node, scope))
-            {
-                reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
-                    "The number of parameters in function " + node.get("name") + " is wrong."));
-            }
-        }
-        else if (!methodExists(node.get("name")))
-        {
-            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
-                    "The method " + node.get("name") + " does not exist."));
-        }
         else
         {
-            if (!methodCheckParTypes(node.get("name"), node.getChildren().get(1).getChildren(), scope))
-            {
-                reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
-                    "The method " + node.get("name") + " does not have the correct parameter types."));
-            }
+            reports.add(new Report(ReportType.ERROR, Stage.SEMANTIC, Integer.valueOf(node.get("line")), Integer.valueOf(node.get("column")),
+                        "The method " + node.get("name") + " can't be applied to the current type."));
         }
         
         return defaultVisit(node, reports);

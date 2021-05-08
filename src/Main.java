@@ -37,13 +37,11 @@ public class Main implements JmmParser {
             	
     		root.dump(""); // prints the tree on the screen
 			//System.out.println(root.toJson());
-			System.out.println(parser.getReports());
 
     		return new JmmParserResult(root, parser.getReports());
 		} catch(ParseException e) {
 			Report r = new Report(ReportType.ERROR, Stage.SYNTATIC, 0, e.getMessage());
 			parser.getReports().add(r);
-			System.out.println(parser.getReports());
 
 			return new JmmParserResult(null, parser.getReports());
 		}
@@ -65,7 +63,7 @@ public class Main implements JmmParser {
 		JmmSemanticsResult semanticsResult = as.semanticAnalysis(parserResult); 	// CP2: Symbol table generation and semantic analysis
 
 		if(!semanticsResult.getReports().isEmpty()){
-			System.out.println(parserResult.getReports());
+			System.out.println(semanticsResult.getReports());
 			return;
 		}
 
@@ -74,14 +72,14 @@ public class Main implements JmmParser {
 		System.out.println("\nOLLIR Code generated with success.\n");
 
 		if(!ollirResult.getReports().isEmpty()){
-			System.out.println(parserResult.getReports());
+			System.out.println(ollirResult.getReports());
 			return;
 		}
 
-		BackendStage bs = new BackendStage();
-		JasminResult jasminResult = bs.toJasmin(ollirResult);// CP2: Convert OLLIR to Jasmin Bytecode (only for code structures defined in the project)
+		//BackendStage bs = new BackendStage();
+		//JasminResult jasminResult = bs.toJasmin(ollirResult);// CP2: Convert OLLIR to Jasmin Bytecode (only for code structures defined in the project)
 		
-		compiler.compile(jasminResult, filename);				
+		//compiler.compile(jasminResult, filename);				
 		
 		
 	}
