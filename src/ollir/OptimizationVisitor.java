@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Stack;
+import pt.up.fe.comp.jmm.analysis.table.Symbol;
 
 import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.ast.AJmmVisitor;
@@ -33,15 +34,13 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         fillTypesMap();
         this.symbolTable = symbolTable;
 
-        addVisit("ClassDeclaration", this::handleClassDeclaration); // DONE
-        addVisit("ImportDeclaration", this::handleImportDeclaration); // DONE
-        addVisit("MethodDeclaration", this::handleMethodDeclaration); // DONE
-        addVisit("MainDeclaration", this::handleMainDeclaration); // DONE
-        addVisit("Assignment", this::handleAssignment); // TO FINISH
-        addVisit("MethodCall", this::handleMethodCall); // TO FINISH
-        addVisit("NewInstance", this::handleNewInstance); // TO DO
-        addVisit("Operation", this::handleOperation); // TO DO
-        addVisit("ReturnExpression", this::handleReturnExpression); // DONE
+        addVisit("ClassDeclaration", this::handleClassDeclaration);
+        addVisit("ImportDeclaration", this::handleImportDeclaration);
+        addVisit("MethodDeclaration", this::handleMethodDeclaration);
+        addVisit("MainDeclaration", this::handleMainDeclaration);
+        addVisit("Assignment", this::handleAssignment);
+        addVisit("MethodCall", this::handleMethodCall);
+        addVisit("ReturnExpression", this::handleReturnExpression);
 
         setDefaultVisit(this::defaultVisit);
     }
@@ -115,6 +114,8 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         }
         return ret + var + defaultVisit(node, ollirCode) + ";\n";
     }
+
+    /*-------------------------------------------------------------------------------------------------*/
 
     public String getType(JmmNode node, String scope){
         String tempType = new String();
@@ -216,11 +217,12 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
     }
 
     public String handleAssignment(JmmNode node, String ollirCode) { //TODO: tratar types
-        
+        String scope = getScope(node);
+        String type = getTypeToOllir(getTypeReturnedByNode(node, scope));
         String line = new String();
         switch (node.getChildren().get(0).getKind()) {
             case "Var":
-                line = line + node.getChildren().get(0).get("name") + ".i32 :=.i32 "; 
+                line = line + node.getChildren().get(0).get("name") + "." + type + " :=." + type + " "; 
                 break;
         
             default:
@@ -238,6 +240,9 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
             case "MethodCall":
                 line = line + methodCallNode(node.getChildren().get(1)) + ";";
                 break;
+            case "Exp":
+                line = line + expNode(node.getChildren().get(1)) + ";";
+                break;
             default:
                 System.out.println("Unexpected behaviour: handleAssignment");
                 break;
@@ -248,10 +253,36 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         return toReturn;
     }
 
+    private String expNode(JmmNode node) {
+        String toReturn = new String();      
+        
+        switch (node.getChildren().get(0).getKind()) {
+            case "Exp":
+                toReturn = expNode(node.getChildren().get(0));
+                break;
+            case "Operation":
+                toReturn = operationNode(node.getChildren().get(0));
+                break;
+            case "MethodCall":
+                toReturn = methodCallNode(node.getChildren().get(0));
+                break;
+            case "IntegerLiteral": case "RestIdentifier": case "True": case "False":
+                toReturn = terminalNode(node.getChildren().get(0));
+                break;
+            default:
+                System.out.println("Unexpected behaviour: expNode");
+                break;
+        }
+        
+        
+        return toReturn;
+    }
 
     private String methodCallNode(JmmNode node) {  //TODO: types
-        String toReturn = "aux" + this.auxNumber + ".i32";
-        String line = "aux" + this.auxNumber + ".i32 :=.i32 ";
+        String scope = getScope(node);
+        String type = getTypeToOllir(getTypeReturnedByNode(node, scope));
+        String toReturn = "aux" + this.auxNumber + "." + type;
+        String line = "aux" + this.auxNumber + "." + type + " :=." + type + " ";
         this.auxNumber++;
         
         switch (node.getChildren().get(0).getKind()) {
@@ -259,7 +290,17 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
                 line = line + "invokevirtual(this, " + "\"" + node.get("name") + "\"";
                 break;
             case "RestIdentifier":
-                //if () //////////////////////////////////////
+                if (varInImports(node.getChildren().get(0))) 
+                {
+                    line = line + "invokestatic(" + node.getChildren().get(0).get("name") + ", \"" + node.get("name") + "\"";
+                }
+                else
+                {
+                    line = line + "invokevirtual(" + node.getChildren().get(0).get("name") + "." + getClassName(node) + ", \"" + node.get("name") + "\"";
+                }
+                break;
+            case "Exp":
+                line = line + expNode(node.getChildren().get(0));
                 break;
             default:
                 System.out.println("Unexpected behaviour: methodCallNode");
@@ -274,31 +315,40 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
                     break;
                 case "Operation":
                     line = line + ", " + operationNode(node.getChildren().get(1).getChildren().get(i));
+                    break;
+                case "Exp":
+                    line = line + ", " + expNode(node.getChildren().get(1).getChildren().get(i));
+                    break;
                 default:
                     System.out.println("Unexpected behaviour: methodCallNode");
                     break;
             }
         }
 
-        line = line + ").i32;\n";
+        line = line + ")." + type + ";\n";
         this.assignmentOllir += line;
         return toReturn;
     }
 
     private String operationNode(JmmNode node) { //TODO: types
-        String toReturn = "aux" + this.auxNumber + ".i32";
-        String line = "aux" + this.auxNumber + ".i32 :=.i32 ";
+        String scope = getScope(node);
+        String type = getTypeToOllir(getTypeReturnedByNode(node, scope));
+        String toReturn = "aux" + this.auxNumber + "." + type;
+        String line = "aux" + this.auxNumber + "." + type + " :=." + type + " ";
         this.auxNumber++;
 
         switch (node.getChildren().get(0).getKind()) {
             case "IntegerLiteral": case "RestIdentifier":
-                line = line + terminalNode(node.getChildren().get(0)) + " " + node.get("name") + ".i32 ";
+                line = line + terminalNode(node.getChildren().get(0)) + " " + node.get("name") + "." + type + " ";
                 break;
             case "Operation":
-                line = line + operationNode(node.getChildren().get(0)) + " " + node.get("name") + ".i32 ";
+                line = line + operationNode(node.getChildren().get(0)) + " " + node.get("name") + "." + type + " ";
                 break;
             case "MethodCall":
-                line = line + methodCallNode(node.getChildren().get(0)) + " " + node.get("name") + ".i32";
+                line = line + methodCallNode(node.getChildren().get(0)) + " " + node.get("name") + "." + type + " ";
+                break;
+            case "Exp":
+                line = line + expNode(node.getChildren().get(0)) + " " + node.get("name") + "." + type + " ";
                 break;
             default:
                 System.out.println("Unexpected behaviour: operationNode");
@@ -314,6 +364,9 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
                 break;
             case "MethodCall":
                 line = line + methodCallNode(node.getChildren().get(1)) + ";\n";
+                break;
+            case "Exp":
+                line = line + expNode(node.getChildren().get(1)) + ";\n";
                 break;
             default:
                 System.out.println("Unexpected behaviour: operationNode");
@@ -348,165 +401,24 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         return toReturn;
     }
 
-    // public String getAssignment(JmmNode node, String result, String var, int varNumber, String type)
-    // {
+    public Boolean varInImports(JmmNode node){
+        for (Map.Entry<JmmNode, MySymbol> entry : symbolTable.getTable().entrySet()) {
+            JmmNode tempNode = entry.getKey();
+            MySymbol symbol = entry.getValue();
 
-    //     int nextVarNumber = varNumber + 1;
-        
-    //     if (node.getKind().equals("Operation"))
-    //     {
-    //         result += getOperation(node, result, var, type); // TODO: Get type com knowledge (função OP)
-    //     }
-    //     else if (node.getKind().equals("MethodCall"))
-    //     {
-    //         result += getMethodCall(node, result, var, nextVarNumber, type);
-    //     }
-    //     else if (node.getKind().equals("Exp"))
-    //     {
-    //         //result += getAssignment(node.getChildren().get(0), result, "aux", nextVarNumber, type);   
-    //     }
-    //     else if (node.getKind().equals("IntegerLiteral") || node.getKind().equals("RestIdentifier") || node.getKind().equals("True") || node.getKind().equals("False"))
-    //     {
-    //         int varIsArg = checkVarIsArg(var);
-    //         if (varIsArg != 0) {
-    //             var = "$" + String.valueOf(varIsArg) + "." + var;
-    //         }
-            
-    //         return "\t" + var + "." + types.get(type) + " :=." + types.get(type) + " " + node.get("name") + "." + types.get(type) + ";\n";
-    //     }
-    //     else if (node.getKind().equals("NewInstance")) {
-    //         return "\t" + var + "." + types.get(type) + " :=." + types.get(type) + " new(" + types.get(type) + ")." + types.get(type) + ";\n";
-    //     }
-        
+            if (tempNode.getKind().equals("ImportDeclaration") && symbol.getName().equals(node.get("name"))){
+                return true;
+            }
+        }
+        return false;
+    }
 
+    public String getClassName(JmmNode node)
+    {
+        return node.getAncestor("ClassDeclaration").get().getChildren().get(0).get("name");
+    }
 
-
-    //     // if (node.getChildren().get(1).getKind().equals("Operation"))
-    //     // {
-
-    //     // }
-    //     // else if (node.getChildren().get(1).getKind().equals("MethodCall"))
-    //     // {
-
-    //     // }
-    //     // else if (node.getChildren().get(1).getKind().equals("Exp"))
-    //     // {
-    //     //     result += getAssignment(node.getChildren().get(1), result);   
-    //     // }
-
-    //     return result;
-    // }
-
-    // public String getOperation(JmmNode node, String result, String var, String type)
-    // {
-    //     String firstChild = new String();
-    //     String secondChild = new String();
-    //     String newResult = result;
-    //     Integer initialVarNumber = this.globalVarNumber;
-        
-    //     if (node.getChildren().get(0).getKind().equals("IntegerLiteral") || node.getChildren().get(0).getKind().equals("RestIdentifier"))
-    //     {
-    //         firstChild = node.getChildren().get(0).get("name");
-    //     }
-    //     else if(node.getChildren().get(0).getKind().equals("Operation"))
-    //     {
-    //         this.globalVarNumber++;
-    //         newResult += getOperation(node.getChildren().get(0), result, "aux", type);
-    //         firstChild = "aux" + String.valueOf(this.prevInitialVarNumber);
-    //     }
-    //     else if(node.getChildren().get(0).getKind().equals("MethodCall"))
-    //     {
-    //         /*this.globalVarNumber++;
-    //         newResult += getMethodCall(node.getChildren().get(0), result, "aux", type);
-    //         firstChild = "aux" + String.valueOf(this.prevInitialVarNumber);*/
-    //     }
-    //     else if(node.getChildren().get(0).getKind().equals("Exp"))
-    //     {
-
-    //     }
-
-    //     if (node.getChildren().get(1).getKind().equals("IntegerLiteral") || node.getChildren().get(1).getKind().equals("RestIdentifier"))
-    //     {
-    //         int varIsArg = checkVarIsArg(var);
-    //         if (varIsArg != 0) {
-    //             var = "$" + String.valueOf(varIsArg) + "." + var;
-    //         }
-
-    //         secondChild = node.getChildren().get(1).get("name");
-    //         int secondChildIsArg = checkVarIsArg(secondChild);
-    //         if (secondChildIsArg != 0) {
-    //             secondChild = "$" + String.valueOf(secondChildIsArg) + "." + secondChild;
-    //         }
-
-    //         if (initialVarNumber == 0)
-    //         {
-    //             newResult += "\t" + var + "." + types.get(type) + " :=." + types.get(type) + " " + firstChild + "." + types.get(type) + " " + node.get("name") + "." + types.get(type) + " " + secondChild + "." + types.get(type) + ";\n";
-    //         }
-    //         else
-    //         {
-    //             newResult += "\t" + var + String.valueOf(initialVarNumber) + "." + types.get(type) + " :=." + types.get(type) + " " + firstChild + "." + types.get(type) + " " + node.get("name") + "." + types.get(type) + " " + secondChild + "." + types.get(type) + ";\n";
-    //         }
-    //     }
-    //     else if(node.getChildren().get(1).getKind().equals("Operation"))
-    //     {
-    //         this.globalVarNumber++;
-    //         newResult += getOperation(node.getChildren().get(1), result, "aux", type);
-    //         secondChild = "aux" + String.valueOf(this.prevInitialVarNumber);
-
-    //         int varIsArg = checkVarIsArg(var);
-    //         if (varIsArg != 0) {
-    //             var = "$" + String.valueOf(varIsArg) + "." + var;
-    //         }
-
-    //         int secondChildIsArg = checkVarIsArg(secondChild);
-    //         if (secondChildIsArg != 0) {
-    //             secondChild = "$" + String.valueOf(secondChildIsArg) + "." + secondChild;
-    //         }
-
-    //         if (initialVarNumber == 0)
-    //         {
-    //             newResult += "\t" + var + "." + types.get(type) + " :=." + types.get(type) + " " + firstChild + "." + types.get(type) + " " + node.get("name") + "." + types.get(type) + " " + secondChild + "." + types.get(type) + ";\n";
-    //         }
-    //         else
-    //         {
-    //             newResult += "\t" + var + String.valueOf(initialVarNumber) + "." + types.get(type) + " :=." + types.get(type) + " " + firstChild + "." + types.get(type) + " " + node.get("name") + "." + types.get(type) + " " + secondChild + "." + types.get(type) + ";\n";
-    //         }
-    //     }
-    //     else if(node.getChildren().get(1).getKind().equals("MethodCall"))
-    //     {
-            
-    //     }
-    //     else if(node.getChildren().get(1).getKind().equals("Exp"))
-    //     {
-
-    //     } 
-        
-    //     this.prevInitialVarNumber = initialVarNumber;
-    //     return newResult;
-    // }
-
-    // public String getMethodCall(JmmNode node, String result, String var, int varNumber, String type)
-    // {
-    //     String firstChild = new String();
-    //     String secondChild = new String();
-    //     String newResult = result;
-    //     Integer initialVarNumber = this.globalVarNumber;
-        
-    //     if (node.getChildren().get(0).getKind().equals("This"))
-    //     {
-    //         firstChild = "this";
-    //     }
-    //     else if (node.getChildren().get(0).getKind().equals("RestIdentifier")){
-    //         firstChild = node.getChildren().get(0).get("name");
-    //     }
-
-    //     if (node.getChildren().get(1).equals("InsideFunction"))
-    //     {
-
-    //     }
-
-    //     return "";
-    // }
+    /*-------------------------------------------------------------------------------------------------*/
 
 
     public String handleInsideFunction(JmmNode node) {
@@ -531,16 +443,6 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
             a.add(child.get("name") + "." + types.get(varTypeST(child.get("name"), this.actualMethodName)));
         }
         return String.join(", ", a);
-    }
-
-    public String handleNewInstance(JmmNode node, String ollirCode) {
-        //return "        // newInstance\n";
-        return "";
-    }
-
-    public String handleOperation(JmmNode node, String ollirCode) {
-        //return "        // handleOperation\n";
-        return "";
     }
 
     private String defaultVisit(JmmNode node, String ollirCode) {
@@ -638,5 +540,26 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         types.put("int[]", "array.i32");
         types.put("String[]", "array.String");
         types.put("void", "V");
+        
+    }
+    
+
+    public String getTypeToOllir(String type)
+    {
+        switch (type) {
+            case "int":
+                return "i32";
+            case "boolean":
+                return "bool";
+            case "int[]":
+                return "array.i32";
+            case "String[]":
+                return "array.String";
+            case "void":
+                return "V";
+            default:
+                return type;
+        }
+    
     }
 }

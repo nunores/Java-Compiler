@@ -1,9 +1,13 @@
 import io;
 class Simple {
 
-    public int add(int a, int b){
-        int c;
-        c = this.constInstr();
+    public boolean add(int a, int b){
+        boolean c;
+		Simple s;
+		//c = (true && false);
+        //c = this.constInstr();
+		s = new Simple();
+		c = true;
         return c;
     }
 
@@ -14,12 +18,13 @@ class Simple {
         Simple s;
         a = 20;
         b = 10;
-        //s = new Simple();
+		//a = (new Simple().constInstr());
+        s = new Simple();
         //c = s.add(a,b);
-        //io.println(c);
+        io.println(c);
     }
 
-    public int constInstr(){
+    public int constInstr(int a){
         int c;
         c = 0;
         c = 4;

@@ -43,11 +43,18 @@ Todas as verificações feitas na análise semantica pedidas devem reportar erro
 - [x] ReturnExpression
 - [ ] Assignment
 - [ ] MethodCall
-- [ ] Operation 
+- [ ] Operation  Falta o caso base
 - [ ] NewInstance
+- [ ] Expression
+- [ ] DotLength / ArrayLength
+- [ ] ArrayAccess
 - [x] HelloWorld.jmm
 - [ ] Fac.jmm
 - [ ] Simple.jmm
+
+- [ ] invokespecial
+- [ ] Less e And
+- [ ] Not
 
 
 ## Jasmin Generation
