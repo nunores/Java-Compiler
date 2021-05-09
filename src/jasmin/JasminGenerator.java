@@ -16,9 +16,15 @@ public class JasminGenerator {
     public JasminGenerator(ClassUnit classUnit){
         this.classUnit = classUnit;
     }
+    private String jasminAccessModifier(AccessModifiers accessModifiers){
+        return  accessModifiers.name().equals("PRIVATE") ? "private" : "public";
+    }
 
+    private String jasminIsStatic(boolean isStatic){
+        return isStatic ? "static" : "";
+    }
     public String classToJasmin(){
-        String jasminString = ".class " + "public " + classUnit.getClassName() + "\n.super java/lang/Object\n";
+        String jasminString = ".class " + jasminAccessModifier(classUnit.getClassAccessModifier())+" " + classUnit.getClassName() + "\n.super " +((classUnit.getSuperClass() == null || classUnit.getSuperClass().equals(classUnit.getClassName())) ? "java/lang/Object" : classUnit.getSuperClass())+ "\n";
         return jasminString + methodToJasmin();
     }
 
@@ -87,6 +93,10 @@ public class JasminGenerator {
                 jasminString += this.storeElement(operand, varTable);
             }
             return jasminString;
+        }
+        if(instruction instanceof SingleOpInstruction){
+            SingleOpInstruction instruction2 = (SingleOpInstruction)instruction;
+            jasminString += loadElement(instruction2.getSingleOperand(), varTable);
         }
 
         if (instruction instanceof BinaryOpInstruction){
