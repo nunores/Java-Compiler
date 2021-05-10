@@ -7,8 +7,6 @@ import org.specs.comp.ollir.Instruction;
 import org.specs.comp.ollir.*;
 import java.util.*;
 
-//import javax.swing.text.AbstractDocument.ElementEdit;
-
 
 public class JasminGenerator {
     private ClassUnit classUnit;
@@ -17,11 +15,13 @@ public class JasminGenerator {
         this.classUnit = classUnit;
     }
     private String jasminAccessModifier(AccessModifiers accessModifiers){
-        return  accessModifiers.name().equals("PRIVATE") ? "private" : "public";
+        if(accessModifiers.name().equals("PRIVATE")) return "private";
+        else return "public";
     }
 
     private String jasminIsStatic(boolean isStatic){
-        return isStatic ? "static" : "";
+        if(isStatic) return "static";
+        else return "";
     }
     public String classToJasmin(){
         String jasminString = ".class " + jasminAccessModifier(classUnit.getClassAccessModifier())+" " + classUnit.getClassName() + "\n.super " +((classUnit.getSuperClass() == null || classUnit.getSuperClass().equals(classUnit.getClassName())) ? "java/lang/Object" : classUnit.getSuperClass())+ "\n";
@@ -31,48 +31,67 @@ public class JasminGenerator {
     public String methodToJasmin(){
         String jasminString = "";
         for (Method method: classUnit.getMethods()){
-            jasminString += "\n.method public ";
+            jasminString += "\n.method ";
             if (method.isConstructMethod()){
-                jasminString += "<init>()V\n\taload_0\n\tinvokespecial java/lang/Object/<init>()V\n\treturn \n";
-            }
-            else if(method.isStaticMethod()){
-                jasminString += "static main([Ljava/lang/String;)V\n\t.limit stack 99\n\t.limit locals 99\n";
+                jasminString += jasminAccessModifier(method.getMethodAccessModifier()) +
+                jasminIsStatic(method.isStaticMethod()) + " "+
+                "<init>"+"(";
+                for (Element element: method.getParams()){
+                    jasminString += convertElementType(element.getType());
+                } 
+                jasminString += ")"+convertElementType(method.getReturnType())+"\n";
+            
             }
             else{
-                jasminString += method.getMethodName() + "(";
+                jasminString += jasminAccessModifier(method.getMethodAccessModifier()) +" "+
+                jasminIsStatic(method.isStaticMethod()) + " "+
+                method.getMethodName()+"(";
                 for (Element element: method.getParams()){
-                    jasminString += convertElementType(element.getType().getTypeOfElement());
-                }
-                jasminString += ")" + this.convertElementType(method.getReturnType().getTypeOfElement());
-                jasminString += "\n\t.limit stack 99\n\t.limit locals 99\n";
-
-                HashMap<String, Descriptor> varTable = method.getVarTable();
-
-                for (Instruction instruction: method.getInstructions()){
-                        jasminString += instructToJasmin(instruction, varTable, method.getLabels());
+                    jasminString += convertElementType(element.getType());
                 } 
+                jasminString += ")"+convertElementType(method.getReturnType())+"\n";
             }
 
+            // jasminString += instructionToJasmin(method.getInstructions(), method);
             jasminString += ".end method\n";
         }
         return jasminString;
         
     }
 
-    public String convertElementType(ElementType type){
-        switch (type){
+    private String ArrayTypeToJasmin(ElementType elementType){
+        switch (elementType.name()){
+            case "STRING": 
+                return "[Ljava/lang/String;";   
+            case "INT32": 
+                return "[I"; 
+            case "BOOLEAN": 
+                return "[B"; 
+            default:    
+                return "";
+        }
+    }
+
+    public String convertElementType(Type type){
+        switch (type.getTypeOfElement()){
             case INT32:
                 return "I";
             case BOOLEAN:
                 return "Z";
             case ARRAYREF:
-                return "{I";
+                return ArrayTypeToJasmin(type.getTypeOfElement());
             case OBJECTREF:
                 return "OBJ";
+            case CLASS:
+                return "C";
+            case THIS:
+                return "T";
+            case STRING:
+                return "S";
             case VOID:
                 return "V";
             default:
-                return "ups - conversao element type"; 
+                return "V"; 
         }
     }
     public String instructToJasmin(Instruction instruction, HashMap<String, Descriptor> varTable, HashMap<String, Instruction> methodLabels){
@@ -146,7 +165,7 @@ public class JasminGenerator {
             CallInstruction instruction2 = (CallInstruction) instruction;
             switch(instruction2.getInvocationType()){
                 case invokevirtual:
-                    return jasminString += "\t" +invokeToJasmin(instruction2, varTable);//"\tinvokevirtual " + classUnit.getClassName() + "\n";
+                    return jasminString += "\taload_0\n\t" +invokeToJasmin(instruction2, varTable);//"\tinvokevirtual " + classUnit.getClassName() + "\n";
                 case invokespecial:
                     return jasminString += "\tinvokespecial " +classUnit.getClassName() +"/" + invokeToJasmin(instruction2, varTable);
                 case invokestatic:
@@ -156,8 +175,30 @@ public class JasminGenerator {
                 default: 
             }
         }
+
+        if(instruction instanceof GotoInstruction){
+            return "goto";
+        }
+
+
     return "";
 }
+
+    public String instructionToJasmin(ArrayList<Instruction> instructions , Method method){
+        HashMap<String, Descriptor> varTable = method.getVarTable();
+        HashMap<String, Instruction> labels = method.getLabels();
+        String body = "";
+        body += "\t.limit stack 99\n";
+        body += "\t.limit locals 99\n";
+        for(Instruction instruction : instructions){
+            body += "\t"+ instructToJasmin(instruction, varTable, labels) + "\n";
+        }
+
+        if(method.getReturnType().getTypeOfElement() == ElementType.VOID){
+            body += "\treturn\n";
+        }
+        return body;
+    }
 
     public String storeElement(Operand operand, HashMap<String, Descriptor> varTable){
         switch(operand.getType().getTypeOfElement()){
@@ -251,11 +292,20 @@ public class JasminGenerator {
         jasminString+="(";
 
         for(Element e: instruction.getListOfOperands()){
-            jasminString+=convertElementType(e.getType().getTypeOfElement());
+            jasminString+=convertElementType(e.getType());
         }
         jasminString+=")";
 
-        jasminString+=convertElementType(instruction.getReturnType().getTypeOfElement());
+        jasminString+=convertElementType(instruction.getReturnType());
         return jasminString +"\n" ;
+    }
+
+    private String jasminFields(){
+        String jasmiString = "";
+        for(Field field : classUnit.getFields())
+        {
+            jasmiString += ".field "+jasminIsStatic(field.isStaticField())+" "+field.getFieldName() + " "+convertElementType(field.getFieldType())+"\n";
+        }
+        return jasmiString;
     }
 }
