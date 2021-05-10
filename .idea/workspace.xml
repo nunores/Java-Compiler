@@ -4,14 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b1be5d57-de64-4a62-9e6a-897895b518bf" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/ollir/OptimizationVisitor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ollir/OptimizationVisitor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/semantic/AnalysisStage.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/semantic/AnalysisStage.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/semantic/SemanticAnalysisVisitor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/semantic/SemanticAnalysisVisitor.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/fixtures/public/Simple.jmm" beforeDir="false" afterPath="$PROJECT_DIR$/test/fixtures/public/Simple.jmm" afterDir="false" />
-    </list>
+    <list default="true" id="b1be5d57-de64-4a62-9e6a-897895b518bf" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
