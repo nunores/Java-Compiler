@@ -50,6 +50,8 @@ public class JasminGenerator {
                     jasminString += convertElementType(element.getType());
                 } 
                 jasminString += ")"+convertElementType(method.getReturnType())+"\n";
+                jasminString += ".limit stack 99\n";
+                jasminString += ".limit locals 99\n";
             }
 
             jasminString += instructionToJasmin(method);
@@ -115,7 +117,7 @@ public class JasminGenerator {
         }
         if(instruction instanceof SingleOpInstruction){
             SingleOpInstruction instruction2 = (SingleOpInstruction)instruction;
-            jasminString += loadElement(instruction2.getSingleOperand(), varTable);
+            return loadElement(instruction2.getSingleOperand(), varTable);
         }
 
         if (instruction instanceof BinaryOpInstruction){
@@ -137,11 +139,12 @@ public class JasminGenerator {
             }
         }
 
-        /* if(instruction instanceof ReturnInstruction){
+        if(instruction instanceof ReturnInstruction){
             ReturnInstruction instruction2 = (ReturnInstruction)instruction;
-            if(!instruction2.hasReturnValue()) jasminString +="return\n";
+            if(!instruction2.hasReturnValue()) return "return\n";
             switch(instruction2.getOperand().getType().getTypeOfElement()){
                 case VOID:
+                    jasminString += "return\n";
 
                 case INT32:
                     return "ireturn\n";
@@ -149,27 +152,31 @@ public class JasminGenerator {
                 case BOOLEAN:
                     jasminString += loadElement(instruction2.getOperand(), varTable);
                     jasminString += "ireturn\n";
+                    return jasminString;
 
                 case ARRAYREF:
+                    jasminString += "return\n";
 
                 case OBJECTREF:
                     jasminString += loadElement(instruction2.getOperand(), varTable);
                     jasminString += "areturn\n";
+                    return jasminString;
 
                 default:
-                    break;
+                    jasminString += "return\n";
             }
-        } */
+            
+        }
 
         if(instruction instanceof CallInstruction){
             CallInstruction instruction2 = (CallInstruction) instruction;
             switch(instruction2.getInvocationType()){
                 case invokevirtual:
-                    return jasminString += "aload_0\n" +invokeToJasmin(instruction2, varTable);//"invokevirtual " + classUnit.getClassName() + "\n";
+                    return  "aload_0\n" +invokeToJasmin(instruction2, varTable);
                 case invokespecial:
-                    return jasminString += "aload_0\n" + invokeToJasmin(instruction2, varTable);
+                    return  "aload_0\n" + invokeToJasmin(instruction2, varTable);
                 case invokestatic:
-                    return jasminString += invokeToJasmin(instruction2, varTable);//"invokestatic " + "\n";
+                    return  invokeToJasmin(instruction2, varTable);
                 case NEW:
                 case arraylength:
                 default: 
@@ -181,15 +188,13 @@ public class JasminGenerator {
         }
 
 
-    return "";
+    return jasminString;
 }
 
     public String instructionToJasmin(Method method){
         HashMap<String, Descriptor> varTable = method.getVarTable();
         HashMap<String, Instruction> labels = method.getLabels();
         String jasminString = "";
-        jasminString += ".limit stack 99\n";
-        jasminString += ".limit locals 99\n";
         for(Instruction instruction : method.getInstructions()){
             jasminString += ""+ instructToJasmin(instruction, varTable, labels);
         }
