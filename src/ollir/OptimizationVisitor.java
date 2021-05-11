@@ -53,9 +53,9 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
             ret += this.className + " extends " + node.getChildren().get(1).get("extendedClass") + " {\n";
         else
             ret += this.className + " {\n";
-        ret += "    .construct " + this.className + "().V {\n";
-        ret += "        invokespecial(this, \"<init>\").V;\n";
-        ret += "    }\n\n";
+        ret += "\t.construct " + this.className + "().V {\n";
+        ret += "\t\tinvokespecial(this, \"<init>\").V;\n";
+        ret += "\t}\n\n";
         return ret + defaultVisit(node, ollirCode) + "}";
     }
 
@@ -74,23 +74,23 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
             node.add(nodeR);
         }
 
-        String init = "    .method public " + this.actualMethodName;
+        String init = "\t.method public " + this.actualMethodName;
         String methodParameters = "(" + methodParameters(node) + ")";
         String methodType = "." + getMethodType(node) + " {\n";
 
-        return init + methodParameters + methodType + defaultVisit(node, ollirCode) + "    }\n\n";
+        return init + methodParameters + methodType + defaultVisit(node, ollirCode) + "\t}\n\n";
     }
 
     public String handleMainDeclaration(JmmNode node, String ollirCode) {
         this.actualMethodName = "MainDeclaration";
 
-        String init = "    .method public static main";
+        String init = "\t.method public static main";
         String args = "(" + firstChildName(node) + ".array.String).V {\n";
         this.parameters = new ArrayList<String>();
         //JmmNode nodeR = new JmmNodeImpl("ReturnExpression");
         //node.add(nodeR);
 
-        return init + args + defaultVisit(node, ollirCode) + "    }\n\n";
+        return init + args + defaultVisit(node, ollirCode) + "\t}\n\n";
     }
 
     public String handleMethodCall(JmmNode node, String ollirCode) {
@@ -100,9 +100,9 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
     }
 
     public String handleReturnExpression(JmmNode node, String ollirCode) {
-        String ret = "        ret." + types.get(this.actualMethodType) + " ";
+        String ret = "\t\tret." + types.get(this.actualMethodType) + " ";
         if (node.getChildren().isEmpty()) {
-            return "        ret.V;\n";
+            return "\t\tret.V;\n";
         }
         String var = firstChildName(node);
         int varIsArg = checkVarIsArg(var);
@@ -219,7 +219,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
     public String handleAssignment(JmmNode node, String ollirCode) { //TODO: tratar types
         String scope = getScope(node);
         String type = getTypeToOllir(getTypeReturnedByNode(node, scope));
-        String line = "        ";
+        String line = "\t";
         switch (node.getChildren().get(0).getKind()) {
             case "Var":
                 line = line + node.getChildren().get(0).get("name") + "." + type + " :=." + type + " "; 
@@ -235,13 +235,13 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
                 line = line + terminalNode(node.getChildren().get(1)) + ";";
                 break;
             case "Operation": case "And": case "Less":
-                line = line + operationNode(node.getChildren().get(1)) + ";";  //TODO: Caso de não precisar de variáveis auxiliares
+                line = line + operationNode(node.getChildren().get(1), false)/* + ";"*/;
                 break;
             case "MethodCall":
-                line = line + methodCallNode(node.getChildren().get(1)) + ";";
+                line = line + methodCallNode(node.getChildren().get(1), false)/* + ";"*/;
                 break;
             case "Exp":
-                line = line + expNode(node.getChildren().get(1)) + ";";
+                line = line + expNode(node.getChildren().get(1), false)/* + ";"*/;
                 break;
             case "Not":
                 line = line + notNode(node.getChildren().get(1)) + ";";
@@ -261,7 +261,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
 
     private String notNode(JmmNode node) {
         String operation = new String();
-        if (node.getKind().equals("And")) {
+/*         if (node.getKind().equals("And")) {
             operation = "&&";
         }
         else if (node.getKind().equals("Less")) {
@@ -270,10 +270,23 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         else {
             operation = node.get("name");
         }
+ */
+        switch (node.getKind()) {
+            case "And":
+                operation = "&&";
+                break;
+            case "Less":
+                operation = "<";
+                break;
+            default:
+                operation = node.get("name");
+                break;
+        }
+
         String scope = getScope(node);
         String type = getTypeToOllir(getTypeReturnedByNode(node, scope));
         String toReturn = "aux" + this.auxNumber + "." + type;
-        String line = "        aux" + this.auxNumber + "." + type + " :=." + type + " ";
+        String line = "\taux" + this.auxNumber + "." + type + " :=." + type + " ";
         this.auxNumber++;
 
         switch (node.getChildren().get(0).getKind()) {
@@ -281,13 +294,13 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
                 line = line + operation + "." + type + " " + terminalNode(node.getChildren().get(0)) + ";\n";
                 break;
             case "Operation": case "And":
-                line = line + operation + "." + type + " " + operationNode(node.getChildren().get(0)) + ";\n";
+                line = line + operation + "." + type + " " + operationNode(node.getChildren().get(0), true) + ";\n";
                 break;
             case "MethodCall":
-                line = line + operation + "." + type + " " + methodCallNode(node.getChildren().get(0)) + ";\n";
+                line = line + operation + "." + type + " " + methodCallNode(node.getChildren().get(0), true) + ";\n";
                 break;
             case "Exp":
-                line = line + operation + "." + type + " " + expNode(node.getChildren().get(0)) + ";\n";
+                //line = line + operation + "." + type + " " + expNode(node.getChildren().get(0)) + ";\n";
                 break;
             case "True": case "False":
                 line = line + operation + "." + type + " " + terminalNode(node.getChildren().get(0)) + ";\n";
@@ -363,18 +376,18 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         return toReturn;
     }
 
-    private String expNode(JmmNode node) {
+    private String expNode(JmmNode node, boolean needAux) {
         String toReturn = new String();      
         
         switch (node.getChildren().get(0).getKind()) {
             case "Exp":
-                toReturn = expNode(node.getChildren().get(0));
+                toReturn = expNode(node.getChildren().get(0), needAux);
                 break;
             case "Operation": case "And": case "Less":
-                toReturn = operationNode(node.getChildren().get(0));
+                toReturn = operationNode(node.getChildren().get(0), needAux); //////////////////////////////
                 break;
             case "MethodCall":
-                toReturn = methodCallNode(node.getChildren().get(0));
+                toReturn = methodCallNode(node.getChildren().get(0), needAux); /////////////////////////////
                 break;
             case "IntegerLiteral": case "RestIdentifier": case "True": case "False":
                 toReturn = terminalNode(node.getChildren().get(0));
@@ -391,12 +404,15 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         return toReturn;
     }
 
-    private String methodCallNode(JmmNode node) {  //TODO: types
+    private String methodCallNode(JmmNode node, boolean needAux) {  //TODO: types
         String scope = getScope(node);
         String type = getTypeToOllir(getTypeReturnedByNode(node, scope));
         String toReturn = "aux" + this.auxNumber + "." + type;
-        String line = "aux" + this.auxNumber + "." + type + " :=." + type + " ";
-        this.auxNumber++;
+        String line = new String();
+        if (needAux){
+            line = "\t\taux" + this.auxNumber + "." + type + " :=." + type + " ";
+            this.auxNumber++;
+        }
         
         switch (node.getChildren().get(0).getKind()) {
             case "This":
@@ -413,7 +429,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
                 }
                 break;
             case "Exp":
-                line = line + expNode(node.getChildren().get(0));
+                line = line + expNode(node.getChildren().get(0), true);
                 break;
             default:
                 System.out.println("Unexpected behaviour: methodCallNode");
@@ -427,10 +443,13 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
                     line = line + ", " + terminalNode(node.getChildren().get(1).getChildren().get(i));
                     break;
                 case "Operation":
-                    line = line + ", " + operationNode(node.getChildren().get(1).getChildren().get(i));
+                    line = line + ", " + operationNode(node.getChildren().get(1).getChildren().get(i), true);  ////////////////////
+                    break;
+                case "MethodCall":
+                    line = line + ", " + methodCallNode(node.getChildren().get(1).getChildren().get(i), true);
                     break;
                 case "Exp":
-                    line = line + ", " + expNode(node.getChildren().get(1).getChildren().get(i));
+                    line = line + ", " + expNode(node.getChildren().get(1).getChildren().get(i), true);
                     break;
                 default:
                     System.out.println("Unexpected behaviour: methodCallNode");
@@ -439,11 +458,16 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         }
 
         line = line + ")." + type + ";\n";
-        this.assignmentOllir += line;
-        return toReturn;
+        if (needAux){
+            this.assignmentOllir += line;
+            return toReturn;
+        }
+        else{
+            return line;
+        }
     }
 
-    private String operationNode(JmmNode node) { //TODO: types
+    private String operationNode(JmmNode node, boolean needAux) { //TODO: types
         String operation = new String();
         if (node.getKind().equals("And")) {
             operation = "&&";
@@ -457,21 +481,24 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         String scope = getScope(node);
         String type = getTypeToOllir(getTypeReturnedByNode(node, scope));
         String toReturn = "aux" + this.auxNumber + "." + type;
-        String line = "        aux" + this.auxNumber + "." + type + " :=." + type + " ";
-        this.auxNumber++;
+        String line = new String();
+        if (needAux){
+            line = "\t\taux" + this.auxNumber + "." + type + " :=." + type + " ";
+            this.auxNumber++;
+        }
 
         switch (node.getChildren().get(0).getKind()) {
             case "IntegerLiteral": case "RestIdentifier": 
                 line = line + terminalNode(node.getChildren().get(0)) + " " + operation + "." + type + " ";
                 break;
             case "Operation":
-                line = line + operationNode(node.getChildren().get(0)) + " " + operation + "." + type + " ";
+                line = line + operationNode(node.getChildren().get(0), true) + " " + operation + "." + type + " ";
                 break;
             case "MethodCall":
-                line = line + methodCallNode(node.getChildren().get(0)) + " " + operation + "." + type + " ";
+                line = line + methodCallNode(node.getChildren().get(0), true) + " " + operation + "." + type + " ";
                 break;
             case "Exp":
-                line = line + expNode(node.getChildren().get(0)) + " " + operation + "." + type + " ";
+                line = line + expNode(node.getChildren().get(0), true) + " " + operation + "." + type + " ";
                 break;
             case "True": case "False":
                 line = line + terminalNode(node.getChildren().get(0)) + " " + operation + ".bool ";
@@ -486,22 +513,26 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
                 line = line + terminalNode(node.getChildren().get(1)) + ";\n";
                 break;
             case "Operation":
-                line = line + operationNode(node.getChildren().get(1)) + ";\n";
+                line = line + operationNode(node.getChildren().get(1), true) + ";\n";
                 break;
             case "MethodCall":
-                line = line + methodCallNode(node.getChildren().get(1)) + ";\n";
+                line = line + methodCallNode(node.getChildren().get(1), true) + ";\n";
                 break;
             case "Exp":
-                line = line + expNode(node.getChildren().get(1)) + ";\n";
+                line = line + expNode(node.getChildren().get(1), true) + ";\n";
                 break;
             default:
                 System.out.println("Unexpected behaviour: operationNode");
                 break;
         }
 
-        this.assignmentOllir += line;
-        
-        return toReturn;
+        if (needAux){
+            this.assignmentOllir += line;
+            return toReturn;
+        }
+        else{
+            return line;
+        }
     }
 
     public String terminalNode(JmmNode node) //TODO: tratar types

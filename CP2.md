@@ -43,7 +43,7 @@ Todas as verificações feitas na análise semantica pedidas devem reportar erro
 - [x] ReturnExpression
 - [ ] Assignment
 - [ ] MethodCall
-- [ ] Operation  Falta o caso base
+- [x] Operation
 - [ ] NewInstance
 - [ ] Expression
 - [ ] DotLength / ArrayLength
@@ -54,7 +54,7 @@ Todas as verificações feitas na análise semantica pedidas devem reportar erro
 
 - [ ] invokespecial
 - [ ] Less e And
-- [ ] Not
+- [ ] Not - Fazendo uma cena tipo !true && true, ele devia avaliar como (!true) && true mas avalia como !(true && true) porque a precedencia da árvore não está bem feita
 
 
 ## Jasmin Generation
