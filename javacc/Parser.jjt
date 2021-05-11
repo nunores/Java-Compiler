@@ -274,7 +274,7 @@ void PlusMinus() #void: { Token t; }
 void MultDiv() #void: { Token t; }
 {
     Rest()
-    (LOOKAHEAD(2) (t=<MULT> { jjtThis.put("name", t.image); } Rest()|
+    (LOOKAHEAD(2) (t=<MULT> { jjtThis.put("name", t.image); } Rest() |
                    t=<DIV> { jjtThis.put("name", t.image); } Rest()) #Operation(2))*
 }
 
@@ -321,7 +321,7 @@ void RestThis() #void: { Token t; }
 
 void Not() #void: { Token t; }
 {
-    t = <NOT> Expression() { jjtThis.put("name", t.image); } #Not(1)
+    t = <NOT> Rest() { jjtThis.put("name", t.image); } #Not(1)
 }
 
 void RestIdentifier(): { Token t; }

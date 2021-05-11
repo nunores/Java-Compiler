@@ -246,7 +246,9 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
             case "Not":
                 line = line + notNode(node.getChildren().get(1)) + ";";
                 break;
-
+            // case "New": case "NewArray":
+            //     line = line + newNode(node.getChildren().get(1)) + ";";
+            //     break;
             default:
                 System.out.println("Unexpected behaviour: handleAssignment");
                 break;
@@ -292,6 +294,67 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
                 break;
             default:
                 System.out.println("Unexpected behaviour: notNode");
+                break;
+        }
+
+        this.assignmentOllir += line;
+        
+        return toReturn;
+    }
+
+    private String newNode(JmmNode node) { //TODO: types
+        String operation = new String();
+        if (node.getKind().equals("And")) {
+            operation = "&&";
+        }
+        else if (node.getKind().equals("Less")) {
+            operation = "<";
+        }
+        else {
+            operation = node.get("name");
+        }
+        String scope = getScope(node);
+        String type = getTypeToOllir(getTypeReturnedByNode(node, scope));
+        String toReturn = "aux" + this.auxNumber + "." + type;
+        String line = "        aux" + this.auxNumber + "." + type + " :=." + type + " ";
+        this.auxNumber++;
+
+        switch (node.getChildren().get(0).getKind()) {
+            case "IntegerLiteral": case "RestIdentifier": 
+                line = line + terminalNode(node.getChildren().get(0)) + " " + operation + "." + type + " ";
+                break;
+            case "Operation":
+                line = line + operationNode(node.getChildren().get(0)) + " " + operation + "." + type + " ";
+                break;
+            case "MethodCall":
+                line = line + methodCallNode(node.getChildren().get(0)) + " " + operation + "." + type + " ";
+                break;
+            case "Exp":
+                line = line + expNode(node.getChildren().get(0)) + " " + operation + "." + type + " ";
+                break;
+            case "True": case "False":
+                line = line + terminalNode(node.getChildren().get(0)) + " " + operation + ".bool ";
+                break;
+            default:
+                System.out.println("Unexpected behaviour: operationNode");
+                break;
+        }
+
+        switch (node.getChildren().get(1).getKind()) {
+            case "IntegerLiteral": case "RestIdentifier": case "True": case "False":
+                line = line + terminalNode(node.getChildren().get(1)) + ";\n";
+                break;
+            case "Operation":
+                line = line + operationNode(node.getChildren().get(1)) + ";\n";
+                break;
+            case "MethodCall":
+                line = line + methodCallNode(node.getChildren().get(1)) + ";\n";
+                break;
+            case "Exp":
+                line = line + expNode(node.getChildren().get(1)) + ";\n";
+                break;
+            default:
+                System.out.println("Unexpected behaviour: operationNode");
                 break;
         }
 

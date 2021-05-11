@@ -15,13 +15,17 @@ class Simple {
         boolean test1;
         boolean test2;
         boolean test3;
-
+        int abc;
+        int[] a;
+        
+        //a = new int[50];
+        //abc = a.length;
+        test1 = !true && (0 < 1);
+        
         //test1 = true && false;
         //test2 = (!test1) && (true && false);
         // test2.bool =.bool !.bool test1.bool
-        
-        test3 = (1 + 2) < (3 + 4);
-        
+        //test3 = (1 + 2) < (3 + 4);
         
         return 0;
     }
