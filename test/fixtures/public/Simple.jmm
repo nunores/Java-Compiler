@@ -23,11 +23,7 @@ class Simple {
         boolean test1;
         boolean test2;
         boolean test3;
-        int abc;
-        int[] a;
         
-        //a = new int[50];
-        //abc = a.length;
         test1 = !true && (0 < 1);
         
         //test1 = true && false;
@@ -38,7 +34,6 @@ class Simple {
         return 0;
     }
 
-    /*
     public int constInstr(){
         int c;
         c = 0;
@@ -51,7 +46,6 @@ class Simple {
         c = 100474650;
 		c = 10;
         return c;
-    }*/
-
+    }
 
 }

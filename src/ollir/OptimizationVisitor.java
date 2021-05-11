@@ -87,8 +87,8 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         String init = "\t.method public static main";
         String args = "(" + firstChildName(node) + ".array.String).V {\n";
         this.parameters = new ArrayList<String>();
-        //JmmNode nodeR = new JmmNodeImpl("ReturnExpression");
-        //node.add(nodeR);
+        JmmNode nodeR = new JmmNodeImpl("ReturnExpression");
+        node.add(nodeR);
 
         return init + args + defaultVisit(node, ollirCode) + "\t}\n\n";
     }
@@ -261,16 +261,6 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
 
     private String notNode(JmmNode node) {
         String operation = new String();
-/*         if (node.getKind().equals("And")) {
-            operation = "&&";
-        }
-        else if (node.getKind().equals("Less")) {
-            operation = "<";
-        }
-        else {
-            operation = node.get("name");
-        }
- */
         switch (node.getKind()) {
             case "And":
                 operation = "&&";
@@ -315,7 +305,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         return toReturn;
     }
 
-    private String newNode(JmmNode node) { //TODO: types
+    /*private String newNode(JmmNode node) { //TODO: types
         String operation = new String();
         if (node.getKind().equals("And")) {
             operation = "&&";
@@ -374,7 +364,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         this.assignmentOllir += line;
         
         return toReturn;
-    }
+    }*/
 
     private String expNode(JmmNode node, boolean needAux) {
         String toReturn = new String();      
