@@ -2,32 +2,24 @@ import io;
 class Simple {
 
     public int add(int a, int b){
-        return a;
+        int c;
+        c = a + this.constInstr();
+        return c;
     }
 
     public static void main(String[] args){
+        int a;
+        int b;
         int c;
-        c = 1;
+        Simple s;
+        a = 20;
+        b = 10;
+        s = new Simple();
+        c = s.add(a,b);
         io.println(c);
     }
 
-    public int exp(int arg) {
-        boolean test1;
-        boolean test2;
-        boolean test3;
-
-        //test1 = true && false;
-        //test2 = (!test1) && (true && false);
-        // test2.bool =.bool !.bool test1.bool
-        
-        test3 = (1 + 2) < (3 + 4);
-        
-        
-        return 0;
-    }
-
-    /*
-    public int constInstr(int a){
+    public int constInstr(){
         int c;
         c = 0;
         c = 4;
@@ -39,7 +31,7 @@ class Simple {
         c = 100474650;
 		c = 10;
         return c;
-    }*/
+    }
 
 
 }

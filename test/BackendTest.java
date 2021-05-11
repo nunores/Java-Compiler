@@ -25,107 +25,108 @@ public class BackendTest {
 
     /* Correct files */
 
-    @Test
+    /*@Test
     public void testFindMaximum() {
         JmmSemanticsResult result = TestUtils.analyse(SpecsIo.getResource("fixtures/public/FindMaximum.jmm"));
         assertTrue(result.getReports().isEmpty());
-    }
+    }*/
 
-    @Test
+    /*@Test
     public void testHelloWorld() {
         JmmSemanticsResult result = TestUtils.analyse(SpecsIo.getResource("fixtures/public/HelloWorld.jmm"));
         assertTrue(result.getReports().isEmpty());
-    }
+    }*/
 
-    @Test
+    /*@Test
     public void testLazysort() {
         JmmSemanticsResult result = TestUtils.analyse(SpecsIo.getResource("fixtures/public/Lazysort.jmm"));
         assertTrue(result.getReports().isEmpty());
-    }
+    }*/
 
-    @Test
+    /*@Test
     public void testLife() {
         JmmSemanticsResult result = TestUtils.analyse(SpecsIo.getResource("fixtures/public/Life.jmm"));
         assertTrue(result.getReports().isEmpty());
-    }
-    @Test
+    }*/
+    
+    /*@Test
     public void testMonteCarloPi() {
         JmmSemanticsResult result = TestUtils.analyse(SpecsIo.getResource("fixtures/public/MonteCarloPi.jmm"));
         assertTrue(result.getReports().isEmpty());
-    }
+    }*/
 
-    @Test
+    /*@Test
     public void testTicTacToe() {
         JmmSemanticsResult result = TestUtils.analyse(SpecsIo.getResource("fixtures/public/TicTacToe.jmm"));
         assertTrue(result.getReports().isEmpty());
-    }
+    }*/
 
-    @Test
+    /*@Test
     public void testWhileAndIf() {
         JmmSemanticsResult result = TestUtils.analyse(SpecsIo.getResource("fixtures/public/WhileAndIf.jmm"));
         assertTrue(result.getReports().isEmpty());
-    }
+    }*/
 
     /* Files with errors */
 
-    @Test
+    /*@Test
     public void testArrIndexNotInt() {
         JmmSemanticsResult result = TestUtils.analyse(SpecsIo.getResource("fixtures/public/fail/semantic/arr_index_not_int.jmm"));
         assertEquals(result.getReports().size(), 1);
-    }
+    }*/
 
-    @Test
+    /*@Test
     public void testArrSizeNotInt() {
         JmmSemanticsResult result = TestUtils.analyse(SpecsIo.getResource("fixtures/public/fail/semantic/arr_size_not_int.jmm"));
         assertEquals(result.getReports().size(), 1);
-    }
+    }*/
     
-    @Test
+   /* @Test
     public void testBadArguments() {
         JmmSemanticsResult result = TestUtils.analyse(SpecsIo.getResource("fixtures/public/fail/semantic/badArguments.jmm"));
         assertEquals(result.getReports().size(), 3);
-    }
+    }*/
 
-    @Test
+    /*@Test
     public void testBinopIncomp() {
         JmmSemanticsResult result = TestUtils.analyse(SpecsIo.getResource("fixtures/public/fail/semantic/binop_incomp.jmm"));
         assertEquals(result.getReports().size(), 2);
-    }
+    }*/
 
-    @Test
+    /*@Test
     public void testFuncNotFound() {
         JmmSemanticsResult result = TestUtils.analyse(SpecsIo.getResource("fixtures/public/fail/semantic/funcNotFound.jmm"));
         assertEquals(result.getReports().size(), 2);
-    }
+    }*/
     
-    @Test
+    /*@Test
     public void testSimpleLength() {
         JmmSemanticsResult result = TestUtils.analyse(SpecsIo.getResource("fixtures/public/fail/semantic/simple_length.jmm"));
         assertEquals(result.getReports().size(), 1);
-    }
+    }*/
 
-    @Test
+    /*@Test
     public void testVarExpIncomp() {
         JmmSemanticsResult result = TestUtils.analyse(SpecsIo.getResource("fixtures/public/fail/semantic/var_exp_incomp.jmm"));
         assertEquals(result.getReports().size(), 1);
-    }
+    }*/
 
-    @Test
+    /*@Test
     public void testVarLitIncomp() {
         JmmSemanticsResult result = TestUtils.analyse(SpecsIo.getResource("fixtures/public/fail/semantic/var_lit_incomp.jmm"));
         assertEquals(result.getReports().size(), 1);
-    }
+    }*/
 
-    @Test
+    /*@Test
     public void testVarUndef() {
         JmmSemanticsResult result = TestUtils.analyse(SpecsIo.getResource("fixtures/public/fail/semantic/var_undef.jmm"));
         assertEquals(result.getReports().size(), 2);
-    }
+    }*/
 
-    @Test
+    /*@Test
     public void testMissType() {
         JmmSemanticsResult result = TestUtils.analyse(SpecsIo.getResource("fixtures/public/fail/semantic/extra/miss_type.jmm"));
         assertEquals(result.getReports().size(), 1);
-    }
+    }*/
 
 }
