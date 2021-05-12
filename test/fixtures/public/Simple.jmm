@@ -24,12 +24,7 @@ class Simple {
         boolean test2;
         boolean test3;
         
-        test1 = !true && (0 < 1);
-        
-        //test1 = true && false;
-        //test2 = (!test1) && (true && false);
-        // test2.bool =.bool !.bool test1.bool
-        //test3 = (1 + 2) < (3 + 4);
+       io.println(test1);
         
         return 0;
     }

@@ -94,9 +94,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
     }
 
     public String handleMethodCall(JmmNode node, String ollirCode) {
-        String scope = getScope(node);
-        //return getMethodCall(node, new String(), node.get("name"), 0, getTypeReturnedByNode(node, scope)); // TODO
-        return "";
+        return methodCallNode(node, false);
     }
 
     public String handleReturnExpression(JmmNode node, String ollirCode) {
@@ -226,7 +224,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
                 break;
         
             default:
-                System.out.println("Unexpected behaviour: handleAssignment");
+                System.out.println("Unexpected behaviour: handleAssignment1");
                 break;
         }
         
@@ -250,7 +248,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
             //     line = line + newNode(node.getChildren().get(1)) + ";";
             //     break;
             default:
-                System.out.println("Unexpected behaviour: handleAssignment");
+                System.out.println("Unexpected behaviour: handleAssignment2");
                 break;
         }
         this.assignmentOllir += line + defaultVisit(node, ollirCode) + "\n";
@@ -290,13 +288,13 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
                 line = line + operation + "." + type + " " + methodCallNode(node.getChildren().get(0), true) + ";\n";
                 break;
             case "Exp":
-                //line = line + operation + "." + type + " " + expNode(node.getChildren().get(0)) + ";\n";
+                line = line + operation + "." + type + " " + expNode(node.getChildren().get(0), true) + ";\n";
                 break;
             case "True": case "False":
                 line = line + operation + "." + type + " " + terminalNode(node.getChildren().get(0)) + ";\n";
                 break;
             default:
-                System.out.println("Unexpected behaviour: notNode");
+                System.out.println("Unexpected behaviour: notNode1");
                 break;
         }
 
@@ -386,7 +384,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
                 toReturn = notNode(node.getChildren().get(0));
                 break;
             default:
-                System.out.println("Unexpected behaviour: expNode");
+                System.out.println("Unexpected behaviour: expNode1");
                 break;
         }
         
@@ -422,7 +420,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
                 line = line + expNode(node.getChildren().get(0), true);
                 break;
             default:
-                System.out.println("Unexpected behaviour: methodCallNode");
+                System.out.println("Unexpected behaviour: methodCallNode1");
                 break;
         }
 
@@ -442,7 +440,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
                     line = line + ", " + expNode(node.getChildren().get(1).getChildren().get(i), true);
                     break;
                 default:
-                    System.out.println("Unexpected behaviour: methodCallNode");
+                    System.out.println("Unexpected behaviour: methodCallNode2");
                     break;
             }
         }
@@ -481,7 +479,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
             case "IntegerLiteral": case "RestIdentifier": 
                 line = line + terminalNode(node.getChildren().get(0)) + " " + operation + "." + type + " ";
                 break;
-            case "Operation":
+            case "Operation": case "Less":
                 line = line + operationNode(node.getChildren().get(0), true) + " " + operation + "." + type + " ";
                 break;
             case "MethodCall":
@@ -493,8 +491,11 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
             case "True": case "False":
                 line = line + terminalNode(node.getChildren().get(0)) + " " + operation + ".bool ";
                 break;
+            case "Not":
+                line = line + notNode(node.getChildren().get(0)) + " " + operation + "." + type + " ";
+                break;
             default:
-                System.out.println("Unexpected behaviour: operationNode");
+                System.out.println("Unexpected behaviour: operationNode1: " + node.getChildren().get(0).getKind());
                 break;
         }
 
@@ -502,7 +503,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
             case "IntegerLiteral": case "RestIdentifier": case "True": case "False":
                 line = line + terminalNode(node.getChildren().get(1)) + ";\n";
                 break;
-            case "Operation":
+            case "Operation": case "Less":
                 line = line + operationNode(node.getChildren().get(1), true) + ";\n";
                 break;
             case "MethodCall":
@@ -511,8 +512,11 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
             case "Exp":
                 line = line + expNode(node.getChildren().get(1), true) + ";\n";
                 break;
+            case "Not":
+                line = line + notNode(node.getChildren().get(1)) + ";\n";
+                break;
             default:
-                System.out.println("Unexpected behaviour: operationNode");
+                System.out.println("Unexpected behaviour: operationNode2");
                 break;
         }
 
