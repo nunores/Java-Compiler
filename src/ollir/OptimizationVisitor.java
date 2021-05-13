@@ -272,7 +272,14 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         String line = "\t";
         switch (node.getChildren().get(0).getKind()) {
             case "Var":
-                line = line + node.getChildren().get(0).get("name") + "." + type + " :=." + type + " "; 
+                String varName = node.getChildren().get(0).get("name");
+                int varParam = checkVarIsArg(varName);
+                if (varParam != 0) {
+                    line = line + "$" + varParam + "." + node.getChildren().get(0).get("name") + "." + type + " :=." + type + " "; 
+                }
+                else {
+                    line = line + node.getChildren().get(0).get("name") + "." + type + " :=." + type + " "; 
+                }
                 break;
         
             default:
@@ -649,6 +656,10 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         switch (node.getKind()) {
             case "IntegerLiteral": case "RestIdentifier":
                 toReturn = node.get("name") + "." + getTypeToOllir(getTypeReturnedByNode(node, scope));
+                int varParam = checkVarIsArg(node.get("name"));
+                if (varParam != 0) {
+                    toReturn = "$" + varParam + "." + toReturn;
+                }
                 break;
             case "True":
                 toReturn = "1.bool";

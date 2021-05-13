@@ -4,11 +4,16 @@ class Simple {
     public int add(int a, int b){
         int c;
 		int[] x;
-        c = a + this.constInstr();
-		x = new int[10];
+        Simple s;
+
+        s = new Simple();
+        a = b;
+        //c = a + this.constInstr();
+		//x = new int[10];
 		//c = x.length;
-		c = x[3];
-        return c;
+		//c = x[3];
+        c = s.add(a, b);
+        return a;
     }
 
 

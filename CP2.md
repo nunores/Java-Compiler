@@ -36,7 +36,6 @@ Todas as verificações feitas na análise semantica pedidas devem reportar erro
 
 ## OLLIR Generation
 
-- [ ] Conversão da AST completa para OLLIR em expressões e tudo o necessário para a declaração da classe e dos métodos
 - [x] ClassDeclaration
 - [x] MethodDeclaration
 - [x] MainDeclaration
@@ -50,7 +49,7 @@ Todas as verificações feitas na análise semantica pedidas devem reportar erro
 - [ ] ArrayAccess
 - [x] Not
 - [x] Less e And
-- [ ] Tratar de $ quando é parâmetro
+- [x] Tratar de $ quando é parâmetro
 - [x] HelloWorld.jmm
 - [ ] Fac.jmm
 - [ ] Simple.jmm
