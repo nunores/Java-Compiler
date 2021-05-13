@@ -6,7 +6,8 @@ class Simple {
 		int[] x;
         c = a + this.constInstr();
 		x = new int[10];
-		c = x.length;
+		//c = x.length;
+		c = x[3];
         return c;
     }
 

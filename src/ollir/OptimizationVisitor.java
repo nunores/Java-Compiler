@@ -136,6 +136,9 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
                     case "Exp":
                         toReturn = toReturn + ", " + expNode(node.getChildren().get(1).getChildren().get(i), true);
                         break;
+                    case "DotLength":
+                        toReturn = toReturn + ", " + dotLengthNode(node.getChildren().get(1).getChildren().get(i), true);
+                        break;
                     default:
                         System.out.println("Unexpected behaviour: methodCallNode2");
                         break;
@@ -320,8 +323,6 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
             line = "\t\taux" + this.auxNumber + "." + type + " :=." + type + " ";
             this.auxNumber++;
         }
-
-        System.out.println(getTypeReturnedByNode(node.getChildren().get(0), scope));
 
         switch (node.getChildren().get(0).getKind()) {
             case "RestIdentifier": 
