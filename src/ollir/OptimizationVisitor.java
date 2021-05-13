@@ -94,7 +94,56 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
     }
 
     public String handleMethodCall(JmmNode node, String ollirCode) {
-        return methodCallNode(node, false);
+        String scope = getScope(node);
+        String type = getTypeToOllir(getTypeReturnedByNode(node, scope));
+        String toReturn = new String();
+        if (!node.getAncestor("Assignment").isPresent()) // Assignments are handled in their own function
+        {
+            switch (node.getChildren().get(0).getKind()) {
+                case "This":
+                    toReturn = toReturn + "invokevirtual(this, " + "\"" + node.get("name") + "\"";
+                    break;
+                case "RestIdentifier":
+                    if (varInImports(node.getChildren().get(0))) 
+                    {
+                        toReturn = toReturn + "invokestatic(" + node.getChildren().get(0).get("name") + ", \"" + node.get("name") + "\"";
+                    }
+                    else
+                    {
+                        toReturn = toReturn + "invokevirtual(" + node.getChildren().get(0).get("name") + "." + getClassName(node) + ", \"" + node.get("name") + "\"";
+                    }
+                    break;
+                case "Exp":
+                    toReturn = toReturn + expNode(node.getChildren().get(0), true);
+                    break;
+                default:
+                    System.out.println("Unexpected behaviour: methodCallNode1");
+                    break;
+            }
+
+            for (int i = 0; i < node.getChildren().get(1).getChildren().size(); i++)
+            {
+                switch (node.getChildren().get(1).getChildren().get(i).getKind()) {
+                    case "IntegerLiteral": case "RestIdentifier": case "True": case "False":
+                        toReturn = toReturn + ", " + terminalNode(node.getChildren().get(1).getChildren().get(i));
+                        break;
+                    case "Operation":
+                        toReturn = toReturn + ", " + operationNode(node.getChildren().get(1).getChildren().get(i), true);  ////////////////////
+                        break;
+                    case "MethodCall":
+                        toReturn = toReturn + ", " + methodCallNode(node.getChildren().get(1).getChildren().get(i), true);
+                        break;
+                    case "Exp":
+                        toReturn = toReturn + ", " + expNode(node.getChildren().get(1).getChildren().get(i), true);
+                        break;
+                    default:
+                        System.out.println("Unexpected behaviour: methodCallNode2");
+                        break;
+                }
+            }
+            toReturn = toReturn + ")." + type + ";\n";
+        }
+        return toReturn + defaultVisit(node, ollirCode);
     }
 
     public String handleReturnExpression(JmmNode node, String ollirCode) {
@@ -242,7 +291,10 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
                 line = line + expNode(node.getChildren().get(1), false)/* + ";"*/;
                 break;
             case "Not":
-                line = line + notNode(node.getChildren().get(1)) + ";";
+                line = line + notNode(node.getChildren().get(1), false)/* + ";"*/;
+                break;
+            case "DotLength":
+                line = line + dotLengthNode(node.getChildren().get(1), false);
                 break;
             // case "New": case "NewArray":
             //     line = line + newNode(node.getChildren().get(1)) + ";";
@@ -257,7 +309,45 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         return toReturn;
     }
 
-    private String notNode(JmmNode node) {
+    private String dotLengthNode(JmmNode node, boolean needAux) {
+        String operation = new String();
+
+        String scope = getScope(node);
+        String type = getTypeToOllir(getTypeReturnedByNode(node, scope));
+        String toReturn = "aux" + this.auxNumber + "." + type;
+        String line = new String();
+        if (needAux){
+            line = "\t\taux" + this.auxNumber + "." + type + " :=." + type + " ";
+            this.auxNumber++;
+        }
+
+        System.out.println(getTypeReturnedByNode(node.getChildren().get(0), scope));
+
+        switch (node.getChildren().get(0).getKind()) {
+            case "RestIdentifier": 
+                line = line + "arraylength(" + terminalNode(node.getChildren().get(0)) + ").i32;\n";
+                break;
+            case "MethodCall":
+                line = line + "arraylength(" + methodCallNode(node.getChildren().get(0), true) + ").i32;\n";
+                break;
+            case "Exp":
+                line = line + "arraylength(" + expNode(node.getChildren().get(0), true) + ").i32;\n";
+                break;
+            default:
+                System.out.println("Unexpected behaviour: dotLengthNode");
+                break;
+        }
+
+        if (needAux){
+            this.assignmentOllir += line;
+            return toReturn;
+        }
+        else{
+            return line;
+        }
+    }
+
+    private String notNode(JmmNode node, boolean needAux) {
         String operation = new String();
         switch (node.getKind()) {
             case "And":
@@ -274,8 +364,11 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         String scope = getScope(node);
         String type = getTypeToOllir(getTypeReturnedByNode(node, scope));
         String toReturn = "aux" + this.auxNumber + "." + type;
-        String line = "\taux" + this.auxNumber + "." + type + " :=." + type + " ";
-        this.auxNumber++;
+        String line = new String();
+        if (needAux){
+            line = "\t\taux" + this.auxNumber + "." + type + " :=." + type + " ";
+            this.auxNumber++;
+        }
 
         switch (node.getChildren().get(0).getKind()) {
             case "IntegerLiteral": case "RestIdentifier": 
@@ -293,14 +386,24 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
             case "True": case "False":
                 line = line + operation + "." + type + " " + terminalNode(node.getChildren().get(0)) + ";\n";
                 break;
+            case "Not":
+                line = line + operation + "." + type + " " + notNode(node.getChildren().get(0), true) + ";\n";
+                break;
+            case "DotLength":
+                line = line + operation + "." + type + " " + dotLengthNode(node.getChildren().get(0), true) + ";\n";
+                break;
             default:
                 System.out.println("Unexpected behaviour: notNode1");
                 break;
         }
 
-        this.assignmentOllir += line;
-        
-        return toReturn;
+        if (needAux){
+            this.assignmentOllir += line;
+            return toReturn;
+        }
+        else{
+            return line;
+        }
     }
 
     /*private String newNode(JmmNode node) { //TODO: types
@@ -381,7 +484,10 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
                 toReturn = terminalNode(node.getChildren().get(0));
                 break;
             case "Not":
-                toReturn = notNode(node.getChildren().get(0));
+                toReturn = notNode(node.getChildren().get(0), needAux);
+                break;
+            case "DotLength":
+                toReturn = dotLengthNode(node.getChildren().get(0), needAux);
                 break;
             default:
                 System.out.println("Unexpected behaviour: expNode1");
@@ -439,6 +545,9 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
                 case "Exp":
                     line = line + ", " + expNode(node.getChildren().get(1).getChildren().get(i), true);
                     break;
+                case "DotLength":
+                    line = line + ", " + dotLengthNode(node.getChildren().get(1).getChildren().get(i), true);
+                    break;
                 default:
                     System.out.println("Unexpected behaviour: methodCallNode2");
                     break;
@@ -492,7 +601,10 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
                 line = line + terminalNode(node.getChildren().get(0)) + " " + operation + ".bool ";
                 break;
             case "Not":
-                line = line + notNode(node.getChildren().get(0)) + " " + operation + "." + type + " ";
+                line = line + notNode(node.getChildren().get(0), true) + " " + operation + "." + type + " ";
+                break;
+            case "DotLength":
+                line = line + dotLengthNode(node.getChildren().get(0), true) + " " + operation + "." + type + " ";
                 break;
             default:
                 System.out.println("Unexpected behaviour: operationNode1: " + node.getChildren().get(0).getKind());
@@ -513,7 +625,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
                 line = line + expNode(node.getChildren().get(1), true) + ";\n";
                 break;
             case "Not":
-                line = line + notNode(node.getChildren().get(1)) + ";\n";
+                line = line + notNode(node.getChildren().get(1), true) + ";\n";
                 break;
             default:
                 System.out.println("Unexpected behaviour: operationNode2");
@@ -531,10 +643,11 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
 
     public String terminalNode(JmmNode node) //TODO: tratar types
     {
+        String scope = getScope(node);
         String toReturn = new String();
         switch (node.getKind()) {
             case "IntegerLiteral": case "RestIdentifier":
-                toReturn = node.get("name") + ".i32";
+                toReturn = node.get("name") + "." + getTypeToOllir(getTypeReturnedByNode(node, scope));
                 break;
             case "True":
                 toReturn = "1.bool";
@@ -709,6 +822,8 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
             case "void":
                 return "V";
             default:
+                if (type.equals(""))
+                    return "V";
                 return type;
         }
     

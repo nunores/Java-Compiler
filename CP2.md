@@ -48,13 +48,12 @@ Todas as verificações feitas na análise semantica pedidas devem reportar erro
 - [ ] Expression
 - [ ] DotLength / ArrayLength
 - [ ] ArrayAccess
+- [x] Not
+- [ ] Less e And
+- [ ] Tratar de $ quando é parâmetro
 - [x] HelloWorld.jmm
 - [ ] Fac.jmm
 - [ ] Simple.jmm
-
-- [ ] invokespecial
-- [ ] Less e And
-- [ ] Not - Fazendo uma cena tipo !true && true, ele devia avaliar como (!true) && true mas avalia como !(true && true) porque a precedencia da árvore não está bem feita
 
 
 ## Jasmin Generation

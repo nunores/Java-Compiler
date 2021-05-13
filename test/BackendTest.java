@@ -61,9 +61,9 @@ public class BackendTest {
         assertTrue(result.getReports().isEmpty());
     }
 
-    @Test
+   @Test
     public void testWhileAndIf() {
-        JmmSemanticsResult result = TestUtils.analyse(SpecsIo.getResource("fixtures/public/WhileAndIf.jmm"));
+        JmmSemanticsResult result = TestUtils.analyse(SpecsIo.getResource("fixtures/public/WhileAndIF.jmm"));
         assertTrue(result.getReports().isEmpty());
     }
 
