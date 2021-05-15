@@ -96,7 +96,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
     public String handleMethodCall(JmmNode node, String ollirCode) {
         String scope = getScope(node);
         String type = getTypeToOllir(getTypeReturnedByNode(node, scope));
-        String toReturn = new String();
+        String toReturn = "\t\t";
         if (!node.getAncestor("Assignment").isPresent()) // Assignments are handled in their own function
         {
             switch (node.getChildren().get(0).getKind()) {
@@ -269,11 +269,13 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
     public String handleAssignment(JmmNode node, String ollirCode) { //TODO: tratar types
         String scope = getScope(node);
         String type = getTypeToOllir(getTypeReturnedByNode(node, scope));
-        String line = "\t";
+        String line = "\t\t";
+        String varName = new String();
+        int varParam = -1;
         switch (node.getChildren().get(0).getKind()) {
             case "Var":
-                String varName = node.getChildren().get(0).get("name");
-                int varParam = checkVarIsArg(varName);
+                varName = node.getChildren().get(0).get("name");
+                varParam = checkVarIsArg(varName);
                 if (varParam != 0) {
                     line = line + "$" + varParam + "." + node.getChildren().get(0).get("name") + "." + type + " :=." + type + " "; 
                 }
@@ -281,7 +283,41 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
                     line = line + node.getChildren().get(0).get("name") + "." + type + " :=." + type + " "; 
                 }
                 break;
-        
+            case "ArrayAccess":
+                varName = node.getChildren().get(0).getChildren().get(0).get("name");
+                varParam = checkVarIsArg(varName);
+                if (varParam != 0) {
+                    line = line + "$" + varParam + "." + varName + "["; 
+                }
+                else {
+                    line = line + varName + "[";
+                }
+
+                switch (node.getChildren().get(0).getChildren().get(1).getKind()) {
+                    case "IntegerLiteral": case "RestIdentifier": case "NewInstance":
+                        line = line + terminalNode(node.getChildren().get(1)) + "].i32 :=.i32 ";
+                        break;
+                    case "Operation":
+                        line = line + operationNode(node.getChildren().get(0).getChildren().get(1), true) + "].i32 :=.i32 ";
+                        break;
+                    case "MethodCall":
+                        line = line + methodCallNode(node.getChildren().get(0).getChildren().get(1), true) + "].i32 :=.i32 ";
+                        break;
+                    case "Exp":
+                        line = line + expNode(node.getChildren().get(0).getChildren().get(1), true) + "].i32 :=.i32 ";
+                        break;
+                    case "DotLength":
+                        line = line + dotLengthNode(node.getChildren().get(0).getChildren().get(1), true) + "].i32 :=.i32 ";
+                        break;
+                    case "ArrayAccess":
+                        line = line + arrayNode(node.getChildren().get(0).getChildren().get(1), true) + "].i32 :=.i32 ";
+                        break;
+                    default:
+                        System.out.println("Unexpected behaviour: handleAssignment2");
+                        break;
+                }
+
+                break;
             default:
                 System.out.println("Unexpected behaviour: handleAssignment1");
                 break;
@@ -306,6 +342,9 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
             case "DotLength":
                 line = line + dotLengthNode(node.getChildren().get(1), false);
                 break;
+            case "ArrayAccess":
+                line = line + arrayNode(node.getChildren().get(1), false);
+                break;
             // case "New": case "NewArray":
             //     line = line + newNode(node.getChildren().get(1)) + ";";
             //     break;
@@ -319,8 +358,66 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         return toReturn;
     }
 
+    private String arrayNode(JmmNode node, boolean needAux) {
+
+        String scope = getScope(node);
+        String type = getTypeToOllir(getTypeReturnedByNode(node, scope));
+        String toReturn = "aux" + this.auxNumber + "." + type;
+        String line = new String();
+        if (needAux){
+            line = "\t\taux" + this.auxNumber + "." + type + " :=." + type + " ";
+            this.auxNumber++;
+        }
+
+        switch (node.getChildren().get(0).getKind()) {
+            case "MethodCall":
+                line = line + methodCallNode(node.getChildren().get(0), true) + "[";
+                break;
+            case "Var": case "RestIdentifier":
+                line = line + node.getChildren().get(0).get("name") + "[";
+                break;
+            case "Exp":
+                line = line + expNode(node.getChildren().get(0), true) + "[";
+                break;
+            default:
+                System.out.println("Unexpected behaviour: arrayNode1");
+                break;
+        }
+
+        switch (node.getChildren().get(1).getKind()) {
+            case "IntegerLiteral": case "RestIdentifier": case "NewInstance":
+                line = line + terminalNode(node.getChildren().get(1)) + "]." + type + ";\n";
+                break;
+            case "Operation":
+                line = line + operationNode(node.getChildren().get(1), true) + "]." + type + ";\n";
+                break;
+            case "MethodCall":
+                line = line + methodCallNode(node.getChildren().get(1), true) + "]." + type + ";\n";
+                break;
+            case "Exp":
+                line = line + expNode(node.getChildren().get(1), true) + "]." + type + ";\n";
+                break;
+            case "DotLength":
+                line = line + dotLengthNode(node.getChildren().get(1), true) + "]." + type + ";\n";
+                break;
+            case "ArrayAccess":
+                line = line + arrayNode(node.getChildren().get(1), true) + "]." + type + ";\n";
+                break;
+            default:
+                System.out.println("Unexpected behaviour: arrayNode2");
+                break;
+        }
+
+        if (needAux){
+            this.assignmentOllir += line;
+            return toReturn;
+        }
+        else{
+            return line;
+        }
+    }
+
     private String dotLengthNode(JmmNode node, boolean needAux) {
-        String operation = new String();
 
         String scope = getScope(node);
         String type = getTypeToOllir(getTypeReturnedByNode(node, scope));
@@ -414,7 +511,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         }
     }
 
-    /*private String newNode(JmmNode node) { //TODO: types
+    /*private String newNode(JmmNode node) {
         String operation = new String();
         if (node.getKind().equals("And")) {
             operation = "&&";
@@ -497,6 +594,9 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
             case "DotLength":
                 toReturn = dotLengthNode(node.getChildren().get(0), needAux);
                 break;
+            case "ArrayAccess":
+                toReturn = arrayNode(node.getChildren().get(0), needAux);
+                break;
             default:
                 System.out.println("Unexpected behaviour: expNode1");
                 break;
@@ -506,7 +606,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         return toReturn;
     }
 
-    private String methodCallNode(JmmNode node, boolean needAux) {  //TODO: types
+    private String methodCallNode(JmmNode node, boolean needAux) {
         String scope = getScope(node);
         String type = getTypeToOllir(getTypeReturnedByNode(node, scope));
         String toReturn = "aux" + this.auxNumber + "." + type;
@@ -545,7 +645,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
                     line = line + ", " + terminalNode(node.getChildren().get(1).getChildren().get(i));
                     break;
                 case "Operation":
-                    line = line + ", " + operationNode(node.getChildren().get(1).getChildren().get(i), true);  ////////////////////
+                    line = line + ", " + operationNode(node.getChildren().get(1).getChildren().get(i), true);
                     break;
                 case "MethodCall":
                     line = line + ", " + methodCallNode(node.getChildren().get(1).getChildren().get(i), true);
@@ -555,6 +655,9 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
                     break;
                 case "DotLength":
                     line = line + ", " + dotLengthNode(node.getChildren().get(1).getChildren().get(i), true);
+                    break;
+                case "ArrayAccess":
+                    line = line + ", " + arrayNode(node.getChildren().get(1).getChildren().get(i), true);
                     break;
                 default:
                     System.out.println("Unexpected behaviour: methodCallNode2");
@@ -614,6 +717,9 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
             case "DotLength":
                 line = line + dotLengthNode(node.getChildren().get(0), true) + " " + operation + "." + type + " ";
                 break;
+            case "ArrayAccess":
+                line = line + arrayNode(node.getChildren().get(0), true) + " " + operation + "." + type + " ";
+                break;
             default:
                 System.out.println("Unexpected behaviour: operationNode1: " + node.getChildren().get(0).getKind());
                 break;
@@ -634,6 +740,9 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
                 break;
             case "Not":
                 line = line + notNode(node.getChildren().get(1), true) + ";\n";
+                break;
+            case "ArrayAccess":
+                line = line + arrayNode(node.getChildren().get(1), true) + ";\n";
                 break;
             default:
                 System.out.println("Unexpected behaviour: operationNode2");

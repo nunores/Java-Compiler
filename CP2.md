@@ -46,10 +46,13 @@ Todas as verificações feitas na análise semantica pedidas devem reportar erro
 - [ ] NewInstance
 - [x] Expression
 - [x] DotLength / ArrayLength
-- [ ] ArrayAccess
+- [x] ArrayAccess
 - [x] Not
 - [x] Less e And
 - [x] Tratar de $ quando é parâmetro
+
+- [x] Arranjar os \t e \n
+
 - [x] HelloWorld.jmm
 - [ ] Fac.jmm
 - [ ] Simple.jmm

@@ -3,18 +3,15 @@ class Simple {
 
     public int add(int a, int b){
         int c;
-		int[] x;
-        Simple s;
-
-        s = new Simple();
-        a = b;
-        //c = a + this.constInstr();
-		//x = new int[10];
-		//c = x.length;
-		//c = x[3];
-        c = s.add(a, b);
-        return a;
+        c = a + this.constInstr();
+        return c;
     }
+	
+	/*public int[] talas(){
+		int[] x;
+		x = new int[4];
+		return x;
+	}*/
 
 
     public static void main(String[] args){
@@ -29,15 +26,15 @@ class Simple {
         io.println(c);
     }
 
-    /*public int exp(int arg) {
+    public int exp(int arg) {
         boolean test1;
         boolean test2;
         boolean test3;
         
-       io.println(test1);
+		io.println(test1);
         
         return 0;
-    }*/
+    }
 
     public int constInstr(){
         int c;
