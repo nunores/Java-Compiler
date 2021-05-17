@@ -171,8 +171,7 @@ void MethodDeclaration(): { Token t; }
     <RPAR>
 
     <LBRACE>
-    (LOOKAHEAD(2) VarDeclaration())*
-    (LOOKAHEAD(2) Statement())*
+    (LOOKAHEAD(2) VarDeclaration() | Statement())*
     ReturnExpression()
     <RBRACE>
 }
@@ -196,8 +195,7 @@ void MainDeclaration(): { Token t; }
     <RPAR>
 
     <LBRACE>
-    (LOOKAHEAD(2) VarDeclaration())* // VarDeclaration gives Type, which can be Identifier
-    (LOOKAHEAD(2) Statement())*
+    (LOOKAHEAD(2) VarDeclaration() | Statement())*
     <RBRACE>
 }
 

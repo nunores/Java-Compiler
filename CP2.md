@@ -40,10 +40,11 @@ Todas as verificações feitas na análise semantica pedidas devem reportar erro
 - [x] MethodDeclaration
 - [x] MainDeclaration
 - [x] ReturnExpression
-- [ ] Assignment
+- [x] Assignment
 - [x] MethodCall
 - [x] Operation
-- [ ] NewInstance
+- [x] NewInstance
+- [x] NewArray
 - [x] Expression
 - [x] DotLength / ArrayLength
 - [x] ArrayAccess
@@ -52,6 +53,7 @@ Todas as verificações feitas na análise semantica pedidas devem reportar erro
 - [x] Tratar de $ quando é parâmetro
 
 - [x] Arranjar os \t e \n
+- [ ] AuxN nos ArrayAccess
 
 - [x] HelloWorld.jmm
 - [ ] Fac.jmm

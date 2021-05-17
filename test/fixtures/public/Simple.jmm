@@ -3,18 +3,33 @@ class Simple {
 
     public int add(int a, int b){
         int c;
-        c = a + this.constInstr();
+        c = a + b;
         return c;
     }
 	
-	/*public int[] talas(){
-		int[] x;
-		x = new int[4];
-		return x;
-	}*/
+	public int[] talas(){
+		int[] C;
+		int[] a;
+        Simple s;
+        s = new Simple();
+
+        int i;
+        
+        a = new int[10];
+        i = 0;
+        a[i] = 1;
+        //a[0] = 1;
+		
+        C = new int[1 + 2];
+        C = new int[s.add(1, 2)];
+        C = new int[a.length];
+        //C = new int[a[0]];
+		
+        return a;
+	}
 
 
-    public static void main(String[] args){
+    /*public static void main(String[] args){
         int a;
         int b;
         int c;
@@ -48,6 +63,6 @@ class Simple {
         c = 100474650;
 		c = 10;
         return c;
-    }
+    }*/
 
 }
