@@ -23,6 +23,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
     private List<String> imports = new ArrayList<String>();
     private String assignmentOllir = "";
     private Integer auxNumber = 1;
+    private Integer ifNumber = 1;
     List<String> booleanArray = Arrays.asList("True", "False", "Less", "And", "Or", "Not");
     List<String> intArray = Arrays.asList("IntegerLiteral", "DotLength", "ArrayAccess");
     List<String> varArray = Arrays.asList("MethodCall", "RestIdentifier");
@@ -41,6 +42,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         addVisit("Assignment", this::handleAssignment);
         addVisit("MethodCall", this::handleMethodCall);
         addVisit("ReturnExpression", this::handleReturnExpression);
+        addVisit("ifStatement", this::handleIfStatement);
 
         setDefaultVisit(this::defaultVisit);
     }
@@ -97,7 +99,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         String scope = getScope(node);
         String type = getTypeToOllir(getTypeReturnedByNode(node, scope));
         String toReturn = "\t\t";
-        if (!node.getAncestor("Assignment").isPresent()) // Assignments are handled in their own function
+        if (!node.getAncestor("Assignment").isPresent() && !node.getAncestor("ifStatement").isPresent()) // Assignments are handled in their own function
         {
             switch (node.getChildren().get(0).getKind()) {
                 case "This":
@@ -166,6 +168,88 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
     }
 
     /*-------------------------------------------------------------------------------------------------*/
+
+    public String handleIfStatement(JmmNode node, String ollirCode){
+        String toReturn = new String();
+        if (!node.getAncestor("ifStatement").isPresent())
+        {
+            toReturn = ifNode(node, ollirCode);
+        }
+        return toReturn;
+    }
+    
+    public String ifNode(JmmNode node, String ollirCode) {
+        String scope = getScope(node.getChildren().get(0));
+        String type = getTypeToOllir(getTypeReturnedByNode(node.getChildren().get(0), scope));
+        String line = "\t\t";
+        Integer currentIfNumber = this.ifNumber;
+        this.ifNumber++;
+
+        switch (node.getChildren().get(0).getKind()){
+            case "And": case "Less":
+                String binaryExpression = removeLastTwoChar(operationNode(node.getChildren().get(0), false));
+                line = line + this.assignmentOllir;
+                this.assignmentOllir = "";
+                line = line + "if (" + binaryExpression + ") goto ifBlock" + currentIfNumber + ";\n";
+                break;
+            //TODO: NOT
+            default:
+                System.out.println("Unexpected behaviour: ifNode1");
+                break;
+        }
+
+        line = line + elseNode(node.getChildren().get(node.getNumChildren() - 1), ollirCode);
+        line = line + "goto endif" + currentIfNumber + ";\n";
+        line = line + "ifBlock" + currentIfNumber + ":\n";
+
+        for (int i = 1; i < node.getNumChildren()-1; i++)
+        {
+            switch (node.getChildren().get(i).getKind()) {
+                case "Assignment":
+                    line = line + assignmentNode(node.getChildren().get(i), ollirCode) + "\n";
+                    break;
+                case "MethodCall":
+                    line = line + handleMethodCall(node.getChildren().get(i), ollirCode) + "\n";
+                    break;
+                case "ifStatement":
+                    line = line + ifNode(node.getChildren().get(i), ollirCode) + "\n";
+                    break;
+                default:
+                    System.out.println("Unexpected behaviour: ifNode2");
+                    break;
+            }
+        }
+        line = line + "endif" + currentIfNumber + ":\n";
+
+        this.assignmentOllir = "";
+        return line + defaultVisit(node, ollirCode) + "\n";
+    }
+
+    private String elseNode(JmmNode node, String ollirCode) {
+        
+        String toReturn = new String();
+        for (int i = 0; i < node.getNumChildren(); i++)
+        {
+            switch (node.getChildren().get(i).getKind()) {
+                case "Assignment":
+                    toReturn = toReturn + assignmentNode(node.getChildren().get(i), ollirCode) + "\n";
+                    break;
+                case "MethodCall":
+                    toReturn = toReturn + handleMethodCall(node.getChildren().get(i), ollirCode) + "\n";
+                    break;
+                case "ifStatement":
+                    toReturn = toReturn + ifNode(node.getChildren().get(i), ollirCode) + "\n";
+                default:
+                    System.out.println("Unexpected behaviour: elseNode");
+                    break;
+            }
+        }
+        return toReturn;
+    }
+
+    public String removeLastTwoChar(String temp){
+        return temp.substring(0, temp.length()-2);
+    }
 
     public String getType(JmmNode node, String scope){
         String tempType = "";
@@ -267,6 +351,13 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
     }
 
     public String handleAssignment(JmmNode node, String ollirCode) { //TODO: tratar types
+        if (!node.getAncestor("ifStatement").isPresent()){
+            return assignmentNode(node, ollirCode);
+        }
+        return "";
+    }
+
+    public String assignmentNode(JmmNode node, String ollirCode) { //TODO: tratar types
         String scope = getScope(node);
         String type = getTypeToOllir(getTypeReturnedByNode(node, scope));
         String line = "\t\t";
@@ -917,13 +1008,20 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
 
     public String getTypeToOllir(String type)
     {
-        return switch (type) {
-            case "int" -> "i32";
-            case "boolean" -> "bool";
-            case "int[]" -> "array.i32";
-            case "String[]" -> "array.String";
-            case "void", "" -> "V";
-            default -> type;
-        };
+        switch (type) {
+            case "int":
+                return "i32";
+            case "boolean":
+                return "bool";
+            case "int[]":
+                return "array.i32";
+            case "String[]":
+                return "array.String";
+            case "void": case "":
+                return "V";
+            default:
+                return type;
+        }
+
     }
 }

@@ -211,7 +211,6 @@ void Type(): { Token t; }
 void Statement() #void: { Token t; }
 {
     ifStatement()
-    elseStatement()
     |
     whileStatement()
     |
@@ -228,7 +227,7 @@ void Statement() #void: { Token t; }
 
 void ifStatement(): {}
 {
-    <IF> <LPAR> Expression() <RPAR> Statement()
+    <IF> <LPAR> Expression() <RPAR> Statement() elseStatement()
 }
 
 void elseStatement(): {}

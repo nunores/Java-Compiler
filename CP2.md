@@ -43,7 +43,7 @@ Todas as verificações feitas na análise semantica pedidas devem reportar erro
 - [x] Assignment
 - [x] MethodCall
 - [x] Operation
-- [x] NewInstance
+- [x] NewInstance - Tem erros. É preciso ver, por exemplo, a main do ficheiro Fac.jmm 
 - [x] NewArray
 - [x] Expression
 - [x] DotLength / ArrayLength
