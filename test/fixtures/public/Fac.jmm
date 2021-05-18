@@ -9,6 +9,6 @@ class Fac {
         return num_aux;
     }       
     public static void main(String[] args){
-        io.println(new Fac().compFac(10));
+        io.println(new Fac().compFac(10)); /*.compFac(10)*/
     }
 }

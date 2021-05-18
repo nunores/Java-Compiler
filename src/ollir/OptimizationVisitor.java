@@ -118,8 +118,10 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
                 case "Exp":
                     toReturn = toReturn + expNode(node.getChildren().get(0), true);
                     break;
+                case "NewInstance":
+                    toReturn = toReturn + "invokevirtual(" + newInstanceNode(node.getChildren().get(0), true); //TODO:
                 default:
-                    System.out.println("Unexpected behaviour: methodCallNode1");
+                    System.out.println("Unexpected behaviour: handleMethodCallNode1");
                     break;
             }
 
@@ -141,8 +143,11 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
                     case "DotLength":
                         toReturn = toReturn + ", " + dotLengthNode(node.getChildren().get(1).getChildren().get(i), true);
                         break;
+                    case "NewInstance":
+                        toReturn = toReturn + ", " + newInstanceNode(node.getChildren().get(1).getChildren().get(i), true);
+                        break;    
                     default:
-                        System.out.println("Unexpected behaviour: methodCallNode2");
+                        System.out.println("Unexpected behaviour: handleMethodCallNode2");
                         break;
                 }
             }
@@ -710,6 +715,9 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
             case "Exp":
                 line = line + expNode(node.getChildren().get(0), true);
                 break;
+            case "NewInstance":
+                line = line + newInstanceNode(node.getChildren().get(0), true);
+                break;
             default:
                 System.out.println("Unexpected behaviour: methodCallNode1");
                 break;
@@ -825,6 +833,28 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
                 System.out.println("Unexpected behaviour: operationNode2");
                 break;
         }
+
+        if (needAux){
+            this.assignmentOllir += line;
+            return toReturn;
+        }
+        else{
+            return line;
+        }
+    }
+
+    private String newInstanceNode(JmmNode node, boolean needAux) { //TODO: types
+        String operation = node.get("name");
+        String scope = getScope(node);
+        String type = getTypeToOllir(getTypeReturnedByNode(node, scope));
+        String toReturn = "aux" + this.auxNumber + "." + type;
+        String line = "";
+        if (needAux){
+            line = "\t\taux" + this.auxNumber + "." + type + " :=." + type + " ";
+            this.auxNumber++;
+        }
+
+        line = line + "ABC" + " " + operation + "." + type + " ";
 
         if (needAux){
             this.assignmentOllir += line;

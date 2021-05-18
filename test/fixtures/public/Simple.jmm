@@ -3,7 +3,8 @@ class Simple {
 
     public int add(int a, int b){
         int c;
-        c = a + this.constInstr();
+        c = 0;
+        //c = a + this.constInstr();
         return c;
     }
 	
@@ -16,18 +17,18 @@ class Simple {
         int i;
         
         a = new int[10];
-        i = 0;
-        a[i] = 1;
+        //i = 0;
+        //a[i] = 1;
 		
-        C = new int[1 + 2];
-        C = new int[s.add(1, 2)];
-        C = new int[a.length];
+        //C = new int[1 + 2];
+        //C = new int[s.add(1, 2)];
+        //C = new int[a.length];
         //C = new int[a[0]];
 		
         return a;
 	}
 
-
+/*
     public static void main(String[] args){
         int a;
         int b;
@@ -62,6 +63,6 @@ class Simple {
         c = 100474650;
 		c = 10;
         return c;
-    }
+    }*/
 
 }
