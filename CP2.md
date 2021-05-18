@@ -57,10 +57,6 @@ Todas as verificações feitas na análise semantica pedidas devem reportar erro
 - [x] Fazer while
 - [x] Not em ifs e whiles
 
-- [x] HelloWorld.jmm
-- [ ] Fac.jmm
-- [ ] Simple.jmm
-
 
 ## Jasmin Generation
 
