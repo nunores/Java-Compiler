@@ -84,7 +84,7 @@ public class BackendTest {
     @Test
     public void testBadArguments() {
         JmmSemanticsResult result = TestUtils.analyse(SpecsIo.getResource("fixtures/public/fail/semantic/badArguments.jmm"));
-        assertEquals(result.getReports().size(), 3);
+        assertEquals(result.getReports().size(), 2);
     }
 
     @Test
@@ -96,13 +96,13 @@ public class BackendTest {
     @Test
     public void testFuncNotFound() {
         JmmSemanticsResult result = TestUtils.analyse(SpecsIo.getResource("fixtures/public/fail/semantic/funcNotFound.jmm"));
-        assertEquals(result.getReports().size(), 2);
+        assertEquals(result.getReports().size(), 1);
     }
     
     @Test
     public void testSimpleLength() {
         JmmSemanticsResult result = TestUtils.analyse(SpecsIo.getResource("fixtures/public/fail/semantic/simple_length.jmm"));
-        assertEquals(result.getReports().size(), 1);
+        assertEquals(result.getReports().size(), 2);
     }
 
     @Test

@@ -834,9 +834,6 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
             case "Exp":
                 line = line + expNode(node.getChildren().get(0), true);
                 break;
-            case "NewInstance":
-                line = line + newInstanceNode(node.getChildren().get(0), true);
-                break;
             default:
                 System.out.println("Unexpected behaviour: methodCallNode1");
                 break;
