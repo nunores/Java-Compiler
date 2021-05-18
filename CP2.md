@@ -43,7 +43,7 @@ Todas as verificações feitas na análise semantica pedidas devem reportar erro
 - [x] Assignment
 - [x] MethodCall
 - [x] Operation
-- [x] NewInstance - Tem erros. É preciso ver, por exemplo, a main do ficheiro Fac.jmm 
+- [x] NewInstance
 - [x] NewArray
 - [x] Expression
 - [x] DotLength / ArrayLength
@@ -52,8 +52,10 @@ Todas as verificações feitas na análise semantica pedidas devem reportar erro
 - [x] Less e And
 - [x] Tratar de $ quando é parâmetro
 
-- [x] Arranjar os \t e \n
-- [ ] AuxN nos ArrayAccess
+- [ ] Arranjar os \t e \n - Calhou na wheel não tratar
+- [x] AuxN nos ArrayAccess
+- [x] Fazer while
+- [x] Not em ifs e whiles
 
 - [x] HelloWorld.jmm
 - [ ] Fac.jmm

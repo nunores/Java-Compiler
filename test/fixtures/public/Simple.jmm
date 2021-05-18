@@ -6,27 +6,6 @@ class Simple {
         c = a + this.constInstr();
         return c;
     }
-	
-	public int[] talas(){
-		int[] C;
-		int[] a;
-        Simple s;
-        s = new Simple();
-
-        int i;
-        
-        a = new int[10];
-        i = 0;
-        a[i] = 1;
-		
-        C = new int[1 + 2];
-        C = new int[s.add(1, 2)];
-        C = new int[a.length];
-        //C = new int[a[0]];
-		
-        return a;
-	}
-
 
     public static void main(String[] args){
         int a;
@@ -38,16 +17,6 @@ class Simple {
         s = new Simple();
         c = s.add(a,b);
         io.println(c);
-    }
-
-    public int exp(int arg) {
-        boolean test1;
-        boolean test2;
-        boolean test3;
-        
-		io.println(test1);
-        
-        return 0;
     }
 
     public int constInstr(){
@@ -63,5 +32,6 @@ class Simple {
 		c = 10;
         return c;
     }
+
 
 }
