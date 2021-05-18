@@ -6,7 +6,6 @@ class Simple {
         c = a + this.constInstr();
         return c;
     }
-
     public static void main(String[] args){
         int a;
         int b;
