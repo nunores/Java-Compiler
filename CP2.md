@@ -52,11 +52,12 @@ Todas as verificações feitas na análise semantica pedidas devem reportar erro
 - [x] Less e And
 - [x] Tratar de $ quando é parâmetro
 
-- [ ] Arranjar os \t e \n - Calhou na wheel não tratar
+- [ ] Arranjar os \t e \n
 - [x] AuxN nos ArrayAccess
 - [x] Fazer while
 - [x] Not em ifs e whiles
 
+- [ ] .field
 
 ## Jasmin Generation
 
