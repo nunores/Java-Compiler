@@ -50,8 +50,8 @@ public class JasminGenerator {
                     jasminString += convertElementType(element.getType());
                 } 
                 jasminString += ")"+convertElementType(method.getReturnType())+"\n";
-                jasminString += ".limit stack 99\n";
-                jasminString += ".limit locals 99\n";
+                jasminString += "\t.limit stack 99\n";
+                jasminString += "\t.limit locals 99\n";
             }
 
             jasminString += instructionToJasmin(method);
@@ -127,13 +127,13 @@ public class JasminGenerator {
             OperationType operationType = instruction2.getUnaryOperation().getOpType();
             switch(operationType){
                 case ADD:
-                    return left + right + "iadd\n";
+                    return left + right + "\tiadd\n";
                 case SUB:
-                    return left + right + "isub\n";
+                    return left + right + "\tisub\n";
                 case MUL:
-                    return left + right + "imul\n";
+                    return left + right + "\timul\n";
                 case DIV:
-                    return left + right + "idiv\n";
+                    return left + right + "\tidiv\n";
                 default:
                     return "default - operations\n";
             }
@@ -141,29 +141,29 @@ public class JasminGenerator {
 
         if(instruction instanceof ReturnInstruction){
             ReturnInstruction instruction2 = (ReturnInstruction)instruction;
-            if(!instruction2.hasReturnValue()) return "return\n";
+            if(!instruction2.hasReturnValue()) return "\treturn\n";
             switch(instruction2.getOperand().getType().getTypeOfElement()){
                 case VOID:
-                    jasminString += "return\n";
+                    jasminString += "\treturn\n";
 
                 case INT32:
-                    return "ireturn\n";
+                    return "\tireturn\n";
 
                 case BOOLEAN:
                     jasminString += loadElement(instruction2.getOperand(), varTable);
-                    jasminString += "ireturn\n";
+                    jasminString += "\tireturn\n";
                     return jasminString;
 
                 case ARRAYREF:
-                    jasminString += "return\n";
+                    jasminString += "\treturn\n";
 
                 case OBJECTREF:
                     jasminString += loadElement(instruction2.getOperand(), varTable);
-                    jasminString += "areturn\n";
+                    jasminString += "\tareturn\n";
                     return jasminString;
 
                 default:
-                    jasminString += "return\n";
+                    jasminString += "\treturn\n";
             }
             
         }
@@ -172,11 +172,11 @@ public class JasminGenerator {
             CallInstruction instruction2 = (CallInstruction) instruction;
             switch(instruction2.getInvocationType()){
                 case invokevirtual:
-                    return  "aload_0\n" +invokeToJasmin(instruction2, varTable);
+                    return  "\taload_0\n\t" +invokeToJasmin(instruction2, varTable);
                 case invokespecial:
-                    return  "aload_0\n" + invokeToJasmin(instruction2, varTable);
+                    return  "\taload_0\n\t" + invokeToJasmin(instruction2, varTable);
                 case invokestatic:
-                    return  invokeToJasmin(instruction2, varTable);
+                    return  "\t"+ invokeToJasmin(instruction2, varTable);
                 case NEW:
                 case arraylength:
                 default: 
@@ -206,11 +206,11 @@ public class JasminGenerator {
         switch(operand.getType().getTypeOfElement()){
             case INT32:
             case BOOLEAN:
-                return String.format("istore %s\n", varTable.get(operand.getName()).getVirtualReg());
+                return String.format("\tistore %s\n", varTable.get(operand.getName()).getVirtualReg());
             case ARRAYREF:
-                return String.format("astore %s\n", varTable.get(operand.getName()).getVirtualReg());
+                return String.format("\tastore %s\n", varTable.get(operand.getName()).getVirtualReg());
             case OBJECTREF:
-                return String.format("astore %s\n", varTable.get(operand.getName()).getVirtualReg());
+                return String.format("\tastore %s\n", varTable.get(operand.getName()).getVirtualReg());
             default:
                 break;
         }
@@ -221,12 +221,19 @@ public class JasminGenerator {
         String jasminString = "";
         if(element instanceof LiteralElement){
             String num = ((LiteralElement) element).getLiteral();
-            if(Integer.parseInt(num) <= 5){
-                return "iconst_" + num + "\n";
+            int num_parsed = Integer.parseInt(num);
+            if(num_parsed < 6){
+                return "\ticonst_" + num + "\n";
             }
 
+            else if(num_parsed < 128){
+                return "\tbipush " + num + "\n";
+            }
+            else if(num_parsed < 32768>){
+                return "\tsipush " + num + "\n";
+            }
             else{
-                return "bipush " + num + "\n";
+                return "\tldc " + num + "\n";
             }
         }
         else if(element instanceof ArrayOperand){
@@ -245,9 +252,9 @@ public class JasminGenerator {
                     return "aload_0\n";
                 case INT32:
                 case BOOLEAN:
-                    return String.format("iload %s\n", varTable.get(operand.getName()).getVirtualReg());
+                    return String.format("\tiload %s\n", varTable.get(operand.getName()).getVirtualReg());
                 case ARRAYREF:
-                    return String.format("aload %s\n", varTable.get(operand.getName()).getVirtualReg());
+                    return String.format("\taload %s\n", varTable.get(operand.getName()).getVirtualReg());
                 case OBJECTREF:
                 default:
                     break;
