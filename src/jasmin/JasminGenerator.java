@@ -11,45 +11,53 @@ import java.util.*;
 public class JasminGenerator {
     private ClassUnit classUnit;
     
-    public JasminGenerator(ClassUnit classUnit){
+    public JasminGenerator(ClassUnit classUnit) {
         this.classUnit = classUnit;
     }
-    private String jasminAccessModifier(AccessModifiers accessModifiers){
-        if(accessModifiers.name().equals("PRIVATE")) return "private";
+    
+    private String jasminAccessModifier(AccessModifiers accessModifiers) {
+        if (accessModifiers.name().equals("PRIVATE")) return "private";
         else return "public";
     }
 
-    private String jasminIsStatic(boolean isStatic){
-        if(isStatic) return "static";
-        else return "";
-    }
-    public String classToJasmin(){
-        String jasminString = ".class " + jasminAccessModifier(classUnit.getClassAccessModifier())+" " + classUnit.getClassName() + "\n.super " +((classUnit.getSuperClass() == null || classUnit.getSuperClass().equals(classUnit.getClassName())) ? "java/lang/Object" : classUnit.getSuperClass())+ "\n";
-        return jasminString + methodToJasmin();
+    public String classToJasmin() {
+        String jasminString = ".class " + jasminAccessModifier(classUnit.getClassAccessModifier()) + " " + classUnit.getClassName() + "\n";
+        jasminString += ".super ";
+        if (classUnit.getSuperClass() == null || classUnit.getSuperClass().equals(classUnit.getClassName())) {
+            jasminString += "java/lang/Object\n";
+        }
+        else {
+            jasminString += classUnit.getSuperClass() + "\n";
+        }
+        return jasminString + fieldsToJasmin() + methodToJasmin();
     }
 
-    public String methodToJasmin(){
+    private String jasminIsStatic(boolean isStatic) {
+        if (isStatic) return "static";
+        else return "";
+    }
+
+    public String methodToJasmin() {
         String jasminString = "";
-        for (Method method: classUnit.getMethods()){
+        for (Method method: classUnit.getMethods()) {
             jasminString += "\n.method ";
-            if (method.isConstructMethod()){
+
+            if (method.isConstructMethod()) {
                 jasminString += jasminAccessModifier(method.getMethodAccessModifier()) +
-                jasminIsStatic(method.isStaticMethod()) + " "+
-                "<init>"+"(";
-                for (Element element: method.getParams()){
+                    jasminIsStatic(method.isStaticMethod()) + " " + "<init>(";
+                for (Element element: method.getParams()) {
                     jasminString += convertElementType(element.getType());
                 } 
-                jasminString += ")"+convertElementType(method.getReturnType())+"\n";
+                jasminString += ")" + convertElementType(method.getReturnType()) + "\n";
             
             }
-            else{
-                jasminString += jasminAccessModifier(method.getMethodAccessModifier()) +" "+
-                jasminIsStatic(method.isStaticMethod()) + " "+
-                method.getMethodName()+"(";
-                for (Element element: method.getParams()){
+            else {
+                jasminString += jasminAccessModifier(method.getMethodAccessModifier()) +
+                    jasminIsStatic(method.isStaticMethod()) + " " + method.getMethodName()+"(";
+                for (Element element: method.getParams()) {
                     jasminString += convertElementType(element.getType());
                 } 
-                jasminString += ")"+convertElementType(method.getReturnType())+"\n";
+                jasminString += ")" + convertElementType(method.getReturnType()) + "\n";
                 jasminString += "\t.limit stack 99\n";
                 jasminString += "\t.limit locals 99\n";
             }
@@ -58,7 +66,6 @@ public class JasminGenerator {
             jasminString += ".end method\n";
         }
         return jasminString;
-        
     }
 
     private String ArrayTypeToJasmin(ElementType elementType){
@@ -96,36 +103,38 @@ public class JasminGenerator {
                 return "V"; 
         }
     }
+
     public String instructToJasmin(Instruction instruction, HashMap<String, Descriptor> varTable, HashMap<String, Instruction> methodLabels){
         String jasminString = "";
-        for(Map.Entry<String, Instruction> entry: methodLabels.entrySet()){
-            if(entry.getValue().equals(instruction)){
+        for (Map.Entry<String, Instruction> entry: methodLabels.entrySet()) {
+            if (entry.getValue().equals(instruction)) {
                 jasminString += entry.getKey() + ":\n";
                 break;
             }
         }
 
-        if (instruction instanceof AssignInstruction){
+        if (instruction instanceof AssignInstruction) {
             AssignInstruction instruction2 = (AssignInstruction)instruction;
             jasminString += instructToJasmin(instruction2.getRhs(), varTable, new HashMap<String, Instruction>());
-            Operand operand = (Operand) instruction2.getDest();
+            Operand operand = (Operand)instruction2.getDest();
     
-            if(!operand.getType().getTypeOfElement().equals(ElementType.OBJECTREF)){
+            if(!operand.getType().getTypeOfElement().equals(ElementType.OBJECTREF)) {
                 jasminString += this.storeElement(operand, varTable);
             }
             return jasminString;
         }
-        if(instruction instanceof SingleOpInstruction){
+        
+        if (instruction instanceof SingleOpInstruction) {
             SingleOpInstruction instruction2 = (SingleOpInstruction)instruction;
             return loadElement(instruction2.getSingleOperand(), varTable);
         }
 
-        if (instruction instanceof BinaryOpInstruction){
+        if (instruction instanceof BinaryOpInstruction) {
             BinaryOpInstruction instruction2 = (BinaryOpInstruction)instruction;
             String left = loadElement(instruction2.getLeftOperand(), varTable);
             String right = loadElement(instruction2.getRightOperand(), varTable);
             OperationType operationType = instruction2.getUnaryOperation().getOpType();
-            switch(operationType){
+            switch(operationType) {
                 case ADD:
                     return left + right + "\tiadd\n";
                 case SUB:
@@ -139,66 +148,59 @@ public class JasminGenerator {
             }
         }
 
-        if(instruction instanceof ReturnInstruction){
+        if (instruction instanceof ReturnInstruction) {
             ReturnInstruction instruction2 = (ReturnInstruction)instruction;
-            if(!instruction2.hasReturnValue()) return "\treturn\n";
-            switch(instruction2.getOperand().getType().getTypeOfElement()){
+            if (!instruction2.hasReturnValue()) return "\treturn\n";
+            
+            switch (instruction2.getOperand().getType().getTypeOfElement()) {
                 case VOID:
                     jasminString += "\treturn\n";
-
                 case INT32:
                     return "\tireturn\n";
-
                 case BOOLEAN:
                     jasminString += loadElement(instruction2.getOperand(), varTable);
                     jasminString += "\tireturn\n";
                     return jasminString;
-
                 case ARRAYREF:
                     jasminString += "\treturn\n";
-
                 case OBJECTREF:
                     jasminString += loadElement(instruction2.getOperand(), varTable);
                     jasminString += "\tareturn\n";
                     return jasminString;
-
                 default:
                     jasminString += "\treturn\n";
             }
-            
         }
 
-        if(instruction instanceof CallInstruction){
+        if (instruction instanceof CallInstruction) {
             CallInstruction instruction2 = (CallInstruction) instruction;
-            switch(instruction2.getInvocationType()){
+            switch (instruction2.getInvocationType()) {
                 case invokevirtual:
-                    return  "\taload_0\n\t" +invokeToJasmin(instruction2, varTable);
+                    return "\taload_0\n\t" + invokeToJasmin(instruction2, varTable);
                 case invokespecial:
-                    return  "\taload_0\n\t" + invokeToJasmin(instruction2, varTable);
+                    return "\taload_0\n\t" + invokeToJasmin(instruction2, varTable);
                 case invokestatic:
-                    return  "\t"+ invokeToJasmin(instruction2, varTable);
+                    return "\t"+ invokeToJasmin(instruction2, varTable);
                 case NEW:
                 case arraylength:
                 default: 
             }
         }
 
-        if(instruction instanceof GotoInstruction){
+        if (instruction instanceof GotoInstruction){
             return "goto";
         }
-
 
     return jasminString;
 }
 
-    public String instructionToJasmin(Method method){
+    public String instructionToJasmin(Method method) {
         HashMap<String, Descriptor> varTable = method.getVarTable();
         HashMap<String, Instruction> labels = method.getLabels();
         String jasminString = "";
         for(Instruction instruction : method.getInstructions()){
-            jasminString += ""+ instructToJasmin(instruction, varTable, labels);
+            jasminString += "" + instructToJasmin(instruction, varTable, labels);
         }
-
         return jasminString;
     }
 
@@ -214,29 +216,28 @@ public class JasminGenerator {
             default:
                 break;
         }
-        return "nhe1";
+        return "";
     }
 
     public String loadElement(Element element, HashMap<String, Descriptor> varTable){
         String jasminString = "";
-        if(element instanceof LiteralElement){
+        if (element instanceof LiteralElement) {
             String num = ((LiteralElement) element).getLiteral();
             int num_parsed = Integer.parseInt(num);
-            if(num_parsed < 6){
+            if (num_parsed < 6){
                 return "\ticonst_" + num + "\n";
             }
-
-            else if(num_parsed < 128){
+            else if (num_parsed < 128){
                 return "\tbipush " + num + "\n";
             }
-            else if(num_parsed < 32768>){
+            else if (num_parsed < 32768){
                 return "\tsipush " + num + "\n";
             }
-            else{
+            else {
                 return "\tldc " + num + "\n";
             }
         }
-        else if(element instanceof ArrayOperand){
+        else if (element instanceof ArrayOperand) {
             ArrayOperand operand = (ArrayOperand) element;
 
             jasminString += String.format("aload %s\n", varTable.get(operand.getName()).getVirtualReg());
@@ -247,7 +248,7 @@ public class JasminGenerator {
 
         else if(element instanceof Operand){
             Operand operand = (Operand) element;
-            switch (operand.getType().getTypeOfElement()){
+            switch (operand.getType().getTypeOfElement()) {
                 case THIS:
                     return "aload_0\n";
                 case INT32:
@@ -260,28 +261,29 @@ public class JasminGenerator {
                     break;
             }
         }
-        return "nhe";
+        return "operand";
     }
+
     public String invokeToJasmin(CallInstruction instruction, HashMap<String, Descriptor> varTable){
         String jasminString = "";
         Element first = instruction.getFirstArg();
 
-        if(first.toString().equals("this")){
+        if (first.toString().equals("this")) {
             jasminString +=loadElement((Operand) first, varTable);
             Element second = instruction.getSecondArg();
-            if(second.isLiteral()){
+            if (second.isLiteral()) {
                 jasminString += ((LiteralElement) second).getLiteral().replace("\"", "");           
             }
-            else{
+            else {
                 Operand op = (Operand) second;
                 jasminString += op.getName();
             }
         }
-        else{
-            jasminString+=instruction.getInvocationType()+" ";
+        else {
+            jasminString += instruction.getInvocationType() + " ";
 
             if(first.isLiteral()){
-                jasminString+="\n"+ ((LiteralElement) first).getLiteral().replace("\"", "");
+                jasminString += "\n" + ((LiteralElement) first).getLiteral().replace("\"", "");
             }
             else{
                 Operand op = (Operand) first;
@@ -299,21 +301,20 @@ public class JasminGenerator {
         }
 
         jasminString+="(";
-
-        for(Element e: instruction.getListOfOperands()){
-            jasminString+=convertElementType(e.getType());
+        for (Element e: instruction.getListOfOperands()) {
+            jasminString += convertElementType(e.getType());
         }
         jasminString+=")";
-
-        jasminString+=convertElementType(instruction.getReturnType());
-        return jasminString +"\n" ;
+        jasminString += convertElementType(instruction.getReturnType());
+        
+        return jasminString + "\n";
     }
 
     private String fieldsToJasmin(){
         String jasmiString = "";
         for(Field field : classUnit.getFields())
         {
-            jasmiString += ".field "+jasminIsStatic(field.isStaticField())+" "+field.getFieldName() + " "+convertElementType(field.getFieldType())+"\n";
+            jasmiString += ".field "+ jasminIsStatic(field.isStaticField()) + " " + field.getFieldName() + " "+convertElementType(field.getFieldType())+"\n";
         }
         return jasmiString;
     }
