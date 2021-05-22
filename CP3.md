@@ -57,7 +57,6 @@ Todas as verificações feitas na análise semantica pedidas devem reportar erro
 - [x] Fazer while
 - [x] Not em ifs e whiles
 
-- [ ] .field
 
 ## Jasmin Generation
 

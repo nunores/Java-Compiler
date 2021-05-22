@@ -53,10 +53,19 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         this.className = firstChildName(node);
         types.put(firstChildName(node), firstChildName(node));
         String ret = "";
+        String type = new String();
         if (node.getChildren().get(1).getKind().equals("Extends"))
             ret += this.className + " extends " + node.getChildren().get(1).get("extendedClass") + " {\n";
         else
             ret += this.className + " {\n";
+        for (int i = 0; i < node.getNumChildren(); i++)
+        {
+            if (node.getChildren().get(i).getKind().equals("VarDeclaration"))
+            {
+                type = getTypeToOllir(node.getChildren().get(i).getChildren().get(0).get("name"));
+                ret += ".field private " + node.getChildren().get(i).get("name") + "." + type + ";\n";
+            }
+        }
         ret += "\t.construct " + this.className + "().V {\n";
         ret += "\t\tinvokespecial(this, \"<init>\").V;\n";
         ret += "\t}\n\n";
@@ -230,6 +239,8 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
     }
 
     /*-------------------------------------------------------------------------------------------------*/
+
+   
 
     public String handleWhileStatement(JmmNode node, String ollirCode){
         
@@ -1021,7 +1032,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
             case "IntegerLiteral": case "RestIdentifier": 
                 line = line + terminalNode(node.getChildren().get(0)) + " " + operation + "." + type + " ";
                 break;
-            case "Operation": case "Less":
+            case "Operation": case "Less": case "And":
                 line = line + operationNode(node.getChildren().get(0), true) + " " + operation + "." + type + " ";
                 break;
             case "MethodCall":
