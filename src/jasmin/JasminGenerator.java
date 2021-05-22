@@ -318,4 +318,28 @@ public class JasminGenerator {
         }
         return jasmiString;
     }
+
+    public String ifsToString(Operand operand, HashMap<String, Descriptor> varTable){
+
+        String elseLabel = "else_" + varTable.get(operand.getName()).getVirtualReg();
+        String endIfLabel = "if_" + varTable.get(operand.getName()).getVirtualReg() + "_end";
+
+        /*if(elseNode != null){
+            println(elseLabel);
+            this.symbolTableContextManager.pushFront(currentSymbolTable.popChild());
+            ifNode.jjtAccept(visitor, null);
+            this.symbolTableContextManager.popFront();
+            writer.println("goto " + endIfLabel);
+            writer.println(elseLabel + ":");
+            this.symbolTableContextManager.pushFront(currentSymbolTable.popChild());
+            elseNode.jjtAccept(visitor, null);
+            this.symbolTableContextManager.popFront();
+
+        }
+        else {
+            this.symbolTableContextManager.pushFront(currentSymbolTable.popChild());
+            ifNode.jjtAccept(visitor, null);
+        }
+        writer.println(endIfLabel + ":"); */
+    }
 }
