@@ -79,14 +79,16 @@ public class JasminGenerator {
         return jasminString;
     }
 
-    private String ArrayTypeToJasmin(ElementType elementType){
-        switch (elementType.name()){
-            case "STRING": 
-                return "[Ljava/lang/String;";   
-            case "INT32": 
-                return "[I"; 
-            case "BOOLEAN": 
-                return "[B"; 
+    private String ArrayTypeToJasmin(ArrayType type){
+        switch (type.getTypeOfElements()){
+            case STRING:
+                return "Ljava/lang/String;";
+            case INT32:
+                return "I";
+            case BOOLEAN:
+                return "B";
+            case CLASS:
+                return classUnit.getClassName();
             default:    
                 return "";
         }
@@ -99,7 +101,7 @@ public class JasminGenerator {
             case BOOLEAN:
                 return "Z";
             case ARRAYREF:
-                return ArrayTypeToJasmin(type.getTypeOfElement());
+                return "[" + ArrayTypeToJasmin((ArrayType) type);
             case OBJECTREF:
                 return "OBJ";
             case CLASS:
@@ -107,7 +109,7 @@ public class JasminGenerator {
             case THIS:
                 return "T";
             case STRING:
-                return "S";
+                return "Ljava/lang/String;";
             case VOID:
                 return "V";
             default:
@@ -199,6 +201,7 @@ public class JasminGenerator {
                     jasminString += "\tnew " + op.getName() + "\n";
                     return jasminString;
                 case arraylength:
+                    
                 default:
             }
         }
