@@ -11,6 +11,7 @@ import java.util.*;
 public class JasminGenerator {
     private ClassUnit classUnit;
     private Method method;
+    int stackCount = -1;
     
     public JasminGenerator(ClassUnit classUnit) {
         this.classUnit = classUnit;
@@ -69,7 +70,7 @@ public class JasminGenerator {
                     jasminString += convertElementType(element.getType());
                 } 
                 jasminString += ")" + convertElementType(method.getReturnType()) + "\n";
-                jasminString += "\t.limit stack 99\n"; // TODO: calculate it
+                jasminString += "\t.limit stack " + getStack() + "\n"; // TODO: calculate it
                 jasminString += "\t.limit locals " + getLocals(method.getVarTable()) + "\n"; // TODO: calculate it
             }
 
@@ -255,11 +256,9 @@ public class JasminGenerator {
         }
         else if (element instanceof ArrayOperand) {
             ArrayOperand operand = (ArrayOperand) element;
-
-            jasminString += String.format("aload %s\n", varTable.get(operand.getName()).getVirtualReg());
+            jasminString += String.format("\taload %s\n", varTable.get(operand.getName()).getVirtualReg());
             jasminString += loadElement(operand.getIndexOperands().get(0), varTable);
-
-            return jasminString + "iaload\n";
+            return jasminString + "\tiaload\n";
         }
 
         else if(element instanceof Operand){
@@ -345,31 +344,6 @@ public class JasminGenerator {
         return jasmiString;
     }
 
-    public String ifsToString(Operand operand, HashMap<String, Descriptor> varTable){
-
-        String elseLabel = "else_" + varTable.get(operand.getName()).getVirtualReg();
-        String endIfLabel = "if_" + varTable.get(operand.getName()).getVirtualReg() + "_end";
-
-        /*if(elseNode != null){
-            println(elseLabel);
-            this.symbolTableContextManager.pushFront(currentSymbolTable.popChild());
-            ifNode.jjtAccept(visitor, null);
-            this.symbolTableContextManager.popFront();
-            writer.println("goto " + endIfLabel);
-            writer.println(elseLabel + ":");
-            this.symbolTableContextManager.pushFront(currentSymbolTable.popChild());
-            elseNode.jjtAccept(visitor, null);
-            this.symbolTableContextManager.popFront();
-
-        }
-        else {
-            this.symbolTableContextManager.pushFront(currentSymbolTable.popChild());
-            ifNode.jjtAccept(visitor, null);
-        }
-        writer.println(endIfLabel + ":"); */
-        return "";
-    }
-
     public String getLocals(HashMap<String, Descriptor> varTable){
         int local = 0;
         for(Map.Entry<String, Descriptor> entry : varTable.entrySet()){
@@ -377,5 +351,14 @@ public class JasminGenerator {
             if(d1.getScope().toString() == "LOCAL") local +=1;
         }
         return String.valueOf(local);
+    }
+
+    public String getStack(){
+        return String.valueOf(countStack());
+    }
+
+    public int countStack(){
+        stackCount +=1;
+        return stackCount;
     }
 }

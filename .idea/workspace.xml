@@ -8,8 +8,6 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.dot" beforeDir="false" afterPath="$PROJECT_DIR$/main.dot" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/jasmin/JasminGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/jasmin/JasminGenerator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/fixtures/public/ollir/myclass1.ollir" beforeDir="false" afterPath="$PROJECT_DIR$/test/fixtures/public/ollir/myclass1.ollir" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/fixtures/public/ollir/myclass2.ollir" beforeDir="false" afterPath="$PROJECT_DIR$/test/fixtures/public/ollir/myclass2.ollir" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
