@@ -70,7 +70,7 @@ public class JasminGenerator {
                 } 
                 jasminString += ")" + convertElementType(method.getReturnType()) + "\n";
                 jasminString += "\t.limit stack 99\n"; // TODO: calculate it
-                jasminString += "\t.limit locals 99\n"; // TODO: calculate it
+                jasminString += "\t.limit locals " + getLocals(method.getVarTable()) + "\n"; // TODO: calculate it
             }
 
             jasminString += instructionToJasmin(method);
@@ -191,11 +191,11 @@ public class JasminGenerator {
             CallInstruction instruction2 = (CallInstruction) instruction;
             switch (instruction2.getInvocationType()) {
                 case invokevirtual:
-                    return jasminString + "\t"+ invokeToJasmin(instruction2, varTable);
+                    return jasminString + invokeToJasmin(instruction2, varTable);
                 case invokespecial:
-                    return jasminString + "\t"+ invokeToJasmin(instruction2, varTable);
+                    return jasminString + invokeToJasmin(instruction2, varTable);
                 case invokestatic:
-                    return "\t"+ invokeToJasmin(instruction2, varTable);
+                    return  invokeToJasmin(instruction2, varTable);
                 case NEW:
                     Operand op = (Operand)instruction2.getFirstArg();
                     jasminString += "\tnew " + op.getName() + "\n";
@@ -266,7 +266,7 @@ public class JasminGenerator {
             Operand operand = (Operand) element;
             switch (operand.getType().getTypeOfElement()) {
                 case THIS:
-                    return "aload_0\n";
+                    return "\taload_0\n";
                 case INT32:
                 case BOOLEAN:
                     return String.format("\tiload %s\n", varTable.get(operand.getName()).getVirtualReg());
@@ -303,7 +303,7 @@ public class JasminGenerator {
             }
         }
         else {
-            jasminString += instruction.getInvocationType() + " ";
+            jasminString += "\t" + instruction.getInvocationType() + " ";
 
             Element second = instruction.getSecondArg();
             if(second.isLiteral()) {
@@ -368,5 +368,14 @@ public class JasminGenerator {
         }
         writer.println(endIfLabel + ":"); */
         return "";
+    }
+
+    public String getLocals(HashMap<String, Descriptor> varTable){
+        int local = 0;
+        for(Map.Entry<String, Descriptor> entry : varTable.entrySet()){
+            Descriptor d1 = entry.getValue();
+            if(d1.getScope().toString() == "LOCAL") local +=1;
+        }
+        return String.valueOf(local);
     }
 }

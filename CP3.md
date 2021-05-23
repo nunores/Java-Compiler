@@ -4,7 +4,7 @@
 - [x] .super
 - [x] .method (and .end method)
 - [ ] .limit stack
-- [ ] .limit locals
+- [x] .limit locals
   
 - [ ] Label:
 - [ ] goto
