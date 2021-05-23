@@ -1,0 +1,18 @@
+# CP3
+
+- [x] .class
+- [x] .super
+- [x] .method (and .end method)
+- [ ] .limit stack
+- [ ] .limit locals
+  
+- [ ] Label:
+- [ ] goto
+- [ ] Ifs
+- [ ] Arrays
+- [ ] Whiles
+- [ ] putfield
+- [ ] getfield
+
+## Bugs:
+- [ ] iload_X of operands in Calls

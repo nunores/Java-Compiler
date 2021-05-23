@@ -10,6 +10,7 @@ import java.util.*;
 
 public class JasminGenerator {
     private ClassUnit classUnit;
+    private Method method;
     
     public JasminGenerator(ClassUnit classUnit) {
         this.classUnit = classUnit;
@@ -40,10 +41,20 @@ public class JasminGenerator {
     public String methodToJasmin() {
         String jasminString = "";
         for (Method method: classUnit.getMethods()) {
+            this.method = method;
             jasminString += "\n.method ";
-
+            boolean hasReturnInstr = false;
             if (method.isConstructMethod()) {
-                jasminString += jasminAccessModifier(method.getMethodAccessModifier()) +
+                for (Instruction i: method.getInstructions()) {
+                    if (i instanceof ReturnInstruction) {
+                        hasReturnInstr = true;
+                        break;
+                    }
+                }
+                if (!hasReturnInstr) {
+                    method.addInstr(new ReturnInstruction(new Element(new Type(ElementType.VOID))));
+                }
+                jasminString += jasminAccessModifier(method.getMethodAccessModifier()) + " " +
                     jasminIsStatic(method.isStaticMethod()) + " " + "<init>(";
                 for (Element element: method.getParams()) {
                     jasminString += convertElementType(element.getType());
@@ -52,14 +63,14 @@ public class JasminGenerator {
             
             }
             else {
-                jasminString += jasminAccessModifier(method.getMethodAccessModifier()) +
+                jasminString += jasminAccessModifier(method.getMethodAccessModifier()) + " " +
                     jasminIsStatic(method.isStaticMethod()) + " " + method.getMethodName()+"(";
                 for (Element element: method.getParams()) {
                     jasminString += convertElementType(element.getType());
                 } 
                 jasminString += ")" + convertElementType(method.getReturnType()) + "\n";
-                jasminString += "\t.limit stack 99\n";
-                jasminString += "\t.limit locals 99\n";
+                jasminString += "\t.limit stack 99\n"; // TODO: calculate it
+                jasminString += "\t.limit locals 99\n"; // TODO: calculate it
             }
 
             jasminString += instructionToJasmin(method);
@@ -115,12 +126,11 @@ public class JasminGenerator {
 
         if (instruction instanceof AssignInstruction) {
             AssignInstruction instruction2 = (AssignInstruction)instruction;
-            jasminString += instructToJasmin(instruction2.getRhs(), varTable, new HashMap<String, Instruction>());
+            jasminString += instructToJasmin(instruction2.getRhs(), varTable, methodLabels);
             Operand operand = (Operand)instruction2.getDest();
-    
-            if(!operand.getType().getTypeOfElement().equals(ElementType.OBJECTREF)) {
-                jasminString += this.storeElement(operand, varTable);
-            }
+
+            jasminString += this.storeElement(operand, varTable);
+
             return jasminString;
         }
         
@@ -148,27 +158,30 @@ public class JasminGenerator {
             }
         }
 
-        if (instruction instanceof ReturnInstruction) {
+        if(instruction instanceof ReturnInstruction){
             ReturnInstruction instruction2 = (ReturnInstruction)instruction;
-            if (!instruction2.hasReturnValue()) return "\treturn\n";
-            
-            switch (instruction2.getOperand().getType().getTypeOfElement()) {
+
+            if (!instruction2.hasReturnValue()) {
+                return "\treturn\n";
+
+            }
+            switch(instruction2.getOperand().getType().getTypeOfElement()){
                 case VOID:
-                    jasminString += "\treturn\n";
-                case INT32:
-                    return "\tireturn\n";
-                case BOOLEAN:
+                    return "\treturn\n";
+
+                case INT32: case BOOLEAN:
                     jasminString += loadElement(instruction2.getOperand(), varTable);
                     jasminString += "\tireturn\n";
                     return jasminString;
+
                 case ARRAYREF:
-                    jasminString += "\treturn\n";
+
                 case OBJECTREF:
                     jasminString += loadElement(instruction2.getOperand(), varTable);
                     jasminString += "\tareturn\n";
                     return jasminString;
                 default:
-                    jasminString += "\treturn\n";
+                    break;
             }
         }
 
@@ -176,18 +189,21 @@ public class JasminGenerator {
             CallInstruction instruction2 = (CallInstruction) instruction;
             switch (instruction2.getInvocationType()) {
                 case invokevirtual:
-                    return "\taload_0\n\t" + invokeToJasmin(instruction2, varTable);
+                    return jasminString + "\t"+ invokeToJasmin(instruction2, varTable);
                 case invokespecial:
-                    return "\taload_0\n\t" + invokeToJasmin(instruction2, varTable);
+                    return jasminString + "\t"+ invokeToJasmin(instruction2, varTable);
                 case invokestatic:
                     return "\t"+ invokeToJasmin(instruction2, varTable);
                 case NEW:
+                    Operand op = (Operand)instruction2.getFirstArg();
+                    jasminString += "\tnew " + op.getName() + "\n";
+                    return jasminString;
                 case arraylength:
-                default: 
+                default:
             }
         }
 
-        if (instruction instanceof GotoInstruction){
+        if (instruction instanceof GotoInstruction) {
             return "goto";
         }
 
@@ -209,14 +225,11 @@ public class JasminGenerator {
             case INT32:
             case BOOLEAN:
                 return String.format("\tistore %s\n", varTable.get(operand.getName()).getVirtualReg());
-            case ARRAYREF:
-                return String.format("\tastore %s\n", varTable.get(operand.getName()).getVirtualReg());
-            case OBJECTREF:
+            case ARRAYREF: case OBJECTREF:
                 return String.format("\tastore %s\n", varTable.get(operand.getName()).getVirtualReg());
             default:
-                break;
+                return "";
         }
-        return "";
     }
 
     public String loadElement(Element element, HashMap<String, Descriptor> varTable){
@@ -257,22 +270,24 @@ public class JasminGenerator {
                 case ARRAYREF:
                     return String.format("\taload %s\n", varTable.get(operand.getName()).getVirtualReg());
                 case OBJECTREF:
+                    return String.format("\taload %s\n", varTable.get(operand.getName()).getVirtualReg());
                 default:
                     break;
             }
         }
-        return "operand";
+        return "";
     }
 
     public String invokeToJasmin(CallInstruction instruction, HashMap<String, Descriptor> varTable){
         String jasminString = "";
         Element first = instruction.getFirstArg();
 
+        jasminString += loadElement((Operand) first, varTable);
         if (first.toString().equals("this")) {
-            jasminString +=loadElement((Operand) first, varTable);
             Element second = instruction.getSecondArg();
+
             if (second.isLiteral()) {
-                jasminString += ((LiteralElement) second).getLiteral().replace("\"", "");           
+                jasminString += ((LiteralElement) second).getLiteral().replace("\"", "");
             }
             else {
                 Operand op = (Operand) second;
@@ -285,20 +300,22 @@ public class JasminGenerator {
             if(first.isLiteral()){
                 jasminString += "\n" + ((LiteralElement) first).getLiteral().replace("\"", "");
             }
-            else{
-                Operand op = (Operand) first;
-                //jasminString += op.getName();
-            }
 
             Element second = instruction.getSecondArg();
             if(second.isLiteral()){
-                jasminString+=classUnit.getClassName() + "/" + ((LiteralElement) second).getLiteral().replace("\"", "");
+                if (this.method.isConstructMethod()) {
+                    jasminString+="java/lang/Object" + "/" + ((LiteralElement) second).getLiteral().replace("\"", "");
+                }
+                else {
+                    jasminString+=classUnit.getClassName() + "/" + ((LiteralElement) second).getLiteral().replace("\"", "");
+                }
             }
             else{
                 Operand op = (Operand) second;
                 jasminString += op.getName();
             }
         }
+
 
         jasminString+="(";
         for (Element e: instruction.getListOfOperands()) {
@@ -341,5 +358,6 @@ public class JasminGenerator {
             ifNode.jjtAccept(visitor, null);
         }
         writer.println(endIfLabel + ":"); */
+        return "";
     }
 }
