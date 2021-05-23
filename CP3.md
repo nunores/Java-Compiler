@@ -15,4 +15,4 @@
 - [ ] getfield
 
 ## Bugs:
-- [ ] iload_X of operands in Calls
+- [x] iload_X of operands in Calls

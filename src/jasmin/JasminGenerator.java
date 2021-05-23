@@ -280,9 +280,14 @@ public class JasminGenerator {
 
     public String invokeToJasmin(CallInstruction instruction, HashMap<String, Descriptor> varTable){
         String jasminString = "";
+
         Element first = instruction.getFirstArg();
 
         jasminString += loadElement((Operand) first, varTable);
+        for (Element e: instruction.getListOfOperands()) {
+            jasminString += loadElement((Operand)e, varTable);
+        }
+
         if (first.toString().equals("this")) {
             Element second = instruction.getSecondArg();
 
@@ -297,17 +302,18 @@ public class JasminGenerator {
         else {
             jasminString += instruction.getInvocationType() + " ";
 
-            if(first.isLiteral()){
-                jasminString += "\n" + ((LiteralElement) first).getLiteral().replace("\"", "");
-            }
-
             Element second = instruction.getSecondArg();
-            if(second.isLiteral()){
+            if(second.isLiteral()) {
                 if (this.method.isConstructMethod()) {
                     jasminString+="java/lang/Object" + "/" + ((LiteralElement) second).getLiteral().replace("\"", "");
                 }
                 else {
-                    jasminString+=classUnit.getClassName() + "/" + ((LiteralElement) second).getLiteral().replace("\"", "");
+                    if (first.getType().getTypeOfElement().equals(ElementType.CLASS)) {
+                        jasminString+=((Operand) first).getName() + "/" + ((LiteralElement) second).getLiteral().replace("\"", "");
+                    }
+                    else { // OBJECTREF
+                        jasminString+= classUnit.getClassName() + "/" + ((LiteralElement) second).getLiteral().replace("\"", "");
+                    }
                 }
             }
             else{
