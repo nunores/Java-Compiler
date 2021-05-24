@@ -67,6 +67,15 @@ public class JasminGenerator {
             
             }
             else {
+                for (Instruction i: method.getInstructions()) {
+                    if (i instanceof ReturnInstruction) {
+                        hasReturnInstr = true;
+                        break;
+                    }
+                }
+                if (!hasReturnInstr) {
+                    method.addInstr(new ReturnInstruction(new Element(new Type(ElementType.VOID))));
+                }
                 jasminString += jasminAccessModifier(method.getMethodAccessModifier()) + " " +
                     jasminIsStatic(method.isStaticMethod()) + method.getMethodName()+"(";
                 for (Element element: method.getParams()) {
@@ -80,7 +89,7 @@ public class JasminGenerator {
 
             if (!method.isConstructMethod()) {
                 jasminString += "\t.limit stack 99" /*+ getStack()*/ + "\n";
-                jasminString += "\t.limit locals 99" /*+ String.valueOf(method.getVarTable().size() + 1) */+ "\n";
+                jasminString += "\t.limit locals " + String.valueOf(method.getVarTable().size() + 1) + "\n";
             }
 
             jasminString += toAddNext;
