@@ -12,6 +12,7 @@ public class JasminGenerator {
     private ClassUnit classUnit;
     private Method method;
     private int stackCount = -1;
+    private int maxstack = 0;
     private HashMap<String, Instruction> labels = new HashMap<>();
     
     public JasminGenerator(ClassUnit classUnit) {
@@ -160,6 +161,7 @@ public class JasminGenerator {
         }
 
         if (instruction instanceof BinaryOpInstruction) {
+            stackCount -=1; maxStack();
             BinaryOpInstruction instruction2 = (BinaryOpInstruction)instruction;
             String left = loadElement(instruction2.getLeftOperand(), varTable);
             String right = loadElement(instruction2.getRightOperand(), varTable);
@@ -264,6 +266,58 @@ public class JasminGenerator {
             return ret + goToLabel + "\n";
         }
 
+        if(instruction instanceof GetFieldInstruction){
+            GetFieldInstruction instruction2 = (GetFieldInstruction) instruction;
+            Element first = instruction2.getFirstOperand();
+            Element second = instruction2.getSecondOperand();
+            jasminString += loadElement(first, varTable);
+            jasminString += "getfield " + "alguma coisa aqui";
+            jasminString += storeElement((Operand)instruction2.getSecondOperand(), varTable);
+            return jasminString;
+            
+            /*EXEMPLO DE GETFIELD 
+            package xyz;     
+            class Point {         
+                public int xCoord, yCoord;     
+            };
+            
+            int x = p.xCoord;
+
+            Jasmin da linha a cima:
+            
+            aload_1 ; push object in local varable 1 (i.e. p) onto the stack     
+            getfield xyz/Point/xCoord I  ; get the value of p.xCoord, which is an int     
+            istore_2                     ; store the int value in local variable 2 (x)             
+            */ 
+
+
+        }
+        if(instruction instanceof PutFieldInstruction){
+            PutFieldInstruction instruction2 = (PutFieldInstruction) instruction;
+            Element first = instruction2.getFirstOperand();
+            Element second = instruction2.getSecondOperand();
+            Element third = instruction2.getThirdOperand();
+            jasminString += loadElement(first, varTable); 
+            jasminString += loadElement(second, varTable);
+            jasminString += "putfield " + third.getType();
+            return jasminString;
+
+
+            /*EXEMPLO DE PUTFIELD 
+            package xyz;     
+            class Point {         
+                public int xCoord, yCoord;     
+            };
+            
+            p.xCoord = 10;
+
+            Jasmin da linha a cima:
+
+            aload_1 ; push object in local varable 1 (i.e. p) onto the stack     
+            bipush 10  ; push the integer 10 onto the stack     
+            putfield xyz/Point/xCoord I  ; set the value of the integer field p.xCoord to 10 */ 
+        }
+
     return jasminString;
 }
 
@@ -278,12 +332,14 @@ public class JasminGenerator {
     }
 
     public String storeElement(Operand operand, HashMap<String, Descriptor> varTable){
+
         switch(operand.getType().getTypeOfElement()){
             case INT32:
             case BOOLEAN:
+                this.stackCount -= 1; maxStack();
                 return String.format("\tistore %s\n", varTable.get(operand.getName()).getVirtualReg());
             case ARRAYREF: case OBJECTREF:
-                this.stackCount -= 1;
+                this.stackCount -= 1; maxStack();
                 return String.format("\tastore %s\n", varTable.get(operand.getName()).getVirtualReg());
             default:
                 return "";
@@ -291,7 +347,7 @@ public class JasminGenerator {
     }
 
     public String loadElement(Element element, HashMap<String, Descriptor> varTable){
-        this.stackCount += 1;
+        this.stackCount += 1; maxStack();
         String jasminString = "";
         if (element instanceof LiteralElement) {
             String num = ((LiteralElement) element).getLiteral();
@@ -402,6 +458,11 @@ public class JasminGenerator {
     }
 
     public String getStack(){
-        return String.valueOf(this.stackCount);
+        return String.valueOf(this.maxstack);
+    }
+
+    public int maxStack(){
+        if(maxstack < stackCount) maxstack=stackCount;
+        return maxstack;
     }
 }
