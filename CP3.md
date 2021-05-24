@@ -4,15 +4,12 @@
 - [x] .super
 - [x] .method (and .end method)
 - [ ] .limit stack
-- [x] .limit locals
+- [ ] .limit locals
   
-- [ ] Label:
-- [ ] goto
-- [ ] Ifs
+- [x] Label:
+- [x] goto
+- [ ] Ifs - (if (bool) //TOCONFIRM)
 - [ ] Arrays
-- [ ] Whiles
+- [x] Whiles (Loop + if)
 - [ ] putfield
 - [ ] getfield
-
-## Bugs:
-- [x] iload_X of operands in Calls

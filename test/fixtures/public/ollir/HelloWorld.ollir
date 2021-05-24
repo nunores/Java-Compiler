@@ -6,8 +6,5 @@ HelloWorld {
 
    .method public static main(args.array.String).V {
       invokestatic(ioPlus, "printHelloWorld").V;
-
    }
-
-
 }
