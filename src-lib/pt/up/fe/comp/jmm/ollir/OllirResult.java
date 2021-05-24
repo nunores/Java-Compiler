@@ -20,7 +20,7 @@ public class OllirResult {
     private final SymbolTable symbolTable;
     private final List<Report> reports;
 
-    private OllirResult(String ollirCode, ClassUnit ollirClass, SymbolTable symbolTable, List<Report> reports) {
+    public OllirResult(String ollirCode, ClassUnit ollirClass, SymbolTable symbolTable, List<Report> reports) {
         this.ollirCode = ollirCode;
         this.ollirClass = ollirClass;
         this.symbolTable = symbolTable;

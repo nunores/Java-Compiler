@@ -5,16 +5,16 @@ import org.specs.comp.ollir.Element;
 import org.specs.comp.ollir.ElementType;
 import org.specs.comp.ollir.Instruction;
 import org.specs.comp.ollir.*;
+
+import java.lang.reflect.Array;
 import java.util.*;
 
 
 public class JasminGenerator {
     private ClassUnit classUnit;
     private Method method;
-    private int stackCount = -1;
-    private int maxstack = 0;
     private HashMap<String, Instruction> labels = new HashMap<>();
-    
+
     public JasminGenerator(ClassUnit classUnit) {
         this.classUnit = classUnit;
     }
@@ -44,7 +44,6 @@ public class JasminGenerator {
     public String methodToJasmin() {
         String jasminString = "";
         for (Method method: classUnit.getMethods()) {
-            this.stackCount = 0;
             this.method = method;
             this.labels = method.getLabels();
             jasminString += "\n.method ";
@@ -89,7 +88,7 @@ public class JasminGenerator {
             toAddNext += ".end method\n";
 
             if (!method.isConstructMethod()) {
-                jasminString += "\t.limit stack 99" /*+ getStack()*/ + "\n";
+                jasminString += "\t.limit stack " + getStack(toAddNext) + "\n";
                 jasminString += "\t.limit locals " + String.valueOf(method.getVarTable().size() + 1) + "\n";
             }
 
@@ -147,34 +146,74 @@ public class JasminGenerator {
 
         if (instruction instanceof AssignInstruction) {
             AssignInstruction instruction2 = (AssignInstruction)instruction;
-            jasminString += instructToJasmin(instruction2.getRhs(), varTable, methodLabels);
-            Operand operand = (Operand)instruction2.getDest();
 
-            jasminString += this.storeElement(operand, varTable);
+            Element e = ((AssignInstruction)instruction2).getDest();
+            Descriptor var = varTable.get(((Operand)e).getName());
+            if (var.getVarType().toString().equals("ARRAYREF") && e.getType().toString().equals("INT32")) {
+                jasminString += "\taload " + var.getVirtualReg() + "\n";
+
+                ArrayOperand arrayOp = (ArrayOperand) e;
+                ArrayList<Element> indexOperands = arrayOp.getIndexOperands();
+                for (Element elem: indexOperands) {
+                    jasminString += loadElement(elem, varTable);
+                }
+                jasminString += instructToJasmin(instruction2.getRhs(), varTable, methodLabels);
+
+                jasminString += "\tiastore\n";
+            }
+            else {
+                jasminString += instructToJasmin(instruction2.getRhs(), varTable, methodLabels);
+
+                Operand operand = (Operand) instruction2.getDest();
+                jasminString += this.storeElement(operand, varTable);
+            }
 
             return jasminString;
         }
         
         if (instruction instanceof SingleOpInstruction) {
             SingleOpInstruction instruction2 = (SingleOpInstruction)instruction;
-            return loadElement(instruction2.getSingleOperand(), varTable);
+            Element e = ((SingleOpInstruction) instruction2).getSingleOperand();
+            if (!e.isLiteral()) {
+                Descriptor var = varTable.get(((Operand)e).getName());
+                if(var.getVarType().toString().equals("ARRAYREF")){
+                    jasminString += "\taload " + var.getVirtualReg() + "\n";
+
+                    ArrayOperand arrayOp = (ArrayOperand) e;
+                    ArrayList<Element> indexOperands = arrayOp.getIndexOperands();
+
+                    for (Element elem: indexOperands) {
+                        jasminString += loadElement(elem, varTable);
+                    }
+
+                    jasminString += "\tiaload\n";
+                }
+                else{
+                    jasminString += loadElement(e, varTable);
+                }
+            }
+            else {
+                jasminString += loadElement(e, varTable);
+            }
+            return jasminString;
         }
 
         if (instruction instanceof BinaryOpInstruction) {
-            stackCount -=1; maxStack();
             BinaryOpInstruction instruction2 = (BinaryOpInstruction)instruction;
             String left = loadElement(instruction2.getLeftOperand(), varTable);
             String right = loadElement(instruction2.getRightOperand(), varTable);
             OperationType operationType = instruction2.getUnaryOperation().getOpType();
             switch(operationType) {
-                case ADD:
-                    return left + right + "\tiadd\n";
-                case SUB:
-                    return left + right + "\tisub\n";
-                case MUL:
-                    return left + right + "\timul\n";
-                case DIV:
-                    return left + right + "\tidiv\n";
+                case ADD: return left + right + "\tiadd\n";
+                case SUB: return left + right + "\tisub\n";
+                case MUL: return left + right + "\timul\n";
+                case DIV: return left + right + "\tidiv\n";
+                case LTH: return left + right + "\tilth\n";
+                case GTH: return left + right + "\tigth\n";
+                case EQ:  return left + right + "\tieq\n";
+                case NEQ: return left + right + "\tine\n";
+                case LTE: return left + right + "\tilte\n";
+                case GTE: return left + right +"\tigte\n";
                 default:
                     return "default - operations\n";
             }
@@ -196,9 +235,7 @@ public class JasminGenerator {
                     jasminString += "\tireturn\n";
                     return jasminString;
 
-                case ARRAYREF:
-
-                case OBJECTREF:
+                case ARRAYREF: case OBJECTREF:
                     jasminString += loadElement(instruction2.getOperand(), varTable);
                     jasminString += "\tareturn\n";
                     return jasminString;
@@ -209,16 +246,23 @@ public class JasminGenerator {
 
         if (instruction instanceof CallInstruction) {
             CallInstruction instruction2 = (CallInstruction) instruction;
-            Operand op = (Operand)instruction2.getFirstArg();
             switch (instruction2.getInvocationType()) {
                 case invokevirtual:
-                    return jasminString + invokeToJasmin(instruction2, varTable);
                 case invokespecial:
-                    return jasminString + invokeToJasmin(instruction2, varTable);
                 case invokestatic:
                     return jasminString + invokeToJasmin(instruction2, varTable);
                 case NEW:
-                    jasminString += "\tnew " + op.getName() + "\n";
+                    Operand op = (Operand)instruction2.getFirstArg();
+
+                    if (op.getType().toString().equals("OBJECTREF")) {
+                        jasminString += "\tnew " + op.getName() + "\n\tdup\n";
+                    }
+                    else { // ARRAYREF
+                        ArrayList<Element> ar = instruction2.getListOfOperands();
+                        Descriptor var = varTable.get(((Operand)ar.get(0)).getName());
+                        jasminString += "iload " + var.getVirtualReg() + "\n";
+                        jasminString += "\tnewarray int\n";
+                    }
                     return jasminString;
                 case arraylength:
                     jasminString += loadElement(instruction2.getFirstArg(), varTable);
@@ -249,7 +293,7 @@ public class JasminGenerator {
                     case NEQ: ret += "\tifne "; break;
                     case LTE: ret += "\tifle "; break;
                     case GTE: ret += "\tifge "; break;
-                    default:  ret += "\tif_not_dealed"; break;
+                    default:  ret += "\tif_not_dealed "; break;
                 }
             }
             else {
@@ -260,62 +304,39 @@ public class JasminGenerator {
                     case NEQ: ret += "\tif_icmpne "; break;
                     case LTE: ret += "\tif_icmple "; break;
                     case GTE: ret += "\tif_icmpge "; break;
-                    default:  ret += "\tif_not_dealed"; break;
+                    case ANDB: ret += "\tif_acmpab "; break;
+                    default:  ret += "\tif_icmp_not_dealed "; break;
                 }
             }
             return ret + goToLabel + "\n";
+        }
+
+        if (instruction instanceof PutFieldInstruction){
+            PutFieldInstruction instruction2 = (PutFieldInstruction) instruction;
+            Element first = instruction2.getFirstOperand();
+            Element second = instruction2.getSecondOperand();
+            Element third = instruction2.getThirdOperand();
+
+            jasminString += loadElement(first, varTable);
+            jasminString += loadElement(third, varTable);
+            jasminString += "\tputfield " + classUnit.getClassName() + "/";
+            jasminString += ((Operand)second).getName() + " ";
+            jasminString += convertElementType(second.getType()) + "\n";
+            return jasminString;
         }
 
         if(instruction instanceof GetFieldInstruction){
             GetFieldInstruction instruction2 = (GetFieldInstruction) instruction;
             Element first = instruction2.getFirstOperand();
             Element second = instruction2.getSecondOperand();
+
             jasminString += loadElement(first, varTable);
-            jasminString += "getfield " + "alguma coisa aqui";
-            jasminString += storeElement((Operand)instruction2.getSecondOperand(), varTable);
-            return jasminString;
-            
-            /*EXEMPLO DE GETFIELD 
-            package xyz;     
-            class Point {         
-                public int xCoord, yCoord;     
-            };
-            
-            int x = p.xCoord;
-
-            Jasmin da linha a cima:
-            
-            aload_1 ; push object in local varable 1 (i.e. p) onto the stack     
-            getfield xyz/Point/xCoord I  ; get the value of p.xCoord, which is an int     
-            istore_2                     ; store the int value in local variable 2 (x)             
-            */ 
-
-
-        }
-        if(instruction instanceof PutFieldInstruction){
-            PutFieldInstruction instruction2 = (PutFieldInstruction) instruction;
-            Element first = instruction2.getFirstOperand();
-            Element second = instruction2.getSecondOperand();
-            Element third = instruction2.getThirdOperand();
-            jasminString += loadElement(first, varTable); 
-            jasminString += loadElement(second, varTable);
-            jasminString += "putfield " + third.getType();
+            jasminString += "\tgetfield " + classUnit.getClassName() + "/";
+            jasminString += ((Operand)second).getName() + " ";
+            jasminString += convertElementType(second.getType()) + "\n";
+            jasminString += storeElement((Operand)first, varTable);
             return jasminString;
 
-
-            /*EXEMPLO DE PUTFIELD 
-            package xyz;     
-            class Point {         
-                public int xCoord, yCoord;     
-            };
-            
-            p.xCoord = 10;
-
-            Jasmin da linha a cima:
-
-            aload_1 ; push object in local varable 1 (i.e. p) onto the stack     
-            bipush 10  ; push the integer 10 onto the stack     
-            putfield xyz/Point/xCoord I  ; set the value of the integer field p.xCoord to 10 */ 
         }
 
     return jasminString;
@@ -336,10 +357,10 @@ public class JasminGenerator {
         switch(operand.getType().getTypeOfElement()){
             case INT32:
             case BOOLEAN:
-                this.stackCount -= 1; maxStack();
                 return String.format("\tistore %s\n", varTable.get(operand.getName()).getVirtualReg());
             case ARRAYREF: case OBJECTREF:
-                this.stackCount -= 1; maxStack();
+                return String.format("\tastore %s\n", varTable.get(operand.getName()).getVirtualReg());
+            case STRING:
                 return String.format("\tastore %s\n", varTable.get(operand.getName()).getVirtualReg());
             default:
                 return "";
@@ -347,7 +368,6 @@ public class JasminGenerator {
     }
 
     public String loadElement(Element element, HashMap<String, Descriptor> varTable){
-        this.stackCount += 1; maxStack();
         String jasminString = "";
         if (element instanceof LiteralElement) {
             String num = ((LiteralElement) element).getLiteral();
@@ -398,9 +418,9 @@ public class JasminGenerator {
 
         Element first = instruction.getFirstArg();
 
-        jasminString += loadElement((Operand) first, varTable);
+        jasminString += loadElement(first, varTable);
         for (Element e: instruction.getListOfOperands()) {
-            jasminString += loadElement((Operand)e, varTable);
+            jasminString += loadElement(e, varTable);
         }
 
         if (first.toString().equals("this")) {
@@ -452,17 +472,75 @@ public class JasminGenerator {
         String jasmiString = "";
         for(Field field : classUnit.getFields())
         {
-            jasmiString += ".field "+ jasminIsStatic(field.isStaticField()) + " " + field.getFieldName() + " "+convertElementType(field.getFieldType())+"\n";
+            jasmiString += ".field " + jasminIsStatic(field.isStaticField()) + field.getFieldAccessModifier().toString().toLowerCase() + " " + field.getFieldName() + " " + convertElementType(field.getFieldType())+"\n";
         }
         return jasmiString;
     }
 
-    public String getStack(){
-        return String.valueOf(this.maxstack);
+    public int getStack(String methodCode) {
+        String[] methodCodeSplit = methodCode.split("\n");
+
+        int limit = 0, maxLimit = 0;
+
+        for (String s: methodCodeSplit) {
+            if (s.contains("const") || s.contains("bipush") || s.contains("sipush")
+                    || s.contains("ldc") || s.contains("getfield") || s.contains("dup")) {
+                limit += 1;
+                maxLimit = Math.max(maxLimit, limit);
+            }
+            else if (s.contains("putfield") || s.contains("add") || s.contains("div") ||
+                    s.contains("sub") || s.contains("mul")) {
+                limit -=1;
+                maxLimit = Math.max(maxLimit, limit);
+            }
+            else if (s.contains("load")) {
+                if (s.contains("iaload")) limit -= 1;
+                else limit += 1;
+                maxLimit = Math.max(maxLimit, limit);
+            }
+            else if(s.contains("store")) {
+                if (s.contains("iastore")) limit -= 3;
+                else limit -= 1;
+                maxLimit = Math.max(maxLimit, limit);
+            }
+            else if (s.contains("invoke")) {
+                //returnType +1
+                char returnType = s.charAt(s.indexOf(")")+1);
+                if (returnType!='V') limit += 1;
+
+                //arguments -1
+                String arguments = s.substring(s.indexOf("(")+1,s.indexOf(")"));
+
+                int nStrings=countSubstring(arguments,"Ljava/lang/String;");
+                String restOfArgs=arguments.substring(nStrings*"Ljava/lang/String;".length());
+                limit-=nStrings+restOfArgs.length();
+
+                maxLimit = Math.max(maxLimit, limit);
+            }
+            else if(s.contains("if_") || s.contains("iflt") || s.contains("ifgt") || s.contains("ifeq") ||
+            s.contains("ifne") || s.contains("ifle") || s.contains("ifge")){
+                limit -=2;
+                maxLimit = Math.max(maxLimit, limit);
+            }
+        }
+        return maxLimit;
     }
 
-    public int maxStack(){
-        if(maxstack < stackCount) maxstack=stackCount;
-        return maxstack;
+    public int countSubstring(String str, String findStr){
+        int lastIndex = 0;
+        int count = 0;
+        while (lastIndex != -1) {
+
+            lastIndex = str.indexOf(findStr, lastIndex);
+
+            if (lastIndex != -1) {
+                count++;
+                lastIndex += findStr.length();
+            }
+        }
+        return count;
     }
 }
+
+
+

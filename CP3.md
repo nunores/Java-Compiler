@@ -2,14 +2,14 @@
 
 - [x] .class
 - [x] .super
-- [x] .method (and .end method)
+- [x] .method
 - [ ] .limit stack
 - [x] .limit locals
   
 - [x] Label:
 - [x] goto
-- [ ] Ifs - (if (bool) //TOCONFIRM)
+- [x] Ifs
 - [ ] Arrays
 - [x] Whiles (Loop + if)
-- [ ] putfield
-- [ ] getfield
+- [x] putfield
+- [x] getfield

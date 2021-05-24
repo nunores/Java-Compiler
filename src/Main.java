@@ -52,34 +52,35 @@ public class Main implements JmmParser {
 
 		Main compiler = new Main();
 		String filename = compiler.readFile(args[0]);
-		JmmParserResult parserResult = compiler.parse(filename);
+		//JmmParserResult parserResult = compiler.parse(filename);
 
-		if(!parserResult.getReports().isEmpty()){
-			System.out.println(parserResult.getReports());
-			return;
-		}
+		//if(!parserResult.getReports().isEmpty()){
+		//	System.out.println(parserResult.getReports());
+		//	return;
+		//}
 
-		AnalysisStage as = new AnalysisStage();
-		JmmSemanticsResult semanticsResult = as.semanticAnalysis(parserResult); 	// CP2: Symbol table generation and semantic analysis
+		//AnalysisStage as = new AnalysisStage();
+		//JmmSemanticsResult semanticsResult = as.semanticAnalysis(parserResult); 	// CP2: Symbol table generation and semantic analysis
 
-		if(!semanticsResult.getReports().isEmpty()){
-			System.out.println(semanticsResult.getReports());
-			return;
-		}
+		//if(!semanticsResult.getReports().isEmpty()){
+		//	System.out.println(semanticsResult.getReports());
+		//	return;
+		//}
 
-		OptimizationStage os = new OptimizationStage(as.getSymbolTable());
-		OllirResult ollirResult = os.toOllir(semanticsResult); 					// CP2: Convert AST to OLLIR format
-		System.out.println("\nOLLIR Code generated with success.\n");
+		//OptimizationStage os = new OptimizationStage(as.getSymbolTable());
+		//OllirResult ollirResult = os.toOllir(semanticsResult); 					// CP2: Convert AST to OLLIR format
+		//System.out.println("\nOLLIR Code generated with success.\n");
 
-		if(!ollirResult.getReports().isEmpty()){
-			System.out.println(ollirResult.getReports());
-			return;
-		}
+		//if(!ollirResult.getReports().isEmpty()){
+		//	System.out.println(ollirResult.getReports());
+		//	return;
+		//}
 
-		//BackendStage bs = new BackendStage();
-		//JasminResult jasminResult = bs.toJasmin(ollirResult);// CP2: Convert OLLIR to Jasmin Bytecode (only for code structures defined in the project)
-		
-		//compiler.compile(jasminResult, filename);				
+		OllirResult or = new OllirResult("", OllirUtils.parse(filename), null, new ArrayList<Report>());
+		BackendStage bs = new BackendStage();
+		JasminResult jasminResult = bs.toJasmin(or);// CP2: Convert OLLIR to Jasmin Bytecode (only for code structures defined in the project)
+		jasminResult.run();
+		//compiler.compile(jasminResult, filename);
 		
 		
 	}
