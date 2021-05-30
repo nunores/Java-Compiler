@@ -336,7 +336,7 @@ void Methods():
 {
 	(
 	    {
-          Method method = new Method();
+          Method method = new Method(getMyClass());
         }
 		((<METHOD> | ".construct" {method.setConstructMethod();})
 		MethodModifiers(method) t1=<IDENTIFIER> "(" Params(method) ")" tp1=FullType()

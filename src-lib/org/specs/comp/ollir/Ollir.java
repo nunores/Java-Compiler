@@ -1,10 +1,10 @@
 /*
  * Compiler course
  *
- * Department of Informatics Engineering, Faculty of Engineering of the University of Porto
- * Porto, Portugal
+ * Department of Informatics Engineering, Faculty of Engineering of the University of Porto Porto, Portugal
  *
  * March 2021
+ * 
  * @author João MP Cardoso
  */
 package org.specs.comp.ollir;
@@ -18,10 +18,10 @@ import org.specs.comp.ollir.parser.ParseException;
 public class Ollir {
 
     /**
-     * Main example with the stages to load an OLLIR file and to build the data structures
-     * to be used by backends.
+     * Main example with the stages to load an OLLIR file and to build the data structures to be used by backends.
      *
-     * @param args  Name of the input file with the OLLIR
+     * @param args
+     *            Name of the input file with the OLLIR
      */
     public static void main(String[] args) {
 
@@ -65,5 +65,16 @@ public class Ollir {
         } catch (OllirErrorException e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    public static String getSimpleClassName(String className) {
+        String separator = ".";
+
+        int extIndex = className.lastIndexOf(separator);
+        if (extIndex < 0) {
+            return className;
+        }
+
+        return className.substring(extIndex + 1, className.length());
     }
 }

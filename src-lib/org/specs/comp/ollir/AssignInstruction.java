@@ -1,17 +1,16 @@
 /*
  * Compiler course
  *
- * Department of Informatics Engineering, Faculty of Engineering of the University of Porto
- * Porto, Portugal
+ * Department of Informatics Engineering, Faculty of Engineering of the University of Porto Porto, Portugal
  *
  * March 2021
+ * 
  * @author João MP Cardoso
  */
 package org.specs.comp.ollir;
 
 /**
- * Class representing assignments.
- * dest = rhs
+ * Class representing assignments. dest = rhs
  */
 public class AssignInstruction extends Instruction {
 
@@ -21,6 +20,10 @@ public class AssignInstruction extends Instruction {
 
     Instruction rhs;
 
+    public Type getTypeOfAssign() {
+        return typeOfAssign;
+    }
+
     public Element getDest() {
         return dest;
     }
@@ -29,16 +32,17 @@ public class AssignInstruction extends Instruction {
         return rhs;
     }
 
+    @Override
     public void show() {
-        System.out.print("\t"+this.instType+" ");
+        System.out.print("\t" + this.instType + " ");
 
         Operand o1 = (Operand) this.dest;
-        System.out.print("Operand: "+o1.getName()+" "+o1.getType());
+        System.out.print("Operand: " + o1.getName() + " " + o1.getType());
 
         System.out.print(" = ");
 
         this.rhs.show();
-        //System.out.println();
+        // System.out.println();
 
     }
 
@@ -47,5 +51,14 @@ public class AssignInstruction extends Instruction {
         this.dest = o1;
         this.typeOfAssign = tp1;
         this.rhs = i1;
+    }
+
+    @Override
+    public void setId(int id) {
+        // Set its own id
+        super.setId(id);
+
+        // Set id of rhs
+        rhs.setId(id);
     }
 }

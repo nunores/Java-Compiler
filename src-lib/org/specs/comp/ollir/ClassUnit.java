@@ -10,6 +10,8 @@
 package org.specs.comp.ollir;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Class representing all the information loaded from the OLLIR input.
@@ -19,6 +21,7 @@ public class ClassUnit {
     String classPackage;
 
     ArrayList<String> imports;
+    Set<String> importClasses;
 
     String className;
 
@@ -92,6 +95,29 @@ public class ClassUnit {
 
     public void addImport(String str) {
         this.imports.add(str);
+
+        var simpleClassName = Ollir.getSimpleClassName(str);
+
+        var isNew = this.importClasses.add(simpleClassName);
+
+        if (!isNew) {
+            throw new RuntimeException(
+                    "Code has two imports with the name simple class name: " + simpleClassName);
+        }
+    }
+
+    /**
+     * 
+     * @param simpleClassName
+     * @return true is the given class name is an import (e.g. "io" will return true if there is an import foo.io;),
+     *         false otherwise
+     */
+    public boolean isImportedClass(String simpleClassName) {
+        return importClasses.contains(simpleClassName);
+    }
+
+    public Set<String> getImportedClasseNames() {
+        return importClasses;
     }
 
     public void setClassName(String name) {
@@ -177,6 +203,7 @@ public class ClassUnit {
         this.fieldList = new ArrayList<Field>();
         this.methodList = new ArrayList<Method>();
         this.imports = new ArrayList<String>();
+        this.importClasses = new HashSet<>();
         this.superClass = null;
     }
 }

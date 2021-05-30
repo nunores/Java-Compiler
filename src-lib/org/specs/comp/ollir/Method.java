@@ -13,13 +13,17 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * Class represents each method in the input OLLIR class.
  */
 public class Method {
+
+    private final ClassUnit ollirClass;
 
     String methodName;
 
@@ -37,6 +41,58 @@ public class Method {
 
     Node beginNode;
     Node endNode;
+    boolean cfgInitialized;
+
+    Map<Instruction, List<String>> labelsMap;
+
+    /**
+     * 
+     * @param instruction
+     * @return a String list with the labels of the given instruction, or an empty list if the instruction has no labels
+     */
+    public List<String> getLabels(Instruction instruction) {
+        if (labelsMap == null) {
+            labelsMap = buildLabelsMap();
+        }
+
+        var labels = labelsMap.get(instruction);
+
+        return labels != null ? labels : Collections.emptyList();
+    }
+
+    private Map<Instruction, List<String>> buildLabelsMap() {
+        var labelsMap = new HashMap<Instruction, List<String>>();
+
+        for (var entry : methodLabels.entrySet()) {
+            var inst = entry.getValue();
+
+            var labels = labelsMap.get(inst);
+            if (labels == null) {
+                labels = new ArrayList<>();
+                labelsMap.put(inst, labels);
+            }
+
+            labels.add(entry.getKey());
+        }
+
+        return labelsMap;
+    }
+
+    public Node getBeginNode() {
+        if (!this.cfgInitialized) {
+            throw new RuntimeException("CFG has not been initialized yet, please call .buildCFG()");
+        }
+
+        return beginNode;
+    }
+
+    public Node getEndNode() {
+        if (!this.cfgInitialized) {
+            throw new RuntimeException("CFG has not been initialized yet, please call .buildCFG()");
+        }
+
+        return endNode;
+    }
 
     public HashMap<String, Descriptor> getVarTable() {
         return varTable;
@@ -54,15 +110,21 @@ public class Method {
         return this.returnType;
     }
 
+    public ClassUnit getOllirClass() {
+        return ollirClass;
+    }
+
     AccessModifiers methodAccessModifier = AccessModifiers.DEFAULT;
 
-    public Method() {
+    public Method(ClassUnit ollirClass) {
+        this.ollirClass = ollirClass;
         this.paramList = new ArrayList<Element>();
         this.listOfInstr = new ArrayList<Instruction>();
         this.methodLabels = new HashMap<String, Instruction>();
 
         this.beginNode = new Node(NodeType.BEGIN);
         this.endNode = new Node(NodeType.END);
+        this.cfgInitialized = false;
 
         this.varTable = new HashMap<String, Descriptor>();
     }
@@ -186,17 +248,27 @@ public class Method {
      */
     int updateTable(Element e1, VarScope vs, int varID) {
         if (!e1.isLiteral()) { // if the e1 is not a literal, then it is a variable
-            if (!this.varTable.containsKey(((Operand) e1).getName())) { // if not already in the varTable
-                var operand = (Operand) e1;
+            var operand = (Operand) e1;
+
+            var varName = operand.getName();
+
+            // If it is an import, ignore
+            if (getOllirClass().isImportedClass(varName)) {
+                return varID;
+            }
+
+            if (!this.varTable.containsKey(varName)) { // if not already in the varTable
+                // var operand = (Operand) e1;
 
                 // If 'this', special case, is always 0
-                if ("this".equals(operand.getName())) {
+                if ("this".equals(varName)) {
                     Descriptor d1 = new Descriptor(vs, 0, e1.getType());
-                    this.varTable.put(operand.getName(), d1);
+                    this.varTable.put(varName, d1);
                 } else {
                     // Descriptor d1 = new Descriptor(vs, ++varID, e1.getType());
-                    Descriptor d1 = new Descriptor(vs, varID++, e1.getType());
-                    this.varTable.put(((Operand) e1).getName(), d1);
+                    Descriptor d1 = new Descriptor(vs, varID, e1.getType());
+                    varID++;
+                    this.varTable.put(varName, d1);
                 }
             }
         }
@@ -262,7 +334,8 @@ public class Method {
             varID = updateTable(e1, VarScope.LOCAL, varID);
 
             e1 = i5.getSecondOperand();
-            varID = updateTable(e1, VarScope.LOCAL, varID);
+            // varID = updateTable(e1, VarScope.FIELD, varID);
+            updateTable(e1, VarScope.FIELD, -1);
 
             e1 = i5.getThirdOperand();
             varID = updateTable(e1, VarScope.LOCAL, varID);
@@ -275,7 +348,8 @@ public class Method {
             varID = updateTable(e1, VarScope.LOCAL, varID);
 
             e1 = i6.getSecondOperand();
-            varID = updateTable(e1, VarScope.LOCAL, varID);
+            // varID = updateTable(e1, VarScope.FIELD, varID);
+            updateTable(e1, VarScope.FIELD, -1);
 
             break;
         case UNARYOPER:
@@ -345,6 +419,8 @@ public class Method {
      * that the instructions are in that ArrayList by the order they order in the input OLLIR.
      */
     public void buildCFG() {
+        this.cfgInitialized = true;
+
         // methods without instructions just connect begin to the end
         if (this.listOfInstr.isEmpty()) {
             this.beginNode.addSucc(this.endNode);
