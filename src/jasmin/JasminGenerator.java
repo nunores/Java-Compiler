@@ -259,8 +259,14 @@ public class JasminGenerator {
                     }
                     else { // ARRAYREF
                         ArrayList<Element> ar = instruction2.getListOfOperands();
-                        Descriptor var = varTable.get(((Operand)ar.get(0)).getName());
-                        jasminString += "iload " + var.getVirtualReg() + "\n";
+                        if (ar.get(0).isLiteral()) {
+                            jasminString += loadElement(ar.get(0), varTable);
+                        }
+                        else {
+                            Descriptor var = varTable.get(((Operand)ar.get(0)).getName());
+                            jasminString += "iload " + var.getVirtualReg() + "\n";
+                        }
+
                         jasminString += "\tnewarray int\n";
                     }
                     return jasminString;

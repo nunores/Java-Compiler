@@ -13,5 +13,17 @@
 - [x] Whiles (Loop + if)
 - [x] putfield
 - [x] getfield
-- [ ] (x && x)
-- [ ] myclass1 e myclass2 dão erro por não ter main. Como é suposto tratar disto?
+- [ ] (x && x), (!x)
+
+- [x] Fac.jmm
+- [x] HelloWorld.jmm
+- [ ] FindMaximum.jmm (last putfield operand with wrong type)
+- [ ] Lazysort.jmm
+- [ ] Life.jmm
+- [ ] MonteCarloPi.jmm
+- [x] MyClass.jmm (ERROR: no main method)
+- [x] OperatorPrecedence.jmm
+- [ ] Quicksort.jmm
+- [x] Simple.jmm
+- [ ] TicTacToe.jmm
+- [ ] WhileAndIF.jmm
