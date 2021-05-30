@@ -17,13 +17,13 @@
 
 - [x] Fac.jmm
 - [x] HelloWorld.jmm
-- [ ] FindMaximum.jmm (last putfield operand with wrong type)
+- [ ] FindMaximum.jmm (iload -1 (?))
 - [ ] Lazysort.jmm
 - [ ] Life.jmm
 - [ ] MonteCarloPi.jmm
 - [x] MyClass.jmm (ERROR: no main method)
 - [x] OperatorPrecedence.jmm
-- [ ] Quicksort.jmm
+- [ ] Quicksort.jmm (Did not implemented overload functions)
 - [x] Simple.jmm
 - [ ] TicTacToe.jmm
 - [ ] WhileAndIF.jmm

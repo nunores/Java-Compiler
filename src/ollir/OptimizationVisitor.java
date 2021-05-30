@@ -758,7 +758,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
 
         String scope = getScope(node);
         String type = getTypeToOllir(getTypeReturnedByNode(node, scope));
-        String toReturn = "aux" + this.auxNumber + "." + type;
+        String toReturn = "aux" + this.auxNumber + "." + "array.i32";
         String line = "";
         if (needAux){
             line = "\t\taux" + this.auxNumber + "." + "array.i32" + " :=." + "array.i32" + " ";
