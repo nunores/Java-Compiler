@@ -23,7 +23,7 @@ import pt.up.fe.specs.util.SpecsIo;
 
 public class BackendTest {
 
-    /* Correct files */
+    /* Semantic Analysis Tests */
 
     @Test
     public void testFindMaximum() {

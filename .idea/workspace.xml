@@ -6,11 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="b1be5d57-de64-4a62-9e6a-897895b518bf" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.dot" beforeDir="false" afterPath="$PROJECT_DIR$/main.dot" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/jasmin/JasminGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/jasmin/JasminGenerator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/BackendTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/BackendTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/JasminTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/JasminTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/OptimizeTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/OptimizeTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/fixtures/public/Testing.jmm" beforeDir="false" afterPath="$PROJECT_DIR$/test/fixtures/public/Testing.jmm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/fixtures/public/debugging" beforeDir="false" afterPath="$PROJECT_DIR$/test/fixtures/public/debugging" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -94,7 +93,28 @@
       <recent name="C:\Users\Asus ZenBook\OneDrive - Universidade do Porto\FEUP\comp2021-4d" />
     </key>
   </component>
-  <component name="RunManager" selected="JAR Application.ollir.jar">
+  <component name="RunManager" selected="Gradle.JasminTest.testFac">
+    <configuration name="JasminTest.testFac" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="--tests &quot;JasminTest.testFac&quot;" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value=":test" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>false</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <method v="2" />
+    </configuration>
     <configuration name="JasminTest.testHelloWorld" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
       <ExternalSystemSettings>
         <option name="executionName" />
@@ -116,27 +136,6 @@
       <DebugAllEnabled>false</DebugAllEnabled>
       <method v="2" />
     </configuration>
-    <configuration name="comp2021-4d [build]" type="GradleRunConfiguration" factoryName="Gradle" temporary="true">
-      <ExternalSystemSettings>
-        <option name="executionName" />
-        <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="externalSystemIdString" value="GRADLE" />
-        <option name="scriptParameters" />
-        <option name="taskDescriptions">
-          <list />
-        </option>
-        <option name="taskNames">
-          <list>
-            <option value="build" />
-          </list>
-        </option>
-        <option name="vmOptions" />
-      </ExternalSystemSettings>
-      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
-      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
-      <DebugAllEnabled>false</DebugAllEnabled>
-      <method v="2" />
-    </configuration>
     <configuration name="jasmin.jar" type="JarApplication" temporary="true">
       <option name="JAR_PATH" value="$PROJECT_DIR$/libs/jasmin.jar" />
       <method v="2" />
@@ -151,11 +150,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Gradle.JasminTest.testFac" />
         <item itemvalue="JAR Application.ollir.jar" />
         <item itemvalue="JAR Application.jasmin.jar" />
         <item itemvalue="JAR Application.utils.jar" />
         <item itemvalue="Gradle.JasminTest.testHelloWorld" />
-        <item itemvalue="Gradle.comp2021-4d [build]" />
       </list>
     </recent_temporary>
   </component>

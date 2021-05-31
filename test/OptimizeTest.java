@@ -20,6 +20,8 @@ import pt.up.fe.specs.util.SpecsIo;
 
 public class OptimizeTest {
 
+    /* OLLIR Tests */
+
     @Test
     public void testHelloWorld() {
         OllirResult result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/HelloWorld.jmm"));

@@ -21,6 +21,7 @@ import pt.up.fe.comp.TestUtils;
 import pt.up.fe.comp.jmm.jasmin.JasminResult;
 import pt.up.fe.comp.jmm.ollir.OllirResult;
 import pt.up.fe.comp.jmm.ollir.OllirUtils;
+import pt.up.fe.comp.jmm.report.Report;
 import pt.up.fe.specs.util.SpecsIo;
 
 import java.util.ArrayList;
@@ -28,21 +29,77 @@ import java.util.ArrayList;
 
 public class JasminTest {
 
-    /* Correct files */
+    /* Jasmin Tests */
 
     @Test
     public void testHelloWorld() {
-        //JasminResult result = TestUtils.backend(new OllirResult(OllirUtils.parse(SpecsIo.getResource("fixtures/public/ollir/HelloWorld.ollir")), null, new ArrayList<>()));
+        JasminResult result = TestUtils.backend(SpecsIo.getResource("fixtures/public/HelloWorld.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
 
-        //result.run();
+    @Test
+    public void testSimple() {
+        JasminResult result = TestUtils.backend(SpecsIo.getResource("fixtures/public/Simple.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testOperatorPrecedence() {
+        JasminResult result = TestUtils.backend(SpecsIo.getResource("fixtures/public/OperatorPrecedence.jmm"));
+        TestUtils.noErrors(result.getReports());
     }
 
     @Test
     public void testFac() {
-        //JasminResult result = TestUtils.backend(new OllirResult(OllirUtils.parse(SpecsIo.getResource("fixtures/public/ollir/Fac.ollir")), null, new ArrayList<>()));
-    
-        //result.run();
+        JasminResult result = TestUtils.backend(SpecsIo.getResource("fixtures/public/Fac.jmm"));
+        TestUtils.noErrors(result.getReports());
     }
 
+    @Test
+    public void testFindMaximum() {
+        JasminResult result = TestUtils.backend(SpecsIo.getResource("fixtures/public/FindMaximum.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
 
+    @Test
+    public void testLazySort() {
+        JasminResult result = TestUtils.backend(SpecsIo.getResource("fixtures/public/Lazysort.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testLife() {
+        JasminResult result = TestUtils.backend(SpecsIo.getResource("fixtures/public/Life.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testMonteCarloPi() {
+        JasminResult result = TestUtils.backend(SpecsIo.getResource("fixtures/public/MonteCarloPi.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testMyClass() {
+        JasminResult result = TestUtils.backend(SpecsIo.getResource("fixtures/public/MyClass.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testTicTacToe() {
+        JasminResult result = TestUtils.backend(SpecsIo.getResource("fixtures/public/TicTacToe.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testWhileAndIf() {
+        JasminResult result = TestUtils.backend(SpecsIo.getResource("fixtures/public/WhileAndIF.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testMyClass2() {
+        JasminResult result = TestUtils.backend(SpecsIo.getResource("fixtures/public/ollir/myclass2.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
 }
