@@ -1,0 +1,21 @@
+import io;
+class Fac {
+    public int compFac(int num){
+        int a;
+        boolean x;
+        boolean y;
+        x = false;
+        y = false;
+        if (!(x && y)) {
+            a = 0;
+        }
+        else {
+            a = 1;
+        }
+        return a;
+    }
+
+    public static void main(String[]args){
+        io.println(new Fac().compFac(6));
+    }
+}

@@ -1030,7 +1030,7 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
 
         switch (node.getChildren().get(0).getKind()) {
             case "IntegerLiteral": case "RestIdentifier": 
-                line = line + terminalNode(node.getChildren().get(0)) + " " + operation + "." + type + " ";
+                line = line + terminalNode(node.getChildren().get(0)) + " " + operation + "." + "i32" + " ";
                 break;
             case "Operation": case "Less": case "And":
                 line = line + operationNode(node.getChildren().get(0), true) + " " + operation + "." + type + " ";

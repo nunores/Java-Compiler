@@ -14,6 +14,7 @@ public class JasminGenerator {
     private ClassUnit classUnit;
     private Method method;
     private HashMap<String, Instruction> labels = new HashMap<>();
+    private HashMap<String, Integer> labelsAux = new HashMap<>();
 
     public JasminGenerator(ClassUnit classUnit) {
         this.classUnit = classUnit;
@@ -140,7 +141,6 @@ public class JasminGenerator {
         for (Map.Entry<String, Instruction> entry: methodLabels.entrySet()) {
             if (entry.getValue().equals(instruction)) {
                 jasminString += entry.getKey() + ":\n";
-                break;
             }
         }
 
@@ -171,7 +171,7 @@ public class JasminGenerator {
             return jasminString;
         }
         
-        if (instruction instanceof SingleOpInstruction) {
+        else if (instruction instanceof SingleOpInstruction) {
             SingleOpInstruction instruction2 = (SingleOpInstruction)instruction;
             Element e = ((SingleOpInstruction) instruction2).getSingleOperand();
             if (!e.isLiteral()) {
@@ -198,37 +198,41 @@ public class JasminGenerator {
             return jasminString;
         }
 
-        if (instruction instanceof BinaryOpInstruction) {
+        else if (instruction instanceof BinaryOpInstruction) {
             BinaryOpInstruction instruction2 = (BinaryOpInstruction)instruction;
             String left = loadElement(instruction2.getLeftOperand(), varTable);
             String right = loadElement(instruction2.getRightOperand(), varTable);
             OperationType operationType = instruction2.getUnaryOperation().getOpType();
             switch(operationType) {
-                case ADD: return left + right + "\tiadd\n";
-                case SUB: return left + right + "\tisub\n";
-                case MUL: return left + right + "\timul\n";
-                case DIV: return left + right + "\tidiv\n";
-                case LTH: return left + right + "\tilth\n";
-                case GTH: return left + right + "\tigth\n";
-                case EQ:  return left + right + "\tieq\n";
-                case NEQ: return left + right + "\tine\n";
-                case LTE: return left + right + "\tilte\n";
-                case GTE: return left + right +"\tigte\n";
+                case ADD: return jasminString + left + right + "\tiadd\n";
+                case SUB: return jasminString + left + right + "\tisub\n";
+                case MUL: return jasminString + left + right + "\timul\n";
+                case DIV: return jasminString + left + right + "\tidiv\n";
+                case LTH: return jasminString + left + right + "\tisub\n";
+                case GTH: return jasminString + left + right + "\tiadd\n";
+                case EQ:  return jasminString + left + right + "\tieq\n";
+                case NEQ: return jasminString + left + right + "\tine\n";
+                case LTE: return jasminString + left + right + "\tisub\n";
+                case GTE: return jasminString + left + right +"\tiadd\n";
+                case ANDB: return jasminString + left + right + "\tiand\n";
+                case NOTB: return jasminString + left;
                 default:
-                    return "default - operations\n";
+                    return "default - operations: " + operationType + "\n";
             }
         }
 
-        if(instruction instanceof ReturnInstruction){
+        else if(instruction instanceof ReturnInstruction){
             ReturnInstruction instruction2 = (ReturnInstruction)instruction;
 
             if (!instruction2.hasReturnValue()) {
-                return "\treturn\n";
+                jasminString += "\treturn\n";
+                return jasminString;
 
             }
             switch(instruction2.getOperand().getType().getTypeOfElement()){
                 case VOID:
-                    return "\treturn\n";
+                    jasminString += "\treturn\n";
+                    return jasminString;
 
                 case INT32: case BOOLEAN:
                     jasminString += loadElement(instruction2.getOperand(), varTable);
@@ -244,7 +248,7 @@ public class JasminGenerator {
             }
         }
 
-        if (instruction instanceof CallInstruction) {
+        else if (instruction instanceof CallInstruction) {
             CallInstruction instruction2 = (CallInstruction) instruction;
             switch (instruction2.getInvocationType()) {
                 case invokevirtual:
@@ -273,51 +277,44 @@ public class JasminGenerator {
                 case arraylength:
                     jasminString += loadElement(instruction2.getFirstArg(), varTable);
                     jasminString += "\tarraylength\n";
+                    return jasminString;
                 default:
+                    return "not dealed call instruction";
             }
         }
 
-        if (instruction instanceof GotoInstruction) {
+        else if (instruction instanceof GotoInstruction) {
             GotoInstruction instruction2 = (GotoInstruction) instruction;
             String goToLabel = instruction2.getLabel();
-            return "\tgoto " + goToLabel + "\n";
+            jasminString += "\tgoto " + goToLabel + "\n";
+            return jasminString;
         }
 
-        if (instruction instanceof CondBranchInstruction){
+        else if (instruction instanceof CondBranchInstruction){
             CondBranchInstruction instruction2 = (CondBranchInstruction) instruction;
             String left = loadElement(instruction2.getLeftOperand(), varTable);
             String right = loadElement(instruction2.getRightOperand(), varTable);
             String goToLabel = instruction2.getLabel();
-            String ret = left + right;
+            String ret = jasminString + left + right;
 
             Element e = instruction2.getRightOperand();
-            if (e.isLiteral() && ((LiteralElement)e).getLiteral().equals("0")) {
-                switch(instruction2.getCondOperation().getOpType()) {
-                    case LTH: ret += "\tiflt "; break;
-                    case GTH: ret += "\tifgt "; break;
-                    case EQ:  ret += "\tifeq "; break;
-                    case NEQ: ret += "\tifne "; break;
-                    case LTE: ret += "\tifle "; break;
-                    case GTE: ret += "\tifge "; break;
-                    default:  ret += "\tif_not_dealed "; break;
-                }
+
+            switch(instruction2.getCondOperation().getOpType()){
+                case LTH: ret += "\tif_icmplt "; break;
+                case GTH: ret += "\tif_icmpgt "; break;
+                case EQ:  ret += "\tif_icmpeq "; break;
+                case NEQ: ret += "\tif_icmpne "; break;
+                case LTE: ret += "\tif_icmple "; break;
+                case GTE: ret += "\tif_icmpge "; break;
+                case ANDB: ret += "\tiand\n\tifne "; break;
+                case NOTB: ret = jasminString + left + "\tifeq "; break;
+                default:  ret += "\tif_icmp_not_dealed:" + instruction2.getCondOperation().getOpType() + " "; break;
             }
-            else {
-                switch(instruction2.getCondOperation().getOpType()){
-                    case LTH: ret += "\tif_icmplt "; break;
-                    case GTH: ret += "\tif_icmpgt "; break;
-                    case EQ:  ret += "\tif_icmpeq "; break;
-                    case NEQ: ret += "\tif_icmpne "; break;
-                    case LTE: ret += "\tif_icmple "; break;
-                    case GTE: ret += "\tif_icmpge "; break;
-                    case ANDB: ret += "\tif_acmpab "; break;
-                    default:  ret += "\tif_icmp_not_dealed "; break;
-                }
-            }
+
             return ret + goToLabel + "\n";
         }
 
-        if (instruction instanceof PutFieldInstruction){
+        else if (instruction instanceof PutFieldInstruction){
             PutFieldInstruction instruction2 = (PutFieldInstruction) instruction;
             Element first = instruction2.getFirstOperand();
             Element second = instruction2.getSecondOperand();
@@ -331,7 +328,7 @@ public class JasminGenerator {
             return jasminString;
         }
 
-        if(instruction instanceof GetFieldInstruction){
+        else if(instruction instanceof GetFieldInstruction){
             GetFieldInstruction instruction2 = (GetFieldInstruction) instruction;
             Element first = instruction2.getFirstOperand();
             Element second = instruction2.getSecondOperand();
@@ -345,8 +342,12 @@ public class JasminGenerator {
 
         }
 
-    return jasminString;
-}
+        else {
+            return jasminString;
+        }
+
+        return jasminString;
+    }
 
     public String instructionToJasmin(Method method) {
         HashMap<String, Descriptor> varTable = method.getVarTable();
@@ -478,7 +479,14 @@ public class JasminGenerator {
         String jasmiString = "";
         for(Field field : classUnit.getFields())
         {
-            jasmiString += ".field " + jasminIsStatic(field.isStaticField()) + field.getFieldAccessModifier().toString().toLowerCase() + " " + field.getFieldName() + " " + convertElementType(field.getFieldType())+"\n";
+            jasmiString += ".field " + jasminIsStatic(field.isStaticField()) + field.getFieldAccessModifier().toString().toLowerCase() + " ";
+            if (field.getFieldName().equals("field")) {
+                jasmiString += "'field'";
+            }
+            else {
+                jasmiString += field.getFieldName();
+            }
+            jasmiString += " " + convertElementType(field.getFieldType())+"\n";
         }
         return jasmiString;
     }
