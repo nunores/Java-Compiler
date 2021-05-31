@@ -520,11 +520,9 @@ public class JasminGenerator {
                 maxLimit = Math.max(maxLimit, limit);
             }
             else if (s.contains("invoke")) {
-                //returnType +1
                 char returnType = s.charAt(s.indexOf(")")+1);
                 if (returnType!='V') limit += 1;
 
-                //arguments -1
                 String arguments = s.substring(s.indexOf("(")+1,s.indexOf(")"));
 
                 int nStrings=countSubstring(arguments,"Ljava/lang/String;");
