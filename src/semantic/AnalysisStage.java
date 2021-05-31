@@ -35,7 +35,7 @@ public class AnalysisStage implements JmmAnalysis {
 			var semanticAnalysisVisitor = new SemanticAnalysisVisitor(st);
 			semanticAnalysisVisitor.visit(node, reports);
 
-			st.print();
+			st.printTable();
 			
 			return new JmmSemanticsResult(node, st, reports);
 		}

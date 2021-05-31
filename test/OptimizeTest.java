@@ -20,13 +20,13 @@ import pt.up.fe.specs.util.SpecsIo;
 
 public class OptimizeTest {
 
-    /*@Test
+    @Test
     public void testHelloWorld() {
         OllirResult result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/HelloWorld.jmm"));
         TestUtils.noErrors(result.getReports());
     }
 
-    /*@Test
+    @Test
     public void testSimple() {
         OllirResult result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/Simple.jmm"));
         TestUtils.noErrors(result.getReports());
@@ -48,5 +48,47 @@ public class OptimizeTest {
     public void testFindMaximum() {
         OllirResult result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/FindMaximum.jmm"));
         TestUtils.noErrors(result.getReports());
-    }*/
+    }
+
+    @Test
+    public void testLazySort() {
+        OllirResult result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/Lazysort.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testLife() {
+        OllirResult result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/Life.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testMonteCarloPi() {
+        OllirResult result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/MonteCarloPi.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
+    
+    @Test
+    public void testMyClass() {
+        OllirResult result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/MyClass.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testTicTacToe() {
+        OllirResult result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/TicTacToe.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testWhileAndIf() {
+        OllirResult result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/WhileAndIF.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
+
+    @Test
+    public void testMyClass2() {
+        OllirResult result = TestUtils.optimize(SpecsIo.getResource("fixtures/public/ollir/myclass2.jmm"));
+        TestUtils.noErrors(result.getReports());
+    }
 }

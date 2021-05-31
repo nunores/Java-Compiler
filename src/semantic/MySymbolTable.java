@@ -69,7 +69,7 @@ public class MySymbolTable implements SymbolTable {
         return super.toString();
     }
 
-    public void print(){
+    public void printTable(){
         for (Map.Entry<JmmNode, MySymbol> entry : table.entrySet()) {
             JmmNode node = entry.getKey();
             MySymbol symbol = entry.getValue();
@@ -77,7 +77,5 @@ public class MySymbolTable implements SymbolTable {
             System.out.println(symbol);
         }
     }
-
-
 
 }

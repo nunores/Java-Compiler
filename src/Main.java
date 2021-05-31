@@ -67,7 +67,7 @@ public class Main implements JmmParser {
 			return;
 		}
 
-		OptimizationStage os = new OptimizationStage(as.getSymbolTable());
+		OptimizationStage os = new OptimizationStage();
 		OllirResult ollirResult = os.toOllir(semanticsResult);
 		System.out.println("\nOLLIR Code generated with success.\n");
 

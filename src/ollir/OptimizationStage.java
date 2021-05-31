@@ -34,9 +34,7 @@ import pt.up.fe.comp.jmm.report.Stage;
 public class OptimizationStage implements JmmOptimization {
     private MySymbolTable table = new MySymbolTable();
 
-    public OptimizationStage(MySymbolTable table){
-        this.table = table;
-    }
+    public OptimizationStage(){}
 
     public MySymbolTable getSymbolTable(){
         return this.table;
@@ -44,6 +42,7 @@ public class OptimizationStage implements JmmOptimization {
 
     @Override
     public OllirResult toOllir(JmmSemanticsResult semanticsResult) {
+        this.table = (MySymbolTable) semanticsResult.getSymbolTable();
         JmmNode node = semanticsResult.getRootNode();
 
         List<Report> reports = new ArrayList<>();
