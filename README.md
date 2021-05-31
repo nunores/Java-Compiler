@@ -1,3 +1,31 @@
+# GROUP: 4d
+- NAME1: Diogo André Barbosa Nunes, NR1: 201808546, GRADE1: 16, CONTRIBUTION1: 25%
+- NAME2: João Miguel Gomes Gonçalves, NR2: 201806796, GRADE2: 16, CONTRIBUTION2: 25%
+- NAME3: Marina Tostões Fernandes Leitão Dias, NR3: 201806787, GRADE3: 16, CONTRIBUTION3: 25%
+- NAME4: Nuno Filipe Ferreira de Sousa Resende, NR4: 201806825, GRADE4: 16, CONTRIBUTION4: 25%
+
+**GLOBAL Grade of the project: 16**
+We believe that this project easily reflects the work that was put into by our team. Although we are missing the optimizations, we made sure to implement all the necessary features, going through each checkpoint throughly.
+
+**SUMMARY:** (Describe what your tool does and its main features.)
+
+The objective of this project was to implement a tool that would essentially compile a simplified java class definition into bytecodes so that it would be possible to run it and produce the expected results, as the original javac would.
+The compiler follows a very logical structure, being divided in lexical analysis with comment ignoring, followed by the syntactic analysis with error recovery mechanisms, OLLIR and jasmin representations.
+
+**DEALING WITH SYNTACTIC ERRORS:** (Describe how the syntactic error recovery of your tool works. Does it exit after the first error?)
+
+
+
+**SEMANTIC ANALYSIS:** (Refer the semantic rules implemented by your tool.)
+
+**CODE GENERATION:** (describe how the code generation of your tool works and identify the possible problems your tool has regarding code generation.)
+
+**TASK DISTRIBUTION:** (Identify the set of tasks done by each member of the project. You can divide this by checkpoint it if helps)
+
+**PROS:** (Identify the most positive aspects of your tool)
+
+**CONS:** (Identify the most negative aspects of your tool)
+
 # Compilers Project
 
 For this project, you need to [install Gradle](https://gradle.org/install/)
@@ -54,10 +82,10 @@ For the first checkpoint the following is required:
 ## Checkpoint 2
 For the second checkpoint the following is required:
 
-1. [ ] Implement the interfaces that will allow the generation of the JSON files representing the source code and the necessary symbol tables
-2. [ ] Implement the Semantic Analsis and generate the LLIR code, OLLIR, from the AST
-3. [ ] Generate grom the OLLIR the JVM code accepted by jasmin corresponding tothe invocation of functions in Java--
-4. [ ] Generate from the OLLIR JVM code accepted by jasmin for arithmetic expressions
+1. [x] Implement the interfaces that will allow the generation of the JSON files representing the source code and the necessary symbol tables
+2. [x] Implement the Semantic Analsis and generate the LLIR code, OLLIR, from the AST
+3. [x] Generate grom the OLLIR the JVM code accepted by jasmin corresponding tothe invocation of functions in Java--
+4. [x] Generate from the OLLIR JVM code accepted by jasmin for arithmetic expressions
 
 
 ### JavaCC to JSON

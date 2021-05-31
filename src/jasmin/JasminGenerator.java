@@ -15,6 +15,8 @@ public class JasminGenerator {
     private Method method;
     private HashMap<String, Instruction> labels = new HashMap<>();
     private HashMap<String, Integer> labelsAux = new HashMap<>();
+    private HashMap<String, Integer> reservedFields = new HashMap<>();
+    private int reservedFieldN = 0;
 
     public JasminGenerator(ClassUnit classUnit) {
         this.classUnit = classUnit;
@@ -323,8 +325,8 @@ public class JasminGenerator {
             jasminString += loadElement(first, varTable);
             jasminString += loadElement(third, varTable);
             jasminString += "\tputfield " + classUnit.getClassName() + "/";
-            jasminString += ((Operand)second).getName() + " ";
-            jasminString += convertElementType(second.getType()) + "\n";
+            jasminString += ((Operand)second).getName();
+            jasminString += " " + convertElementType(second.getType()) + "\n";
             return jasminString;
         }
 
@@ -335,8 +337,8 @@ public class JasminGenerator {
 
             jasminString += loadElement(first, varTable);
             jasminString += "\tgetfield " + classUnit.getClassName() + "/";
-            jasminString += ((Operand)second).getName() + " ";
-            jasminString += convertElementType(second.getType()) + "\n";
+            jasminString += ((Operand)second).getName();
+            jasminString += " " + convertElementType(second.getType()) + "\n";
             jasminString += storeElement((Operand)first, varTable);
             return jasminString;
 
@@ -476,19 +478,19 @@ public class JasminGenerator {
     }
 
     private String fieldsToJasmin(){
-        String jasmiString = "";
+        String jasminString = "";
         for(Field field : classUnit.getFields())
         {
-            jasmiString += ".field " + jasminIsStatic(field.isStaticField()) + field.getFieldAccessModifier().toString().toLowerCase() + " ";
+            jasminString += ".field " + jasminIsStatic(field.isStaticField()) + field.getFieldAccessModifier().toString().toLowerCase() + " ";
             if (field.getFieldName().equals("field")) {
-                jasmiString += "'field'";
+                jasminString += "'field'";
             }
             else {
-                jasmiString += field.getFieldName();
+                jasminString += field.getFieldName();
             }
-            jasmiString += " " + convertElementType(field.getFieldType())+"\n";
+            jasminString += " " + convertElementType(field.getFieldType())+"\n";
         }
-        return jasmiString;
+        return jasminString;
     }
 
     public int getStack(String methodCode) {

@@ -60,7 +60,7 @@ public class Main implements JmmParser {
 		}
 
 		AnalysisStage as = new AnalysisStage();
-		JmmSemanticsResult semanticsResult = as.semanticAnalysis(parserResult); 	// CP2: Symbol table generation and semantic analysis
+		JmmSemanticsResult semanticsResult = as.semanticAnalysis(parserResult);
 
 		if(!semanticsResult.getReports().isEmpty()){
 			System.out.println(semanticsResult.getReports());
@@ -68,7 +68,7 @@ public class Main implements JmmParser {
 		}
 
 		OptimizationStage os = new OptimizationStage(as.getSymbolTable());
-		OllirResult ollirResult = os.toOllir(semanticsResult); 					// CP2: Convert AST to OLLIR format
+		OllirResult ollirResult = os.toOllir(semanticsResult);
 		System.out.println("\nOLLIR Code generated with success.\n");
 
 		if(!ollirResult.getReports().isEmpty()){
@@ -76,9 +76,9 @@ public class Main implements JmmParser {
 			return;
 		}
 
-		BackendStage bs = new BackendStage();
-		JasminResult jasminResult = bs.toJasmin(ollirResult);// CP2: Convert OLLIR to Jasmin Bytecode (only for code structures defined in the project)
-		compiler.compile(jasminResult, filename);
+		//BackendStage bs = new BackendStage();
+		//JasminResult jasminResult = bs.toJasmin(ollirResult);
+		//compiler.compile(jasminResult, filename);
 	}
 
 	public void compile(JasminResult jasminResult, String filename){

@@ -27,9 +27,9 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
     private Integer whileNumber = 1;
     List<String> booleanArray = Arrays.asList("True", "False", "Less", "And", "Or", "Not");
     List<String> intArray = Arrays.asList("IntegerLiteral", "DotLength", "ArrayAccess");
-    List<String> varArray = Arrays.asList("MethodCall", "RestIdentifier");
+    List<String> varArray = Arrays.asList("Var", "MethodCall", "RestIdentifier");
     List<String> newInstanceArray = Arrays.asList("NewInstance");
-    List<String> typeReturner = Arrays.asList("True", "False", "Less", "And", "Or", "Not", "IntegerLiteral", "DotLength", "ArrayAccess", "MethodCall", "RestIdentifier", "NewInstance");
+    List<String> typeReturner = Arrays.asList("Var", "True", "False", "Less", "And", "Or", "Not", "IntegerLiteral", "DotLength", "ArrayAccess", "MethodCall", "RestIdentifier", "NewInstance");
     List<String> nodeTypes = Arrays.asList("int", "boolean", "int[]");
 
     public OptimizationVisitor(MySymbolTable symbolTable) {
@@ -448,7 +448,9 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
     }
 
     public String removeLastTwoChar(String temp){
-        return temp.substring(0, temp.length()-2);
+        if (temp.endsWith(";\n"))
+            return temp.substring(0, temp.length()-2);
+        return temp;
     }
 
     public String getType(JmmNode node, String scope){
@@ -571,10 +573,9 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         return "";
     }
 
-
     public String assignmentNode(JmmNode node, String ollirCode) { //TODO: tratar types
         String scope = getScope(node);
-        String type = getTypeToOllir(getTypeReturnedByNode(node, scope));
+        String type = getTypeToOllir(getTypeReturnedByNode(node.getChildren().get(0), scope));
         String line = "\t\t";
         String varName;
         int varParam = -1;
@@ -605,11 +606,18 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
             case "ArrayAccess":
                 varName = node.getChildren().get(0).getChildren().get(0).get("name");
                 varParam = checkVarIsArg(varName);
-                if (varParam != 0) {
-                    line = line + "$" + varParam + "." + varName + "["; 
+
+                if (inScope(node.getChildren().get(0).getChildren().get(0), "GLOBAL"))
+                {
+                    line = line + getFieldArrayAccessNode(node.getChildren().get(0).getChildren().get(0)) + "[";
                 }
                 else {
-                    line = line + varName + "[";
+                    if (varParam != 0) {
+                        line = line + "$" + varParam + "." + varName + "["; 
+                    }
+                    else {
+                        line = line + varName + "[";
+                    }
                 }
 
                 switch (node.getChildren().get(0).getChildren().get(1).getKind()) {
@@ -691,6 +699,20 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
         this.assignmentOllir = "";
         return toReturn;
     }
+    
+    
+
+    private String getFieldArrayAccessNode(JmmNode node) {
+        String scope = getScope(node);
+        String type = "array.i32";
+        String toReturn = "aux" + this.auxNumber;
+        this.auxNumber++;
+        String line = "";
+        line = "\t\t" + toReturn + "." + type + " :=." + type + " getfield(this, " + node.get("name") + "." + type + ")." + type + ";\n";
+
+        this.assignmentOllir += line;
+        return toReturn;
+    }
 
     private String arrayNode(JmmNode node, boolean needAux) {
 
@@ -767,22 +789,22 @@ class OptimizationVisitor extends AJmmVisitor<String, String> {
 
         switch (node.getChildren().get(0).getKind()) {
             case "IntegerLiteral": case "Var": case "RestIdentifier":
-                line = line + "new(array, " + node.getChildren().get(0).get("name") + "." + type + ").array.i32;";
+                line = line + "new(array, " + node.getChildren().get(0).get("name") + "." + type + ").array.i32;\n";
                 break;
             case "DotLength":
-                line = line + "new(array, " + dotLengthNode(node.getChildren().get(0), true) + ").array.i32;";
+                line = line + "new(array, " + dotLengthNode(node.getChildren().get(0), true) + ").array.i32;\n";
                 break;
             case "MethodCall":
-                line = line + "new(array, " + methodCallNode(node.getChildren().get(0), true) + ").array.i32;";
+                line = line + "new(array, " + methodCallNode(node.getChildren().get(0), true) + ").array.i32;\n";
                 break;
             case "Operation":
-                line = line + "new(array, " + operationNode(node.getChildren().get(0), true) + ").array.i32;";
+                line = line + "new(array, " + operationNode(node.getChildren().get(0), true) + ").array.i32;\n";
                 break;
             case "Exp":
-                line = line + "new(array, " + expNode(node.getChildren().get(0), true) + ").array.i32;";
+                line = line + "new(array, " + expNode(node.getChildren().get(0), true) + ").array.i32;\n";
                 break;
             case "ArrayAccess":
-                line = line + "new(array, " + arrayNode(node.getChildren().get(0), true) + ").array.i32;";
+                line = line + "new(array, " + arrayNode(node.getChildren().get(0), true) + ").array.i32;\n";
                 break;
             default:
                 System.out.println("Unexpected behaviour: newArrayNode1");
