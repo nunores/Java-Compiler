@@ -1,34 +1,54 @@
-*** Name of the method: build_test_arr
-        Construct method: false
-        Access modifier: PUBLIC
-        Static method: false
-        Final method: false
-        * Parameters:
-        * Return: Type: INT32
-        * No. Instructions: 13
+.class public myClass
+.super java/lang/Object
 
-        * Instructions:
-        ASSIGN Operand: aux4 ARRAYREF =         CALL Operand: array ARRAYREF, Literal: 5
-        PUTFIELD putfield Operand: this THISOperand: test_arr ARRAYREFOperand: aux4 ARRAYREF
-        ASSIGN Operand: aux5 INT32 =    NOPER Literal: 0
-        ASSIGN Operand: test_arr INT32 =        NOPER Literal: 14
-        ASSIGN Operand: aux6 INT32 =    NOPER Literal: 1
-        ASSIGN Operand: test_arr INT32 =        NOPER Literal: 28
-        ASSIGN Operand: aux7 INT32 =    NOPER Literal: 2
-        ASSIGN Operand: test_arr INT32 =        NOPER Literal: 0
-        ASSIGN Operand: aux8 INT32 =    NOPER Literal: 3
-        ASSIGN Operand: test_arr INT32 =        BINARYOPER Literal: 0 SUB Literal: 5
-        ASSIGN Operand: aux9 INT32 =    NOPER Literal: 4
-        ASSIGN Operand: test_arr INT32 =        NOPER Literal: 12
-        RETURN Literal: 0
+.method public <init>()V
+        aload_0
+        invokespecial java/lang/Object.<init>()V
+        return
+.end method
 
-        * Table of variables:
-                Var name: array scope: LOCAL virtual register: 2
-                Var name: this scope: LOCAL virtual register: 0
-                Var name: aux9 scope: LOCAL virtual register: 7
-                Var name: aux8 scope: LOCAL virtual register: 6
-                Var name: aux5 scope: LOCAL virtual register: 3
-                Var name: aux4 scope: LOCAL virtual register: 1
-                Var name: test_arr scope: FIELD virtual register: -1
-                Var name: aux7 scope: LOCAL virtual register: 5
-                Var name: aux6 scope: LOCAL virtual register: 4
+.method public sum([I[I)[I
+        .limit stack 4
+        .limit locals 12
+        aload 1
+        arraylength
+        istore 3
+iload 3
+        newarray int
+        astore 4
+        iconst_0
+        istore 6
+Loop1:
+        aload 1
+        arraylength
+        istore 7
+        iload 6
+        iload 7
+        if_icmplt Body1
+        goto EndLoop1
+Body1:
+        iload 6
+        istore 8
+        aload 1
+        iload 8
+        iaload
+        istore 9
+        iload 6
+        istore 10
+        aload 2
+        iload 10
+        iaload
+        istore 11
+        aload 4
+        iload 6
+        iload 9
+        iload 11
+        iadd
+        iastore
+        iload 6
+        iinc 6 1
+        goto Loop1
+EndLoop1:
+        aload 4
+        areturn
+.end method

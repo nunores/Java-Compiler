@@ -76,9 +76,9 @@ public class Main implements JmmParser {
 			return;
 		}
 
-		//BackendStage bs = new BackendStage();
-		//JasminResult jasminResult = bs.toJasmin(ollirResult);
-		//compiler.compile(jasminResult, filename);
+		BackendStage bs = new BackendStage();
+		JasminResult jasminResult = bs.toJasmin(ollirResult);
+		compiler.compile(jasminResult, filename);
 	}
 
 	public void compile(JasminResult jasminResult, String filename){

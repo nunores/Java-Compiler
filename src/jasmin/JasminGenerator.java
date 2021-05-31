@@ -97,7 +97,35 @@ public class JasminGenerator {
 
             jasminString += toAddNext;
         }
+        jasminString = incrementOptimization(jasminString);
+
         return jasminString;
+    }
+
+    public String incrementOptimization(String methodCode) {
+        String[] code = methodCode.split("\n");
+        List<String> newCode = new ArrayList<>();
+
+        for (int i = 0; i < code.length; i++) {
+            if (code[i].contains("iload") &&
+                code[i+1].contains("iconst") &&
+                code[i+2].contains("iadd") &&
+                code[i+3].contains("istore") &&
+                code[i].substring(7).equals(code[i+3].substring(8))) {
+                String newInst = "\tiinc ";
+                newInst += code[i].substring(7);
+                newInst += " 1";
+                newCode.add(newInst);
+
+                i++;
+                i++;
+                i++;
+            }
+            else {
+                newCode.add(code[i]);
+            }
+        }
+        return String.join("\n", newCode);
     }
 
     private String ArrayTypeToJasmin(ArrayType type){
