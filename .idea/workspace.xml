@@ -6,10 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="b1be5d57-de64-4a62-9e6a-897895b518bf" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/BackendTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/BackendTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/JasminTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/JasminTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/OptimizeTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/OptimizeTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/fixtures/public/Testing.jmm" beforeDir="false" afterPath="$PROJECT_DIR$/test/fixtures/public/Testing.jmm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/comp2021-4d" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -83,11 +81,15 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/compiled/Simple" />
     <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Asus ZenBook\OneDrive - Universidade do Porto\FEUP\comp2021-4d\compiled\Simple" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Asus ZenBook\OneDrive - Universidade do Porto\FEUP\comp2021-4d\compiled\Simple" />
       <recent name="C:\Users\Asus ZenBook\OneDrive - Universidade do Porto\FEUP\comp2021-4d\src-lib\org\specs\comp\ollir" />
       <recent name="C:\Users\Asus ZenBook\OneDrive - Universidade do Porto\FEUP\comp2021-4d\libs" />
       <recent name="C:\Users\Asus ZenBook\OneDrive - Universidade do Porto\FEUP\comp2021-4d" />

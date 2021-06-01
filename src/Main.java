@@ -57,6 +57,9 @@ public class Main implements JmmParser {
 
 		String fileNameWithoutExtension = compiler.getFileNameWithoutExtension(args[0]);
 
+		// Output Original
+		compiler.writeToFile(compiler.parseToFile(args[0], ".jmm"), fileNameWithoutExtension, jmmCode);
+
 		// Output to JSON
 		compiler.writeToFile(compiler.parseToFile(args[0], ".json"), fileNameWithoutExtension, parserResult.toJson());
 
@@ -90,7 +93,7 @@ public class Main implements JmmParser {
 
 		BackendStage bs = new BackendStage();
 		JasminResult jasminResult = bs.toJasmin(ollirResult);
-		compiler.compile(jasminResult, jmmCode);
+		compiler.compile(jasminResult, fileNameWithoutExtension);
 
 		// Output to j
 		compiler.writeToFile(compiler.parseToFile(args[0], ".j"), fileNameWithoutExtension, jasminResult.getJasminCode());
@@ -99,8 +102,12 @@ public class Main implements JmmParser {
 	}
 
 
-	public void compile(JasminResult jasminResult, String jmmCode){
-		jasminResult.run();
+	public void compile(JasminResult jasminResult, String fileWithoutExtension){
+		List<String> classpaths = new ArrayList<>();
+		List<String> args = new ArrayList<>();
+		classpaths.add(TestUtils.getLibsClasspath());
+		classpaths.add("compiled/" + fileWithoutExtension);
+		jasminResult.run(args, classpaths);
 	}
 
 
