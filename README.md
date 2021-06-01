@@ -6,7 +6,7 @@
 - Nuno Filipe Ferreira de Sousa Resende, NR4: 201806825, GRADE4: 16, CONTRIBUTION4: 25%
 
 **GLOBAL Grade of the project: 16**
-We believe that this project easily reflects the work that was put into by our team. Although we are missing the optimizations, we made sure to implement all the necessary features, going through each checkpoint throughly.
+We believe that this project easily reflects the work that was put into by our team. Although we are missing many optimizations, we made sure to implement all the necessary features, going through each checkpoint throughly.
 
 **SUMMARY:**
 
