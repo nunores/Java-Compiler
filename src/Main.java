@@ -8,13 +8,14 @@ import pt.up.fe.comp.jmm.analysis.JmmSemanticsResult;
 import pt.up.fe.comp.jmm.JmmNode;
 import pt.up.fe.comp.jmm.analysis.table.SymbolTable;
 import pt.up.fe.comp.MainAnalysis;
+import pt.up.fe.comp.TestUtils;
 import pt.up.fe.comp.jmm.analysis.JmmAnalysis;
 import pt.up.fe.comp.jmm.ollir.*;
 import pt.up.fe.comp.jmm.jasmin.JasminResult;
+import pt.up.fe.comp.jmm.jasmin.JasminUtils;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.io.StringReader;
 import java.io.*;
 import java.nio.file.*;
 
@@ -48,11 +49,16 @@ public class Main implements JmmParser {
 	}
 
     public static void main(String[] args) {
-		if (args.length != 1) { return; }
+		if (args.length != 1) { System.out.println("Invalid Arguments"); return; }
 
 		Main compiler = new Main();
-		String filename = compiler.readFile(args[0]);
-		JmmParserResult parserResult = compiler.parse(filename);
+		String jmmCode = compiler.readFile(args[0]);
+		JmmParserResult parserResult = compiler.parse(jmmCode);
+
+		String fileNameWithoutExtension = compiler.getFileNameWithoutExtension(args[0]);
+
+		// Output to JSON
+		compiler.writeToFile(compiler.parseToFile(args[0], ".json"), fileNameWithoutExtension, parserResult.toJson());
 
 		if(!parserResult.getReports().isEmpty()){
 			System.out.println(parserResult.getReports());
@@ -61,6 +67,9 @@ public class Main implements JmmParser {
 
 		AnalysisStage as = new AnalysisStage();
 		JmmSemanticsResult semanticsResult = as.semanticAnalysis(parserResult);
+
+		// Output to symbols.txt
+		compiler.writeToFile(compiler.parseToFile(args[0], ".symbols.txt"), fileNameWithoutExtension, semanticsResult.getSymbolTable().print());
 
 		if(!semanticsResult.getReports().isEmpty()){
 			System.out.println(semanticsResult.getReports());
@@ -76,12 +85,50 @@ public class Main implements JmmParser {
 			return;
 		}
 
+		// Output to ollir
+		compiler.writeToFile(compiler.parseToFile(args[0], ".ollir"), fileNameWithoutExtension, ollirResult.getOllirCode());
+
 		BackendStage bs = new BackendStage();
 		JasminResult jasminResult = bs.toJasmin(ollirResult);
-		compiler.compile(jasminResult, filename);
+		compiler.compile(jasminResult, jmmCode);
+
+		// Output to j
+		compiler.writeToFile(compiler.parseToFile(args[0], ".j"), fileNameWithoutExtension, jasminResult.getJasminCode());
+
+		JasminUtils.assemble(new File("compiled/" + fileNameWithoutExtension + "/" + compiler.parseToFile(args[0], ".j")), new File("./compiled/" + fileNameWithoutExtension));
 	}
 
-	public void compile(JasminResult jasminResult, String filename){
+
+	public void compile(JasminResult jasminResult, String jmmCode){
 		jasminResult.run();
+	}
+
+
+	public void writeToFile(String fileName, String fileWithoutExtension, String content){
+		try {
+			File newDir = new File("compiled/" + fileWithoutExtension);
+			if (!newDir.exists()){
+				newDir.mkdirs();
+			}
+			FileWriter fileWriter = new FileWriter("compiled/" + fileWithoutExtension + "/" + fileName);		
+			fileWriter.write(content);
+			fileWriter.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public String parseToFile(String fileName, String extension){
+		return getFileNameWithoutExtension(fileName) + extension;
+	}
+
+	public String getFileNameWithoutExtension(String fileName){
+		String fileNameWithoutPath = fileName.substring(fileName.lastIndexOf("/") + 1);
+		if (fileNameWithoutPath.indexOf(".") != -1) 
+		{
+			return fileNameWithoutPath.substring(0 , fileNameWithoutPath.indexOf("."));
+		}
+		System.out.println("Failed to get file name without extension");
+		return null;
 	}
 }

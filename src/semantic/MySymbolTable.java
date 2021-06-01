@@ -26,42 +26,118 @@ public class MySymbolTable implements SymbolTable {
 
     @Override
     public List<String> getImports() {
-        return new ArrayList<String>();
+        List<String> imports = new ArrayList<>();
+        for (Map.Entry<JmmNode, MySymbol> entry : table.entrySet()) {
+            JmmNode node = entry.getKey();
+            MySymbol symbol = entry.getValue();
+
+            if (symbol.getType().getName().equals("ImportDeclaration")) {
+                imports.add(symbol.getName());
+            }
+        }
+        return imports;
     }
     
     @Override
     public String getClassName(){
-        return new String();
+        for (Map.Entry<JmmNode, MySymbol> entry : table.entrySet()) {
+            JmmNode node = entry.getKey();
+            MySymbol symbol = entry.getValue();
+
+            if (symbol.getType().getName().equals("ClassDeclaration")) {
+                return symbol.getName();
+            }
+        }
+        return "";
     }
     
+
     @Override
     public String getSuper(){
-        return new String();
+        for (Map.Entry<JmmNode, MySymbol> entry : table.entrySet()) {
+            JmmNode node = entry.getKey();
+            MySymbol symbol = entry.getValue();
+
+            if (symbol.getType().getName().equals("ClassDeclaration") && symbol.getAttributes().containsKey("Extends")) {
+                return symbol.getAttributes().get("Extends").get(0).getSuperName();
+            }
+        }
+        return "";
     }
 
     @Override
     public List<Symbol> getFields(){
-        return new ArrayList<Symbol>();
+        List<Symbol> fields = new ArrayList<>();
+        for (Map.Entry<JmmNode, MySymbol> entry : table.entrySet()) {
+            JmmNode node = entry.getKey();
+            MySymbol symbol = entry.getValue();
+            if (symbol.getSuperName().equals("VarDeclaration") &&
+                symbol.getScope().equals("GLOBAL")) {
+                fields.add(symbol);
+            }
+        }
+        return fields;
     }
     
     @Override
     public List<String> getMethods(){
-        return new ArrayList<String>();
+        List<String> methods = new ArrayList<>();
+        for (Map.Entry<JmmNode, MySymbol> entry : table.entrySet()) {
+            JmmNode node = entry.getKey();
+            MySymbol symbol = entry.getValue();
+
+            if (symbol.getSuperName().equals("MethodDeclaration")) {
+                methods.add(symbol.getName());
+            }
+        }
+        return methods;
     }
     
     @Override
     public Type getReturnType(String methodName){
-        return new Type(new String(), true);
+        for (Map.Entry<JmmNode, MySymbol> entry : table.entrySet()) {
+            JmmNode node = entry.getKey();
+            MySymbol symbol = entry.getValue();
+
+            if (symbol.getSuperName().equals("MethodDeclaration") &&
+                symbol.getName().equals(methodName)) {
+                return symbol.getType();
+            }
+        }
+        return null;
     }
 
     @Override
     public List<Symbol> getParameters(String methodName){
-        return new ArrayList<Symbol>();
+        List<Symbol> par = new ArrayList<>();
+        for (Map.Entry<JmmNode, MySymbol> entry : table.entrySet()) {
+            JmmNode node = entry.getKey();
+            MySymbol symbol = entry.getValue();
+
+            if (symbol.getSuperName().equals("MethodDeclaration") &&
+                symbol.getName().equals(methodName) && 
+                symbol.getAttributes().containsKey("Parameter")) {
+                    for (int i = 0; i < symbol.getAttributes().get("Parameter").size(); i++){
+                        par.add(symbol.getAttributes().get("Parameter").get(i));
+                    }
+            }
+        }
+        return par;
     }
     
     @Override
     public List<Symbol> getLocalVariables(String methodName){
-        return new ArrayList<Symbol>();
+        List<Symbol> local = new ArrayList<>();
+        for (Map.Entry<JmmNode, MySymbol> entry : table.entrySet()) {
+            JmmNode node = entry.getKey();
+            MySymbol symbol = entry.getValue();
+            System.out.println(symbol.getSuperName() + " " + symbol.getScope());
+            if (symbol.getSuperName().equals("VarDeclaration") &&
+                symbol.getScope().equals(methodName)) {
+                    local.add(symbol);
+            }
+        }
+        return local;
     }
 
     @Override

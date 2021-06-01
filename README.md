@@ -58,7 +58,7 @@ The OLLIR code is being successfully being generated, with all the required impl
 
 We accomplished this generation by having done our own visitor, which works simillarly to a PreOrder visitor. With this tool, we traverse the previously generated tree and let each function handle the node associated with it (like the semantic analysis). This way, a large string is consecutively created and being written to by those functions, which results in the OLLIR code.
 
-Jasmin is being succesfully generated from the OLLIR code, with only the increment optimization done. We tried to make use of all necessary functions already implemented in the libraries given, to clean our code and to make it readable. We utilized a loop through all the methods, generating the code depending on the instruction type.
+Jasmin is being succesfully generated from the OLLIR code, with only the increment optimization done (iinc). We tried to make use of all necessary functions already implemented in the libraries given, to clean our code and to make it readable. We utilized a loop through all the methods, generating the code depending on the instruction type.
 
 **TASK DISTRIBUTION:**
 
@@ -88,7 +88,7 @@ During the initial development stages, we weren't aware of the code quantitity a
 
 As such, we needed to rework and refactor some features, having to change the mindset midway.
 
-Also, we did not manage to implement most of    the optimizations and function overloading is not supported.
+Also, we did not manage to implement most of the optimizations and function overloading is not supported.
 
 **CONCLUSION:**
 
