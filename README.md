@@ -41,7 +41,7 @@ Semantic rules follow the course specification and validate:
 - Ensures `void` functions don’t return a value
 
 #### Arrays
-- Indexed expressions are initialized and integers
+- Indexed expressions are initialized and are integers
 - Only array variables are indexed
 - `.length` used only on arrays
 
